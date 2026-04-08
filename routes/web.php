@@ -47,6 +47,12 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+// Onboarding dismiss (auth only)
+Route::post('/admin/onboarding/dismiss', function () {
+    session(['onboarding_dismissed' => true]);
+    return response()->json(['ok' => true]);
+})->middleware('auth')->name('admin.onboarding.dismiss');
+
 // =============================================================================
 // SUPER ADMIN - Accès global à tous les tenants
 // =============================================================================
