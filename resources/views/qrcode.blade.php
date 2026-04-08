@@ -4,92 +4,355 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code - {{ $tenant->name }} - Table {{ $table->code }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+        }
+
+        /* Card */
+        .qr-card {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        /* Top band */
+        .card-top {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 28px 24px 24px;
+            text-align: center;
+            position: relative;
+        }
+        .card-top::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            border: 4px solid #e2e8f0;
+        }
+
+        .logo-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 0 auto 12px;
+            background: #fff;
+            padding: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .logo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .logo-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .tenant-name {
+            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        .tenant-info {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* QR section */
+        .qr-section {
+            padding: 36px 24px 20px;
+            text-align: center;
+        }
+        .qr-frame {
+            display: inline-block;
+            padding: 16px;
+            border: 3px solid #e2e8f0;
+            border-radius: 20px;
+            background: #fff;
+            position: relative;
+        }
+        .qr-frame img {
+            width: 220px;
+            height: 220px;
+            display: block;
+        }
+
+        /* Corner decorations */
+        .qr-frame::before, .qr-frame::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #6366f1;
+        }
+        .qr-frame::before {
+            top: -2px; left: -2px;
+            border-right: none; border-bottom: none;
+            border-radius: 8px 0 0 0;
+        }
+        .qr-frame::after {
+            top: -2px; right: -2px;
+            border-left: none; border-bottom: none;
+            border-radius: 0 8px 0 0;
+        }
+        .corners-bottom::before, .corners-bottom::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #6366f1;
+        }
+        .corners-bottom::before {
+            bottom: -2px; left: -2px;
+            border-right: none; border-top: none;
+            border-radius: 0 0 0 8px;
+        }
+        .corners-bottom::after {
+            bottom: -2px; right: -2px;
+            border-left: none; border-top: none;
+            border-radius: 0 0 8px 0;
+        }
+
+        /* Table badge */
+        .table-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+        }
+
+        /* CTA */
+        .cta-section {
+            padding: 0 24px 24px;
+            text-align: center;
+        }
+        .cta-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .cta-sub {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        /* Steps */
+        .steps {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 20px;
+        }
+        .step {
+            text-align: center;
+        }
+        .step-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #6366f1;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 4px;
+        }
+        .step-text {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* URL bar */
+        .url-bar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 11px;
+            color: #64748b;
+            word-break: break-all;
+            text-align: left;
+        }
+
+        /* Buttons */
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding: 0 24px 28px;
+        }
+        .btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-print {
+            background: #1e293b;
+            color: #fff;
+        }
+        .btn-print:hover { background: #0f172a; }
+        .btn-pdf {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-pdf:hover { background: #b91c1c; }
+        .btn-test {
+            background: #6366f1;
+            color: #fff;
+        }
+        .btn-test:hover { background: #4f46e5; }
+        .btn svg { width: 18px; height: 18px; }
+
+        /* Back */
+        .back-link {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .back-link a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .back-link a:hover { color: #fff; }
+
+        /* Print */
         @media print {
+            body { background: #fff !important; padding: 0 !important; }
             .no-print { display: none !important; }
-            body { background: white !important; }
+            .qr-card { box-shadow: none; border: 2px solid #000; }
+            .card-top { background: #fff !important; -webkit-print-color-adjust: exact; }
+            .tenant-name { color: #000 !important; }
+            .tenant-info { color: #333 !important; }
+            .actions, .back-link, .url-bar { display: none !important; }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- En-tête -->
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">{{ $tenant->name }}</h1>
-            <p class="text-xl text-gray-600">Table {{ $table->label }} ({{ $table->code }})</p>
-        </div>
-
-        <!-- Carte QR Code -->
-        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
-            <!-- Branding -->
-            @if($tenant->branding && $tenant->branding['logo_url'])
-                <div class="text-center mb-6">
-                    <img src="{{ $tenant->branding['logo_url'] }}" alt="{{ $tenant->name }}"
-                         class="h-16 mx-auto mb-4">
+<body class="p-6">
+    <div style="max-width: 420px; margin: 0 auto;">
+        {{-- QR Card --}}
+        <div class="qr-card">
+            {{-- Top Band with Logo --}}
+            <div class="card-top">
+                <div class="logo-wrap">
+                    @if($tenant->logo_url)
+                        <img src="{{ $tenant->logo_url }}" alt="{{ $tenant->name }}">
+                    @else
+                        <div class="logo-placeholder">{{ strtoupper(substr($tenant->name, 0, 2)) }}</div>
+                    @endif
                 </div>
-            @endif
+                <div class="tenant-name">{{ $tenant->name }}</div>
+                @if($tenant->address)
+                    <div class="tenant-info">{{ $tenant->address }}</div>
+                @endif
+            </div>
 
-            <!-- QR Code -->
-            <div class="text-center mb-6">
-                <div class="inline-block p-4 bg-white border-2 border-gray-200 rounded-lg">
-                    <img src="{{ $qrCodeUrl }}" alt="QR Code Menu"
-                         class="w-64 h-64">
+            {{-- QR Code --}}
+            <div class="qr-section">
+                <div class="qr-frame">
+                    <div class="corners-bottom" style="position:absolute;inset:0;pointer-events:none;"></div>
+                    <img src="{{ $qrCodeUrl }}" alt="QR Code Menu">
+                </div>
+                <div>
+                    <span class="table-badge">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:18px;height:18px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M12 6v12"/></svg>
+                        Table {{ $table->label ?? $table->code }}
+                    </span>
                 </div>
             </div>
 
-            <!-- Informations -->
-            <div class="text-center mb-6">
-                <h2 class="text-lg font-semibold text-gray-800 mb-2">Scannez pour commander</h2>
-                <p class="text-sm text-gray-600 mb-4">
-                    Utilisez votre téléphone pour accéder au menu digital
-                </p>
-                <div class="text-xs text-gray-500">
-                    <p><strong>Restaurant:</strong> {{ $tenant->name }}</p>
-                    <p><strong>Table:</strong> {{ $table->label }}</p>
-                    <p><strong>URL:</strong> <span class="break-all">{{ $menuUrl }}</span></p>
+            {{-- CTA --}}
+            <div class="cta-section">
+                <div class="cta-title">Scannez pour commander</div>
+                <div class="cta-sub">Accedez au menu digital en un instant</div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-text">Scannez</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-text">Choisissez</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-text">Commandez</div>
+                    </div>
                 </div>
+
+                <div class="url-bar no-print">{{ $menuUrl }}</div>
             </div>
 
-            <!-- Actions -->
-            <div class="flex space-x-4 no-print">
-                <button onclick="window.print()" class="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors">
-                    <i class="fas fa-print mr-2"></i>Imprimer
+            {{-- Actions --}}
+            <div class="actions no-print">
+                <button onclick="window.print()" class="btn btn-print">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Imprimer
                 </button>
-                <a href="{{ $menuUrl }}" target="_blank" class="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors text-center">
-                    <i class="fas fa-external-link-alt mr-2"></i>Tester le menu
+                <a href="{{ route('qrcode.pdf', [$tenant->id, $table->code]) }}" class="btn btn-pdf">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    PDF
+                </a>
+                <a href="{{ $menuUrl }}" target="_blank" class="btn btn-test">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    Tester
                 </a>
             </div>
         </div>
 
-        <!-- Instructions d'impression -->
-        <div class="max-w-md mx-auto mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 no-print">
-            <h3 class="font-semibold text-blue-800 mb-2">
-                <i class="fas fa-info-circle mr-2"></i>Instructions d'impression
-            </h3>
-            <ul class="text-sm text-blue-700 space-y-1">
-                <li>• Imprimez cette page en format A4</li>
-                <li>• Placez le QR code sur la table</li>
-                <li>• Assurez-vous qu'il est scannable</li>
-                <li>• Testez avec votre téléphone avant impression finale</li>
-            </ul>
-        </div>
-
-        <!-- Retour -->
-        <div class="text-center mt-8 no-print">
-            <a href="{{ route('admin.dashboard', $tenant->slug) }}"
-               class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                <i class="fas fa-arrow-left mr-2"></i>Retour au dashboard
+        {{-- Back --}}
+        <div class="back-link no-print">
+            <a href="{{ route('admin.dashboard', $tenant->slug) }}">
+                ← Retour au dashboard
             </a>
         </div>
     </div>
-
-    <script>
-        // Auto-refresh du QR code toutes les 30 secondes (optionnel)
-        setTimeout(() => {
-            location.reload();
-        }, 30000);
-    </script>
 </body>
 </html>

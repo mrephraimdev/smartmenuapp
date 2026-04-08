@@ -38,10 +38,10 @@
                 </div>
 
                 <div class="flex space-x-2">
-                    <a href="{{ route('themes.show', $theme) }}" class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">
+                    <a href="{{ route('admin.themes.show', [$tenant->slug, $theme]) }}" class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded">
                         Voir Détails
                     </a>
-                    <a href="{{ route('themes.preview', $theme) }}" class="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded">
+                    <a href="{{ route('admin.themes.edit', [$tenant->slug, $theme]) }}" class="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded">
                         Aperçu
                     </a>
                 </div>

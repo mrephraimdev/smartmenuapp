@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créer un Utilisateur</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
@@ -13,9 +14,9 @@
         <header class="bg-white shadow-sm">
             <div class="container mx-auto px-4 py-4">
                 <div class="flex justify-between items-center">
-                    <h1 class="text-2xl font-bold text-gray-800">👥 Créer un Nouvel Utilisateur</h1>
-                    <a href="{{ route('users.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                        <i class="fas fa-arrow-left mr-2"></i>Retour
+                    <h1 class="text-2xl font-bold text-gray-800">Créer un Nouvel Utilisateur</h1>
+                    <a href="{{ route('superadmin.users.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 inline-flex items-center">
+                        <x-heroicon-o-arrow-left class="w-5 h-5 mr-2" />Retour
                     </a>
                 </div>
             </div>
@@ -25,7 +26,7 @@
         <main class="container mx-auto px-4 py-8">
             <div class="max-w-2xl mx-auto">
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <form action="{{ route('users.store') }}" method="POST">
+                    <form action="{{ route('superadmin.users.store') }}" method="POST">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -35,7 +36,8 @@
                                     Nom complet *
                                 </label>
                                 <input type="text" id="name" name="name" value="{{ old('name') }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('name') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('name') border-red-500 @enderror"
+                                       placeholder="Jean Dupont"
                                        required>
                                 @error('name')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -48,7 +50,8 @@
                                     Adresse email *
                                 </label>
                                 <input type="email" id="email" name="email" value="{{ old('email') }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('email') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('email') border-red-500 @enderror"
+                                       placeholder="jean.dupont@exemple.com"
                                        required>
                                 @error('email')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -61,7 +64,8 @@
                                     Mot de passe *
                                 </label>
                                 <input type="password" id="password" name="password"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('password') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('password') border-red-500 @enderror"
+                                       placeholder="Minimum 8 caractères"
                                        required>
                                 @error('password')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -74,47 +78,62 @@
                                     Confirmer le mot de passe *
                                 </label>
                                 <input type="password" id="password_confirmation" name="password_confirmation"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                       placeholder="Confirmez le mot de passe"
                                        required>
                             </div>
 
-                            <!-- Tenant -->
+                            <!-- Rôle -->
                             <div class="md:col-span-2">
+                                <label for="role" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Rôle *
+                                </label>
+                                <select id="role" name="role"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('role') border-red-500 @enderror"
+                                        required>
+                                    <option value="">-- Sélectionner un rôle --</option>
+                                    @foreach(\App\Enums\UserRole::cases() as $role)
+                                    <option value="{{ $role->value }}" {{ old('role') == $role->value ? 'selected' : '' }}>
+                                        {{ $role->label() }} - {{ $role->description() }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('role')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+
+                                <!-- Description des rôles -->
+                                <div class="mt-3 p-4 bg-gray-50 rounded-lg text-sm">
+                                    <p class="font-medium text-gray-700 mb-2">Description des rôles :</p>
+                                    <ul class="space-y-1 text-gray-600">
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 mr-2">SUPER_ADMIN</span> Accès global à tous les tenants</li>
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 mr-2">ADMIN</span> Gestion complète de son restaurant</li>
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 mr-2">CAISSIER</span> POS, paiements, encaissements</li>
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 mr-2">CHEF</span> Cuisine, préparation des commandes (KDS)</li>
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mr-2">SERVEUR</span> Service en salle, commandes, tables</li>
+                                        <li><span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mr-2">CLIENT</span> Menu public et commandes</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Tenant -->
+                            <div class="md:col-span-2" id="tenant-field">
                                 <label for="tenant_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Tenant (laisser vide pour Super Admin)
+                                    Restaurant assigné
                                 </label>
                                 <select id="tenant_id" name="tenant_id"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('tenant_id') border-red-500 @enderror">
-                                    <option value="">Super Admin (accès global)</option>
-                                    @foreach(\App\Models\Tenant::where('is_active', true)->get() as $tenant)
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 @error('tenant_id') border-red-500 @enderror">
+                                    <option value="">-- Aucun (Super Admin) --</option>
+                                    @foreach(\App\Models\Tenant::where('is_active', true)->orderBy('name')->get() as $tenant)
                                     <option value="{{ $tenant->id }}" {{ old('tenant_id') == $tenant->id ? 'selected' : '' }}>
                                         {{ $tenant->name }} ({{ $tenant->slug }})
                                     </option>
                                     @endforeach
                                 </select>
+                                <p class="mt-1 text-sm text-gray-500" id="tenant-help">
+                                    Le SUPER_ADMIN n'a pas besoin de tenant. Les autres rôles doivent être associés à un restaurant.
+                                </p>
                                 @error('tenant_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <!-- Rôles -->
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Rôles *
-                                </label>
-                                <div class="space-y-2">
-                                    @foreach(\App\Models\Role::all() as $role)
-                                    <div class="flex items-center">
-                                        <input type="checkbox" id="role_{{ $role->id }}" name="roles[]" value="{{ $role->id }}"
-                                               {{ in_array($role->id, old('roles', [])) ? 'checked' : '' }}
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                        <label for="role_{{ $role->id }}" class="ml-2 block text-sm text-gray-900">
-                                            {{ $role->name }} - {{ $role->description }}
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                </div>
-                                @error('roles')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -122,13 +141,13 @@
 
                         <!-- Boutons -->
                         <div class="mt-8 flex justify-end space-x-4">
-                            <a href="{{ route('users.index') }}"
-                               class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">
+                            <a href="{{ route('superadmin.users.index') }}"
+                               class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors">
                                 Annuler
                             </a>
                             <button type="submit"
-                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                <i class="fas fa-save mr-2"></i>Créer l'utilisateur
+                                    class="bg-indigo-500 text-white px-6 py-2 rounded-lg hover:bg-indigo-600 inline-flex items-center transition-colors">
+                                <x-heroicon-o-check class="w-5 h-5 mr-2" />Créer l'utilisateur
                             </button>
                         </div>
                     </form>
@@ -136,5 +155,26 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Afficher/masquer le champ tenant en fonction du rôle
+        document.getElementById('role').addEventListener('change', function() {
+            const tenantField = document.getElementById('tenant-field');
+            const tenantSelect = document.getElementById('tenant_id');
+            const tenantHelp = document.getElementById('tenant-help');
+
+            if (this.value === 'SUPER_ADMIN') {
+                tenantSelect.value = '';
+                tenantHelp.textContent = 'Le Super Admin a accès à tous les restaurants.';
+            } else if (this.value === 'CLIENT') {
+                tenantSelect.value = '';
+                tenantHelp.textContent = 'Les clients n\'ont pas besoin d\'être assignés à un restaurant.';
+            } else if (this.value) {
+                tenantHelp.textContent = 'Ce rôle doit être associé à un restaurant.';
+            } else {
+                tenantHelp.textContent = 'Le SUPER_ADMIN n\'a pas besoin de tenant. Les autres rôles doivent être associés à un restaurant.';
+            }
+        });
+    </script>
 </body>
 </html>

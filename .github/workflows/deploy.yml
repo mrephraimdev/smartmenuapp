@@ -1,0 +1,186 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/smartmenu-saas
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/smartmenu-saas:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/smartmenu-saas:buildcache,mode=max
+
+  deploy:
+    name: Deploy to Server
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd /var/www/smartmenu-saas
+
+            # Pull latest code
+            git pull origin main
+
+            # Pull latest Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/smartmenu-saas:${{ github.ref_name }}
+
+            # Stop containers
+            docker-compose down
+
+            # Update .env if needed
+            # cp .env.production .env
+
+            # Start containers with new image
+            docker-compose up -d
+
+            # Wait for services to be healthy
+            sleep 10
+
+            # Run migrations
+            docker-compose exec -T app php artisan migrate --force
+
+            # Clear and cache config
+            docker-compose exec -T app php artisan config:cache
+            docker-compose exec -T app php artisan route:cache
+            docker-compose exec -T app php artisan view:cache
+
+            # Clear application cache
+            docker-compose exec -T app php artisan cache:clear
+
+            # Restart queue workers
+            docker-compose exec -T app php artisan queue:restart
+
+            # Check health
+            curl -f http://localhost/health || exit 1
+
+            echo "Deployment successful!"
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "✅ Deployment successful!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*SmartMenu SaaS Deployment* :rocket:\n*Version:* ${{ github.ref_name }}\n*Status:* Success ✅\n*Environment:* ${{ github.event.inputs.environment || 'production' }}"
+                  }
+                }
+              ]
+            }
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "❌ Deployment failed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*SmartMenu SaaS Deployment* :x:\n*Version:* ${{ github.ref_name }}\n*Status:* Failed ❌\n*Environment:* ${{ github.event.inputs.environment || 'production' }}\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                  }
+                }
+              ]
+            }
+
+  rollback:
+    name: Rollback (Manual)
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: failure()
+    environment:
+      name: rollback-approval
+
+    steps:
+      - name: Rollback deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd /var/www/smartmenu-saas
+
+            # Get previous version tag
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1)
+
+            # Checkout previous version
+            git checkout $PREVIOUS_TAG
+
+            # Pull previous Docker image
+            docker pull ${{ secrets.DOCKER_USERNAME }}/smartmenu-saas:$PREVIOUS_TAG
+
+            # Restart with previous version
+            docker-compose down
+            docker-compose up -d
+
+            echo "Rollback to $PREVIOUS_TAG completed!"

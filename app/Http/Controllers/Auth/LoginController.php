@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Enums\UserRole;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LoginController extends Controller
@@ -28,21 +29,35 @@ class LoginController extends Controller
     protected function redirectTo()
     {
         $user = auth()->user();
+        $tenant = $user->tenant;
 
-        if ($user->hasRole('SUPER_ADMIN')) {
+        // SUPER_ADMIN → Dashboard Super Admin
+        if ($user->hasRole(UserRole::SUPER_ADMIN)) {
             return route('superadmin.dashboard');
         }
 
-        if ($user->hasRole('ADMIN')) {
-            // Rediriger vers le dashboard admin du tenant
-            $tenant = $user->tenant;
-            if ($tenant) {
-                return route('admin.dashboard', $tenant->slug);
-            }
+        // ADMIN → Dashboard Admin du restaurant
+        if ($user->hasRole(UserRole::ADMIN) && $tenant) {
+            return route('admin.dashboard', $tenant->slug);
         }
 
-        // Par défaut, rediriger vers la page d'accueil
-        return '/';
+        // CAISSIER → Interface Caisse (POS)
+        if ($user->hasRole(UserRole::CAISSIER) && $tenant) {
+            return route('caisse.pos.index', $tenant->slug);
+        }
+
+        // CHEF → Écran Cuisine (KDS)
+        if ($user->hasRole(UserRole::CHEF) && $tenant) {
+            return route('kds', $tenant->slug);
+        }
+
+        // SERVEUR → Écran Cuisine (KDS)
+        if ($user->hasRole(UserRole::SERVEUR) && $tenant) {
+            return route('kds', $tenant->slug);
+        }
+
+        // Par défaut → Page d'accueil (pour les utilisateurs sans rôle/tenant)
+        return route('home');
     }
 
     /**

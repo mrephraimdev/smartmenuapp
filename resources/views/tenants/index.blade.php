@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des Tenants</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
         <!-- Header -->
@@ -15,8 +16,8 @@
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold text-gray-800">🏢 Gestion des Tenants</h1>
                     <div class="flex space-x-4">
-                        <a href="{{ route('tenants.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            <i class="fas fa-plus mr-2"></i>Nouveau Tenant
+                        <a href="{{ route('superadmin.tenants.create') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 inline-flex items-center">
+                            <x-heroicon-o-plus class="w-5 h-5 mr-2" />Nouveau Tenant
                         </a>
                         <a href="{{ route('superadmin.dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
                             🏠 Dashboard Super Admin
@@ -77,24 +78,24 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('tenants.show', $tenant) }}"
+                                        <a href="{{ route('superadmin.tenants.show', $tenant) }}"
                                            class="text-indigo-600 hover:text-indigo-900">
-                                            <i class="fas fa-eye"></i>
+                                            <x-heroicon-o-eye class="w-5 h-5" />
                                         </a>
-                                        <a href="{{ route('tenants.edit', $tenant) }}"
+                                        <a href="{{ route('superadmin.tenants.edit', $tenant) }}"
                                            class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-edit"></i>
+                                            <x-heroicon-o-pencil class="w-5 h-5" />
                                         </a>
                                         <a href="{{ route('admin.dashboard', $tenant->slug) }}"
                                            class="text-green-600 hover:text-green-900">
-                                            <i class="fas fa-cog"></i>
+                                            <x-heroicon-o-cog-6-tooth class="w-5 h-5" />
                                         </a>
-                                        <form action="{{ route('tenants.destroy', $tenant) }}" method="POST" class="inline"
+                                        <form action="{{ route('superadmin.tenants.destroy', $tenant) }}" method="POST" class="inline"
                                               onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce tenant ?')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900">
-                                                <i class="fas fa-trash"></i>
+                                                <x-heroicon-o-trash class="w-5 h-5" />
                                             </button>
                                         </form>
                                     </div>

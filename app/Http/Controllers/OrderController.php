@@ -3,78 +3,116 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Dish;
-use App\Models\Variant;
+use App\Models\Tenant;
+use App\Services\OrderService;
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
-    public function store(Request $request)
+    public function __construct(
+        private OrderService $orderService
+    ) {}
+
+    /**
+     * Get order status for client tracking (public API - no auth required)
+     * Used by menu-client.blade.php for real-time order tracking
+     */
+    public function getOrderForClient(int $id): JsonResponse
+    {
+        $order = Order::with(['items.dish', 'table'])
+            ->find($id);
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Commande non trouvée'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'order' => [
+                'id' => $order->id,
+                'order_number' => $order->order_number,
+                'status' => $order->status,
+                'payment_status' => $order->payment_status,
+                'total' => $order->total,
+                'table' => $order->table ? [
+                    'id' => $order->table->id,
+                    'code' => $order->table->code,
+                ] : null,
+                'items' => $order->items->map(fn($item) => [
+                    'id' => $item->id,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'dish' => $item->dish ? [
+                        'id' => $item->dish->id,
+                        'name' => $item->dish->name,
+                    ] : null,
+                ]),
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
+            ]
+        ]);
+    }
+
+    /**
+     * Create a new order
+     */
+    public function store(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'tenant_id' => 'required|exists:tenants,id',
-                'table_id' => 'required|exists:tables,id',
+                'table_id' => [
+                    'required',
+                    'exists:tables,id',
+                    // SECURITE: Vérifier que la table appartient au tenant
+                    function ($attribute, $value, $fail) use ($request) {
+                        $table = \App\Models\Table::find($value);
+                        if (!$table || $table->tenant_id != $request->tenant_id) {
+                            $fail('Cette table n\'appartient pas à ce restaurant.');
+                        }
+                    },
+                ],
                 'items' => 'required|array|min:1',
-                'items.*.dish_id' => 'required|exists:dishes,id',
-                'items.*.quantity' => 'required|integer|min:1'
+                'items.*.dish_id' => [
+                    'required',
+                    'exists:dishes,id',
+                    // SECURITE: Vérifier que le plat appartient au tenant
+                    function ($attribute, $value, $fail) use ($request) {
+                        $dish = \App\Models\Dish::find($value);
+                        if (!$dish || $dish->tenant_id != $request->tenant_id) {
+                            $fail('Ce plat n\'appartient pas à ce restaurant.');
+                        }
+                    },
+                ],
+                'items.*.quantity' => 'required|integer|min:1|max:99',
+                'items.*.variant_id' => 'nullable|exists:variants,id',
+                'items.*.options' => 'nullable|array',
+                'items.*.notes' => 'nullable|string|max:500',
+                'notes' => 'nullable|string|max:1000',
             ]);
 
-            DB::beginTransaction();
-
-            $total = 0;
-            $orderItems = [];
-
-            foreach ($validated['items'] as $item) {
-                $dish = Dish::find($item['dish_id']);
-                $itemPrice = $dish->price_base;
-
-                if (!empty($item['variant_id'])) {
-                    $variant = Variant::find($item['variant_id']);
-                    if ($variant) {
-                        $itemPrice += $variant->extra_price;
-                    }
-                }
-
-                $itemTotal = $itemPrice * $item['quantity'];
-                $total += $itemTotal;
-
-                $orderItems[] = [
-                    'dish_id' => $item['dish_id'],
-                    'variant_id' => $item['variant_id'] ?? null,
-                    'options' => json_encode($item['options'] ?? []), // ✅ CONVERTIR EN JSON
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $itemPrice,
-                    'notes' => $item['notes'] ?? ''
-                ];
-            }
-
-            $order = Order::create([
-                'tenant_id' => $validated['tenant_id'],
-                'table_id' => $validated['table_id'],
-                'status' => 'RECU',
-                'total' => $total,
-                'notes' => $request->notes ?? ''
-            ]);
-
-            foreach ($orderItems as $itemData) {
-                $itemData['order_id'] = $order->id;
-                OrderItem::create($itemData);
-            }
-
-            DB::commit();
+            $order = $this->orderService->createOrder($validated);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Commande créée avec succès!',
                 'order_id' => $order->id,
-                'total' => $total
+                'order_number' => $order->order_number,
+                'total' => $order->total
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur: ' . $e->getMessage()
@@ -82,81 +120,269 @@ class OrderController extends Controller
         }
     }
 
-    // ✅ CORRIGÉ : Charger les variants + Filtrer les statuts + Filtrer par tenant de l'utilisateur connecté
-    public function index(Request $request)
+    /**
+     * Get orders for authenticated user's tenant (Admin View)
+     */
+    public function index(Request $request, string $tenantSlug)
     {
         $user = auth()->user();
 
-        $query = Order::with([
-                    'table',
-                    'items.dish',
-                    'items.variant'  // ✅ AJOUTER LA VARIANTE
-                ])
-                ->whereIn('status', ['RECU', 'PREP', 'PRET']);  // ✅ EXCLURE SERVI
-
-        // Filtrer par tenant de l'utilisateur connecté (sauf super admin)
-        if ($user && !$user->hasRole('SUPER_ADMIN')) {
-            $query->where('tenant_id', $user->tenant_id);
+        if (!$user) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Non authentifié'], 401);
+            }
+            return redirect()->route('login');
         }
 
-        $orders = $query->orderBy('created_at', 'desc')->get();
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
-        return response()->json($orders);
+        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Accès non autorisé'], 403);
+            }
+            abort(403, 'Accès non autorisé à ce tenant');
+        }
+
+        // Date filter - par défaut aujourd'hui si non spécifié
+        $filterDate = $request->filled('date') ? $request->date : now()->format('Y-m-d');
+
+        // Build query with filters
+        $query = Order::with(['table', 'items.dish', 'items.variant'])
+            ->where('tenant_id', $tenant->id)
+            ->whereDate('created_at', $filterDate)
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('table')) {
+            $query->where('table_id', $request->table);
+        }
+
+        // For JSON requests (API), return all data
+        if ($request->wantsJson()) {
+            return response()->json($query->get());
+        }
+
+        // For web requests, paginate and return view
+        $orders = $query->paginate(50)->withQueryString();
+
+        // Get tables for filter dropdown
+        $tables = \App\Models\Table::where('tenant_id', $tenant->id)->get();
+
+        // Calculate statistics for the selected date
+        $statistics = [
+            'total' => Order::where('tenant_id', $tenant->id)
+                ->whereDate('created_at', $filterDate)
+                ->count(),
+            'pending' => Order::where('tenant_id', $tenant->id)
+                ->whereDate('created_at', $filterDate)
+                ->whereIn('status', ['RECU', 'PREP', 'PRET'])
+                ->count(),
+            'completed' => Order::where('tenant_id', $tenant->id)
+                ->whereDate('created_at', $filterDate)
+                ->where('status', 'SERVI')
+                ->count(),
+            'revenue' => Order::where('tenant_id', $tenant->id)
+                ->whereDate('created_at', $filterDate)
+                ->where('payment_status', 'PAID')
+                ->sum('total'),
+        ];
+
+        return view('admin.orders.index', [
+            'orders' => $orders,
+            'tables' => $tables,
+            'statistics' => $statistics,
+            'tenantSlug' => $tenantSlug,
+            'tenant' => $tenant,
+            'filterDate' => $filterDate,
+        ]);
     }
 
-    // ✅ NOUVELLE MÉTHODE : Récupérer les commandes pour un tenant spécifique (KDS)
-    public function getOrdersByTenant($tenantSlug)
+    /**
+     * Get orders for a specific tenant (KDS API)
+     * Retourne toutes les commandes du jour (actives + servies)
+     */
+    public function getOrdersByTenant(string $tenantSlug): JsonResponse
     {
         $user = auth()->user();
-        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
-        // Vérifier l'accès au tenant
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
-        $orders = Order::with([
-                    'table',
-                    'items.dish',
-                    'items.variant'
-                ])
-                ->where('tenant_id', $tenant->id)
-                ->whereIn('status', ['RECU', 'PREP', 'PRET'])
-                ->orderBy('created_at', 'desc')
-                ->get();
+        // Récupérer toutes les commandes du jour (pas annulées) pour le KDS
+        $orders = Order::with(['table', 'items.dish', 'items.variant'])
+            ->where('tenant_id', $tenant->id)
+            ->whereDate('created_at', now())
+            ->where('status', '!=', 'ANNULE')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json($orders);
     }
 
-    public function updateStatus(Request $request, $id)
+    /**
+     * Update order status
+     */
+    public function updateStatus(Request $request, int $id): JsonResponse
     {
         $order = Order::findOrFail($id);
         $user = auth()->user();
 
-        // Vérifier l'accès au tenant
+        if (!$user) {
+            return response()->json(['success' => false, 'error' => 'Non authentifié'], 401);
+        }
+
+        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+            return response()->json(['success' => false, 'error' => 'Accès non autorisé'], 403);
+        }
+
+        $validated = $request->validate([
+            'status' => 'required|string|in:' . implode(',', array_column(OrderStatus::cases(), 'value')),
+        ]);
+
+        $newStatus = OrderStatus::from($validated['status']);
+        $order = $this->orderService->updateStatus($order, $newStatus);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Statut mis à jour',
+            'order' => $order
+        ]);
+    }
+
+    /**
+     * Progress order to next status
+     */
+    public function progressStatus(int $id): JsonResponse
+    {
+        return $this->progress($id);
+    }
+
+    /**
+     * Progress order to next status (alias for progressStatus)
+     */
+    public function progress(string $tenantSlug, int $id): JsonResponse
+    {
+        $order = Order::findOrFail($id);
+        $user = auth()->user();
+
         if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
-        $order->update(['status' => $request->status]);
+        $order = $this->orderService->progressStatus($order);
+
+        if (!$order) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La commande ne peut pas progresser'
+            ], 400);
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Statut mis à jour'
+            'message' => 'Statut progressé',
+            'order' => $order
         ]);
     }
 
-    public function kds($tenantSlug)
+    /**
+     * Cancel an order
+     */
+    public function cancel(Request $request, string $tenantSlug, int $id): JsonResponse
     {
+        $order = Order::findOrFail($id);
         $user = auth()->user();
 
-        $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+            return response()->json(['error' => 'Accès non autorisé'], 403);
+        }
 
-        // Vérifier l'accès au tenant
+        $reason = $request->input('reason', '');
+        $order = $this->orderService->cancelOrder($order, $reason);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Commande annulée',
+            'order' => $order
+        ]);
+    }
+
+    /**
+     * Get order details
+     */
+    public function show(Request $request, string $tenantSlug, int $id)
+    {
+        $order = $this->orderService->getOrderWithDetails($id);
+        $user = auth()->user();
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        if (!$order) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Commande non trouvée'], 404);
+            }
+            abort(404, 'Commande non trouvée');
+        }
+
+        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+            if ($request->wantsJson()) {
+                return response()->json(['error' => 'Accès non autorisé'], 403);
+            }
+            abort(403, 'Accès non autorisé');
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json($order);
+        }
+
+        return view('admin.orders.show', [
+            'order' => $order,
+            'tenantSlug' => $tenantSlug,
+            'tenant' => $tenant,
+        ]);
+    }
+
+    /**
+     * KDS view
+     */
+    public function kds(string $tenantSlug)
+    {
+        $user = auth()->user();
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403, 'Accès non autorisé à ce tenant');
         }
 
-        return view('kds', ['tenantId' => $tenant->id, 'tenantSlug' => $tenantSlug]);
+        return view('kds', [
+            'tenantId' => $tenant->id,
+            'tenantSlug' => $tenantSlug
+        ]);
+    }
+
+    /**
+     * Get orders grouped by status for KDS
+     */
+    public function kdsData(string $tenantSlug): JsonResponse
+    {
+        $user = auth()->user();
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+            return response()->json(['error' => 'Accès non autorisé'], 403);
+        }
+
+        $data = $this->orderService->getOrdersForKDS($tenant->id);
+
+        return response()->json($data);
     }
 }

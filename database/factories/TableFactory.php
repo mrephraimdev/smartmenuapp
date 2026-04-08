@@ -16,8 +16,15 @@ class TableFactory extends Factory
      */
     public function definition(): array
     {
+        $number = fake()->unique()->numberBetween(1, 100);
+
         return [
-            //
+            'tenant_id' => \App\Models\Tenant::factory(),
+            'code' => 'T' . str_pad($number, 3, '0', STR_PAD_LEFT),
+            'label' => 'Table ' . $number,
+            'capacity' => fake()->numberBetween(2, 8),
+            'qr_code_url' => null,
+            'is_active' => true,
         ];
     }
 }

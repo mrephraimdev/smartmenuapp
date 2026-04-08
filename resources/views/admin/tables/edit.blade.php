@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier Table - {{ $tenant->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-6">
         <!-- En-tête -->
@@ -15,8 +16,8 @@
                 <h1 class="text-2xl font-bold text-gray-800">🍽️ Modifier Table</h1>
                 <p class="text-gray-600">{{ $tenant->name }} - {{ $table->label }}</p>
             </div>
-            <a href="{{ route('admin.tables.index', $tenant->slug) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                <i class="fas fa-arrow-left mr-2"></i>Retour
+            <a href="{{ route('admin.tables.index', $tenant->slug) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 inline-flex items-center">
+                <x-heroicon-o-arrow-left class="w-5 h-5 mr-2" />Retour
             </a>
         </div>
 
@@ -75,7 +76,7 @@
                             Statut
                         </label>
                         <div class="flex items-center">
-                            <input type="checkbox" id="is_active" name="is_active" {{ $table->is_active ? 'checked' : '' }}
+                            <input type="checkbox" id="is_active" name="is_active" value="1" {{ $table->is_active ? 'checked' : '' }}
                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label for="is_active" class="ml-2 block text-sm text-gray-900">
                                 Table active
@@ -92,8 +93,8 @@
                         Annuler
                     </a>
                     <button type="submit"
-                            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        <i class="fas fa-save mr-2"></i>Mettre à jour
+                            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 inline-flex items-center">
+                        <x-heroicon-o-check class="w-5 h-5 mr-2" />Mettre à jour
                     </button>
                 </div>
             </form>
@@ -101,8 +102,8 @@
 
         <!-- Informations sur la table -->
         <div class="bg-gray-50 rounded-lg p-4 mt-6">
-            <h3 class="font-semibold text-gray-800 mb-3">
-                <i class="fas fa-info-circle mr-2"></i>Informations de la table
+            <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <x-heroicon-o-information-circle class="w-5 h-5 mr-2" />Informations de la table
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>

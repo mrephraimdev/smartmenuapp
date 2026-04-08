@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails du Tenant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
 <body class="bg-gray-100">
     <div class="min-h-screen">
         <!-- Header -->
@@ -15,11 +16,11 @@
                 <div class="flex justify-between items-center">
                     <h1 class="text-2xl font-bold text-gray-800">🏢 Détails du Tenant: {{ $tenant->name }}</h1>
                     <div class="flex space-x-4">
-                        <a href="{{ route('tenants.edit', $tenant) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            <i class="fas fa-edit mr-2"></i>Modifier
+                        <a href="{{ route('superadmin.tenants.edit', $tenant) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 inline-flex items-center">
+                            <x-heroicon-o-pencil class="w-5 h-5 mr-2" />Modifier
                         </a>
-                        <a href="{{ route('tenants.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            <i class="fas fa-arrow-left mr-2"></i>Retour
+                        <a href="{{ route('superadmin.tenants.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 inline-flex items-center">
+                            <x-heroicon-o-arrow-left class="w-5 h-5 mr-2" />Retour
                         </a>
                     </div>
                 </div>
@@ -111,23 +112,23 @@
 
                         <div class="space-y-4">
                             <a href="{{ route('admin.dashboard', $tenant->slug) }}"
-                               class="block w-full bg-green-500 text-white text-center px-4 py-3 rounded hover:bg-green-600">
-                                <i class="fas fa-cog mr-2"></i>Administration
+                               class="w-full bg-green-500 text-white text-center px-4 py-3 rounded hover:bg-green-600 inline-flex items-center justify-center">
+                                <x-heroicon-o-cog-6-tooth class="w-5 h-5 mr-2" />Administration
                             </a>
 
                             <a href="{{ route('admin.menus', $tenant->slug) }}"
-                               class="block w-full bg-blue-500 text-white text-center px-4 py-3 rounded hover:bg-blue-600">
-                                <i class="fas fa-utensils mr-2"></i>Gérer les Menus
+                               class="w-full bg-blue-500 text-white text-center px-4 py-3 rounded hover:bg-blue-600 inline-flex items-center justify-center">
+                                <x-heroicon-o-clipboard-document-list class="w-5 h-5 mr-2" />Gérer les Menus
                             </a>
 
-                            <a href="{{ route('superadmin.users') }}?tenant={{ $tenant->id }}"
-                               class="block w-full bg-purple-500 text-white text-center px-4 py-3 rounded hover:bg-purple-600">
-                                <i class="fas fa-users mr-2"></i>Gérer les Utilisateurs
+                            <a href="{{ route('superadmin.users.index') }}?tenant={{ $tenant->id }}"
+                               class="w-full bg-purple-500 text-white text-center px-4 py-3 rounded hover:bg-purple-600 inline-flex items-center justify-center">
+                                <x-heroicon-o-users class="w-5 h-5 mr-2" />Gérer les Utilisateurs
                             </a>
 
                             <a href="/menu?tenant={{ $tenant->id }}&table=1"
-                               class="block w-full bg-orange-500 text-white text-center px-4 py-3 rounded hover:bg-orange-600">
-                                <i class="fas fa-eye mr-2"></i>Voir le Menu Client
+                               class="w-full bg-orange-500 text-white text-center px-4 py-3 rounded hover:bg-orange-600 inline-flex items-center justify-center">
+                                <x-heroicon-o-eye class="w-5 h-5 mr-2" />Voir le Menu Client
                             </a>
                         </div>
                     </div>

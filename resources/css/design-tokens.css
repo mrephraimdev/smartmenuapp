@@ -1,0 +1,212 @@
+/**
+ * SMARTMENU SAAS - Design Tokens
+ *
+ * Variables CSS centralisées pour un design cohérent
+ * Dernière mise à jour : 2026-01-19
+ */
+
+@layer base {
+  :root {
+    /* ========================================
+       BRAND COLORS
+       ======================================== */
+    --brand-primary: 79 70 229; /* indigo-600 */
+    --brand-secondary: 139 92 246; /* purple-600 */
+    --brand-accent: 6 182 212; /* cyan-600 */
+
+    /* ========================================
+       SEMANTIC COLORS
+       ======================================== */
+    --color-success: 34 197 94; /* green-600 */
+    --color-warning: 245 158 11; /* amber-500 */
+    --color-danger: 239 68 68; /* red-500 */
+    --color-info: 59 130 246; /* blue-500 */
+
+    /* ========================================
+       KDS STATUS COLORS
+       ======================================== */
+    --status-received: 209 213 219; /* gray-300 */
+    --status-preparing: 251 191 36; /* amber-400 */
+    --status-ready: 34 197 94; /* green-500 */
+    --status-served: 156 163 175; /* gray-400 */
+
+    /* ========================================
+       BACKGROUND COLORS
+       ======================================== */
+    --color-bg-primary: 255 255 255; /* white */
+    --color-bg-secondary: 249 250 251; /* gray-50 */
+    --color-bg-tertiary: 243 244 246; /* gray-100 */
+    --color-bg-dark: 17 24 39; /* gray-900 */
+
+    /* ========================================
+       TEXT COLORS
+       ======================================== */
+    --color-text-primary: 17 24 39; /* gray-900 */
+    --color-text-secondary: 107 114 128; /* gray-500 */
+    --color-text-tertiary: 156 163 175; /* gray-400 */
+    --color-text-inverse: 255 255 255; /* white */
+
+    /* ========================================
+       GRADIENTS
+       ======================================== */
+    --gradient-hero: linear-gradient(135deg, rgb(79 70 229) 0%, rgb(139 92 246) 100%);
+    --gradient-hero-alt: linear-gradient(135deg, rgb(79 70 229) 0%, rgb(6 182 212) 100%);
+    --gradient-kds: linear-gradient(to right, rgb(249 115 22), rgb(239 68 68));
+    --gradient-success: linear-gradient(to right, rgb(34 197 94), rgb(16 185 129));
+    --gradient-card: linear-gradient(135deg, rgb(139 92 246) 0%, rgb(236 72 153) 100%);
+
+    /* ========================================
+       TYPOGRAPHY
+       ======================================== */
+    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+
+    /* Font Sizes */
+    --font-size-xs: 0.75rem;      /* 12px */
+    --font-size-sm: 0.875rem;     /* 14px */
+    --font-size-base: 1rem;       /* 16px */
+    --font-size-lg: 1.125rem;     /* 18px */
+    --font-size-xl: 1.25rem;      /* 20px */
+    --font-size-2xl: 1.5rem;      /* 24px */
+    --font-size-3xl: 1.875rem;    /* 30px */
+    --font-size-4xl: 2.25rem;     /* 36px */
+    --font-size-5xl: 3rem;        /* 48px */
+
+    /* Font Weights */
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* Line Heights */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+
+    /* ========================================
+       SPACING SCALE
+       ======================================== */
+    --spacing-0: 0;
+    --spacing-px: 1px;
+    --spacing-0-5: 0.125rem;  /* 2px */
+    --spacing-1: 0.25rem;     /* 4px */
+    --spacing-1-5: 0.375rem;  /* 6px */
+    --spacing-2: 0.5rem;      /* 8px */
+    --spacing-2-5: 0.625rem;  /* 10px */
+    --spacing-3: 0.75rem;     /* 12px */
+    --spacing-3-5: 0.875rem;  /* 14px */
+    --spacing-4: 1rem;        /* 16px */
+    --spacing-5: 1.25rem;     /* 20px */
+    --spacing-6: 1.5rem;      /* 24px */
+    --spacing-7: 1.75rem;     /* 28px */
+    --spacing-8: 2rem;        /* 32px */
+    --spacing-10: 2.5rem;     /* 40px */
+    --spacing-12: 3rem;       /* 48px */
+    --spacing-16: 4rem;       /* 64px */
+    --spacing-20: 5rem;       /* 80px */
+    --spacing-24: 6rem;       /* 96px */
+
+    /* ========================================
+       BORDER RADIUS
+       ======================================== */
+    --radius-none: 0;
+    --radius-sm: 0.25rem;     /* 4px */
+    --radius-md: 0.375rem;    /* 6px */
+    --radius-DEFAULT: 0.5rem; /* 8px */
+    --radius-lg: 0.75rem;     /* 12px */
+    --radius-xl: 1rem;        /* 16px */
+    --radius-2xl: 1.5rem;     /* 24px */
+    --radius-3xl: 2rem;       /* 32px */
+    --radius-full: 9999px;
+
+    /* ========================================
+       SHADOWS
+       ======================================== */
+    --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+    /* ========================================
+       TRANSITIONS
+       ======================================== */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* ========================================
+       Z-INDEX SCALE
+       ======================================== */
+    --z-0: 0;
+    --z-10: 10;
+    --z-20: 20;
+    --z-30: 30;
+    --z-40: 40;
+    --z-50: 50;
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+  }
+
+  /* ========================================
+     DARK MODE OVERRIDES
+     ======================================== */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg-primary: 17 24 39; /* gray-900 */
+      --color-bg-secondary: 31 41 55; /* gray-800 */
+      --color-bg-tertiary: 55 65 81; /* gray-700 */
+
+      --color-text-primary: 243 244 246; /* gray-100 */
+      --color-text-secondary: 209 213 219; /* gray-300 */
+      --color-text-tertiary: 156 163 175; /* gray-400 */
+    }
+  }
+
+  /* ========================================
+     THEME CLASSES
+     ======================================== */
+  .dark {
+    --color-bg-primary: 17 24 39;
+    --color-bg-secondary: 31 41 55;
+    --color-bg-tertiary: 55 65 81;
+
+    --color-text-primary: 243 244 246;
+    --color-text-secondary: 209 213 219;
+    --color-text-tertiary: 156 163 175;
+  }
+}
+
+/* ========================================
+   GLOBAL RESETS & BASE STYLES
+   ======================================== */
+@layer base {
+  * {
+    @apply antialiased;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+    font-family: var(--font-family-sans);
+  }
+
+  /* Focus Visible (Accessibilité) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
+  }
+
+  /* Screen Reader Only */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+}

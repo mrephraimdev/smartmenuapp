@@ -10,11 +10,14 @@ class Tenant extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'logo_url', 'branding', 'type', 'currency', 'locale', 'is_active', 'theme_id'
+        'name', 'slug', 'logo_url', 'cover_url', 'branding', 'type', 'currency', 'locale', 'is_active', 'theme_id',
+        'address', 'phone', 'email', 'opening_hours'
     ];
 
     protected $casts = [
-        'branding' => 'array'
+        'branding' => 'array',
+        'opening_hours' => 'array',
+        'is_active' => 'boolean'
     ];
 
     public function users()
@@ -35,6 +38,11 @@ class Tenant extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function dishes()
+    {
+        return $this->hasMany(Dish::class);
     }
 
     public function theme()

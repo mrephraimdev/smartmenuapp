@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Détails Table - {{ $tenant->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-6">
         <!-- En-tête -->
@@ -16,11 +17,11 @@
                 <p class="text-gray-600">{{ $tenant->name }} - {{ $table->label }}</p>
             </div>
             <div class="flex space-x-3">
-                <a href="{{ route('admin.tables.edit', [$tenant->slug, $table->id]) }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                    <i class="fas fa-edit mr-2"></i>Modifier
+                <a href="{{ route('admin.tables.edit', [$tenant->slug, $table->id]) }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 inline-flex items-center">
+                    <x-heroicon-o-pencil class="w-5 h-5 mr-2" />Modifier
                 </a>
-                <a href="{{ route('admin.tables.index', $tenant->slug) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
-                    <i class="fas fa-arrow-left mr-2"></i>Retour
+                <a href="{{ route('admin.tables.index', $tenant->slug) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 inline-flex items-center">
+                    <x-heroicon-o-arrow-left class="w-5 h-5 mr-2" />Retour
                 </a>
             </div>
         </div>
@@ -30,7 +31,7 @@
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-blue-100 rounded-full">
-                        <i class="fas fa-hashtag text-blue-600 text-xl"></i>
+                        <x-heroicon-o-hashtag class="w-6 h-6 text-blue-600" />
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Code</p>
@@ -42,7 +43,7 @@
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <div class="flex items-center">
                     <div class="p-3 bg-green-100 rounded-full">
-                        <i class="fas fa-users text-green-600 text-xl"></i>
+                        <x-heroicon-o-users class="w-6 h-6 text-green-600" />
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Capacité</p>
@@ -54,7 +55,11 @@
             <div class="bg-white rounded-lg shadow-sm p-6">
                 <div class="flex items-center">
                     <div class="p-3 {{ $table->is_active ? 'bg-green-100' : 'bg-red-100' }} rounded-full">
-                        <i class="fas fa-{{ $table->is_active ? 'check' : 'ban' }} {{ $table->is_active ? 'text-green-600' : 'text-red-600' }} text-xl"></i>
+                        @if($table->is_active)
+                            <x-heroicon-o-check class="w-6 h-6 text-green-600" />
+                        @else
+                            <x-heroicon-o-no-symbol class="w-6 h-6 text-red-600" />
+                        @endif
                     </div>
                     <div class="ml-4">
                         <p class="text-sm font-medium text-gray-600">Statut</p>
@@ -68,8 +73,8 @@
 
         <!-- QR Code -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-qrcode mr-2"></i>QR Code
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <x-heroicon-o-qr-code class="w-6 h-6 mr-2" />QR Code
             </h2>
             <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
                 <div class="text-center">
@@ -102,7 +107,7 @@
                         <a href="{{ route('qrcode.show', [$tenant->id, $table->code]) }}"
                            target="_blank"
                            class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                            <i class="fas fa-print mr-2"></i>Voir page d'impression
+                            <x-heroicon-o-printer class="w-5 h-5 mr-2" />Voir page d'impression
                         </a>
                     </div>
                 </div>
@@ -111,8 +116,8 @@
 
         <!-- Historique des commandes -->
         <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-bold mb-4">
-                <i class="fas fa-history mr-2"></i>Historique des Commandes
+            <h2 class="text-xl font-bold mb-4 flex items-center">
+                <x-heroicon-o-clock class="w-6 h-6 mr-2" />Historique des Commandes
             </h2>
 
             @if($table->orders->count() > 0)
@@ -152,7 +157,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <a href="#" class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-eye"></i>
+                                            <x-heroicon-o-eye class="w-5 h-5" />
                                         </a>
                                     </td>
                                 </tr>
@@ -162,7 +167,7 @@
                 </div>
             @else
                 <div class="text-center py-8">
-                    <i class="fas fa-receipt text-4xl text-gray-300 mb-4"></i>
+                    <x-heroicon-o-document-text class="w-12 h-12 text-gray-300 mx-auto mb-4" />
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune commande</h3>
                     <p class="text-gray-500">Cette table n'a pas encore été utilisée pour des commandes.</p>
                 </div>

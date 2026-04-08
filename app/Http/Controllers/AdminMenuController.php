@@ -15,14 +15,71 @@ use Illuminate\Support\Facades\Log;
 class AdminMenuController extends Controller
 {
     /**
-     * Afficher le dashboard admin
+     * Invalider tous les caches liés au tenant
+     */
+    private function invalidateTenantCache(int $tenantId): void
+    {
+        \Illuminate\Support\Facades\Cache::forget("dashboard_full_{$tenantId}");
+        \Illuminate\Support\Facades\Cache::forget("dashboard_stats_{$tenantId}");
+        \Illuminate\Support\Facades\Cache::forget("menu_client_{$tenantId}");
+        \Illuminate\Support\Facades\Cache::forget("statistics_{$tenantId}");
+    }
+
+    /**
+     * Afficher le dashboard admin (optimisé avec cache)
      */
     public function dashboard($tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
-        $menus = Menu::with('categories.dishes')->where('tenant_id', $tenant->id)->get();
+        $tenantId = $tenant->id;
 
-        return view('admin.dashboard', compact('tenant', 'menus'));
+        // Cache toutes les données du dashboard (5 minutes)
+        $cacheKey = "dashboard_full_{$tenantId}";
+        $dashboardData = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($tenantId) {
+            // Menus avec comptages
+            $menus = Menu::with(['categories' => function ($q) {
+                $q->withCount('dishes');
+            }])
+                ->where('tenant_id', $tenantId)
+                ->get();
+
+            // Stats combinées en une seule requête
+            $orderStats = \App\Models\Order::where('tenant_id', $tenantId)
+                ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue')
+                ->first();
+
+            // Plats actifs
+            $activeDishes = Dish::where('tenant_id', $tenantId)
+                ->where('active', true)
+                ->count();
+
+            // Plats populaires (top 5)
+            $popularDishes = DB::table('order_items')
+                ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
+                ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->where('orders.tenant_id', $tenantId)
+                ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
+                ->groupBy('dishes.id', 'dishes.name')
+                ->orderBy('order_count', 'desc')
+                ->limit(5)
+                ->get();
+
+            return [
+                'menus' => $menus,
+                'stats' => [
+                    'totalOrders' => $orderStats->total_orders ?? 0,
+                    'totalRevenue' => $orderStats->total_revenue ?? 0,
+                    'activeDishes' => $activeDishes,
+                    'popularDishes' => $popularDishes,
+                ]
+            ];
+        });
+
+        return view('admin.dashboard', [
+            'tenant' => $tenant,
+            'menus' => $dashboardData['menus'],
+            'stats' => $dashboardData['stats'],
+        ]);
     }
 
     /**
@@ -44,7 +101,6 @@ class AdminMenuController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
-                'active' => 'boolean'
             ]);
 
             $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
@@ -52,26 +108,39 @@ class AdminMenuController extends Controller
             Menu::create([
                 'tenant_id' => $tenant->id,
                 'title' => $request->title,
-                'active' => $request->active ?? true
+                'active' => $request->has('active')
             ]);
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Menu créé avec succès!'
-            ]);
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
+
+            // Si requête AJAX, retourner JSON
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Menu créé avec succès!'
+                ]);
+            }
+
+            // Sinon, rediriger vers le dashboard
+            return redirect()->route('admin.dashboard', $tenantSlug)->with('success', 'Menu créé avec succès!');
 
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 500);
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erreur: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Erreur: ' . $e->getMessage());
         }
     }
 
     /**
      * Mettre à jour un menu
      */
-    public function updateMenu(Request $request, $id)
+    public function updateMenu(Request $request, $tenantSlug, $id)
     {
         try {
             $request->validate([
@@ -79,8 +148,12 @@ class AdminMenuController extends Controller
                 'active' => 'boolean'
             ]);
 
-            $menu = Menu::findOrFail($id);
+            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($id);
             $menu->update($request->all());
+
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
 
             return response()->json([
                 'success' => true,
@@ -98,11 +171,15 @@ class AdminMenuController extends Controller
     /**
      * Supprimer un menu
      */
-    public function destroyMenu($id)
+    public function destroyMenu($tenantSlug, $id)
     {
         try {
-            $menu = Menu::findOrFail($id);
+            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($id);
             $menu->delete();
+
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
 
             return response()->json([
                 'success' => true,
@@ -230,6 +307,9 @@ class AdminMenuController extends Controller
 
             DB::commit();
 
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Plat créé avec succès!',
@@ -296,6 +376,9 @@ class AdminMenuController extends Controller
 
             DB::commit();
 
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Plat mis à jour avec succès!'
@@ -322,6 +405,9 @@ class AdminMenuController extends Controller
             })->findOrFail($id);
             $dish->delete();
 
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Plat supprimé avec succès!'
@@ -346,6 +432,9 @@ class AdminMenuController extends Controller
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
             $dish->update(['active' => !$dish->active]);
+
+            // Invalider les caches
+            $this->invalidateTenantCache($tenant->id);
 
             return response()->json([
                 'success' => true,
@@ -388,34 +477,154 @@ class AdminMenuController extends Controller
     }
 
     /**
-     * Statistiques des plats populaires
+     * Statistiques des plats populaires (avec cache 2 minutes)
      */
     public function statistics($tenantSlug)
     {
         try {
             $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
-            $popularDishes = DB::table('order_items')
-                ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
-                ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                ->where('orders.tenant_id', $tenant->id)
-                ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
-                ->groupBy('dishes.id', 'dishes.name')
-                ->orderBy('order_count', 'desc')
-                ->limit(10)
-                ->get();
+            // Cache les stats pendant 2 minutes
+            $cacheKey = "dashboard_stats_{$tenant->id}";
+            $stats = \Illuminate\Support\Facades\Cache::remember($cacheKey, 120, function () use ($tenant) {
+                // Une seule requête pour orders stats
+                $orderStats = \App\Models\Order::where('tenant_id', $tenant->id)
+                    ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue')
+                    ->first();
 
-            $totalOrders = \App\Models\Order::where('tenant_id', $tenant->id)->count();
-            $totalRevenue = \App\Models\Order::where('tenant_id', $tenant->id)->sum('total');
+                // Plats populaires (limité à 5 pour performance)
+                $popularDishes = DB::table('order_items')
+                    ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
+                    ->join('orders', 'order_items.order_id', '=', 'orders.id')
+                    ->where('orders.tenant_id', $tenant->id)
+                    ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
+                    ->groupBy('dishes.id', 'dishes.name')
+                    ->orderBy('order_count', 'desc')
+                    ->limit(5)
+                    ->get();
+
+                // Compteur de plats actifs
+                $activeDishes = Dish::where('tenant_id', $tenant->id)
+                    ->where('active', true)
+                    ->count();
+
+                return [
+                    'popular_dishes' => $popularDishes,
+                    'total_orders' => $orderStats->total_orders ?? 0,
+                    'total_revenue' => $orderStats->total_revenue ?? 0,
+                    'active_dishes' => $activeDishes
+                ];
+            });
 
             return response()->json([
                 'success' => true,
-                'popular_dishes' => $popularDishes,
-                'total_orders' => $totalOrders,
-                'total_revenue' => $totalRevenue
+                'popular_dishes' => $stats['popular_dishes'],
+                'total_orders' => $stats['total_orders'],
+                'total_revenue' => $stats['total_revenue'],
+                'active_dishes' => $stats['active_dishes']
             ]);
 
         } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Afficher le menu client public
+     * Cette méthode retourne la vue qui charge les données via JavaScript/API
+     */
+    public function showMenu($tenantId, $tableId)
+    {
+        return view('menu-client', [
+            'tenantId' => $tenantId,
+            'tableCode' => $tableId,
+        ]);
+    }
+
+    /**
+     * Upload de la photo d'un plat
+     */
+    public function uploadDishPhoto(Request $request, $tenantSlug, $dishId)
+    {
+        try {
+            $request->validate([
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+            ]);
+
+            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+                $query->where('tenant_id', $tenant->id);
+            })->findOrFail($dishId);
+
+            // Supprimer l'ancienne photo si elle existe
+            if ($dish->photo_url) {
+                $oldPath = public_path(parse_url($dish->photo_url, PHP_URL_PATH));
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+            }
+
+            // Stocker la nouvelle photo avec nom sécurisé (UUID)
+            $file = $request->file('photo');
+            $filename = \Illuminate\Support\Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('dishes/' . $tenant->id, $filename, 'public');
+
+            // Mettre à jour le plat avec l'URL de la photo
+            $dish->update(['photo_url' => '/storage/' . $path]);
+
+            // Invalider les caches (le menu client doit voir la nouvelle photo)
+            $this->invalidateTenantCache($tenant->id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photo uploadée avec succès!',
+                'photo_url' => $dish->photo_url
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur upload photo plat: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Supprimer la photo d'un plat
+     */
+    public function deleteDishPhoto($tenantSlug, $dishId)
+    {
+        try {
+            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+                $query->where('tenant_id', $tenant->id);
+            })->findOrFail($dishId);
+
+            if ($dish->photo_url) {
+                // Supprimer le fichier
+                $path = public_path(parse_url($dish->photo_url, PHP_URL_PATH));
+                if (file_exists($path)) {
+                    unlink($path);
+                }
+
+                // Mettre à jour le plat
+                $dish->update(['photo_url' => null]);
+
+                // Invalider les caches
+                $this->invalidateTenantCache($tenant->id);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Photo supprimée avec succès!'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur suppression photo plat: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur: ' . $e->getMessage()

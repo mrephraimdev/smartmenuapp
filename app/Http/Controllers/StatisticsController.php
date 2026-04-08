@@ -7,100 +7,94 @@ use App\Models\OrderItem;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 class StatisticsController extends Controller
 {
     /**
      * Afficher les statistiques pour un tenant
+     * Optimisé avec cache et requêtes groupées
      */
     public function index($tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
-        // Statistiques générales
-        $stats = $this->getGeneralStats($tenant);
+        // Cache des stats pendant 5 minutes pour réduire la charge
+        $cacheKey = "statistics_{$tenant->id}";
+        $data = Cache::remember($cacheKey, 300, function () use ($tenant) {
+            return [
+                'stats' => $this->getGeneralStats($tenant),
+                'hourlyPeaks' => $this->getHourlyPeaks($tenant),
+                'topDishes' => $this->getTopDishes($tenant),
+                'conversionRate' => $this->getConversionRate($tenant),
+                'revenueByPeriod' => $this->getRevenueByPeriod($tenant),
+                'trendData' => $this->getLast7DaysData($tenant),
+            ];
+        });
 
-        // Pics horaires
-        $hourlyPeaks = $this->getHourlyPeaks($tenant);
-
-        // Top plats
-        $topDishes = $this->getTopDishes($tenant);
-
-        // Taux de conversion (simulé pour l'instant)
-        $conversionRate = $this->getConversionRate($tenant);
-
-        // Revenus par période
-        $revenueByPeriod = $this->getRevenueByPeriod($tenant);
-
-        return view('admin.statistics', compact(
-            'tenant',
-            'stats',
-            'hourlyPeaks',
-            'topDishes',
-            'conversionRate',
-            'revenueByPeriod'
-        ));
+        return view('admin.statistics', array_merge(['tenant' => $tenant], $data));
     }
 
     /**
      * API pour les données de graphiques
+     * Validation stricte du paramètre period
      */
     public function chartData(Request $request, $tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        // SECURITE: Valider period contre liste blanche
+        $allowedPeriods = ['7days', '30days', 'hourly'];
         $period = $request->get('period', '7days');
 
-        $data = [];
-
-        switch ($period) {
-            case '7days':
-                $data = $this->getLast7DaysData($tenant);
-                break;
-            case '30days':
-                $data = $this->getLast30DaysData($tenant);
-                break;
-            case 'hourly':
-                $data = $this->getHourlyData($tenant);
-                break;
+        if (!in_array($period, $allowedPeriods)) {
+            return response()->json(['error' => 'Période invalide'], 400);
         }
+
+        // Cache court (1 minute) pour les données de graphique
+        $cacheKey = "chart_data_{$tenant->id}_{$period}";
+        $data = Cache::remember($cacheKey, 60, function () use ($tenant, $period) {
+            return match ($period) {
+                '7days' => $this->getLast7DaysData($tenant),
+                '30days' => $this->getLast30DaysData($tenant),
+                'hourly' => $this->getHourlyData($tenant),
+                default => [],
+            };
+        });
 
         return response()->json($data);
     }
 
     /**
-     * Statistiques générales
+     * Statistiques générales - OPTIMISE: 1 requête au lieu de 5
      */
     private function getGeneralStats($tenant)
     {
-        $totalOrders = Order::where('tenant_id', $tenant->id)->count();
-        $totalRevenue = Order::where('tenant_id', $tenant->id)->sum('total');
-        $avgOrderValue = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
-
-        $todayOrders = Order::where('tenant_id', $tenant->id)
-            ->whereDate('created_at', Carbon::today())
-            ->count();
-
-        $todayRevenue = Order::where('tenant_id', $tenant->id)
-            ->whereDate('created_at', Carbon::today())
-            ->sum('total');
-
-        $pendingOrders = Order::where('tenant_id', $tenant->id)
-            ->where('status', 'pending')
-            ->count();
+        // Combiner toutes les stats en une seule requête
+        $stats = Order::where('tenant_id', $tenant->id)
+            ->selectRaw('
+                COUNT(*) as total_orders,
+                COALESCE(SUM(total), 0) as total_revenue,
+                COALESCE(AVG(total), 0) as avg_order_value,
+                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN 1 ELSE 0 END) as today_orders,
+                SUM(CASE WHEN DATE(created_at) = CURDATE() THEN total ELSE 0 END) as today_revenue,
+                SUM(CASE WHEN status = "RECU" THEN 1 ELSE 0 END) as pending_orders
+            ')
+            ->first();
 
         return [
-            'total_orders' => $totalOrders,
-            'total_revenue' => $totalRevenue,
-            'avg_order_value' => round($avgOrderValue, 2),
-            'today_orders' => $todayOrders,
-            'today_revenue' => $todayRevenue,
-            'pending_orders' => $pendingOrders
+            'total_orders' => (int) $stats->total_orders,
+            'total_revenue' => (float) $stats->total_revenue,
+            'avg_order_value' => round((float) $stats->avg_order_value, 2),
+            'today_orders' => (int) $stats->today_orders,
+            'today_revenue' => (float) $stats->today_revenue,
+            'pending_orders' => (int) $stats->pending_orders
         ];
     }
 
     /**
-     * Pics horaires des commandes
+     * Pics horaires des commandes - Déjà optimisé
      */
     private function getHourlyPeaks($tenant)
     {
@@ -125,7 +119,7 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Top plats populaires
+     * Top plats populaires - Déjà optimisé
      */
     private function getTopDishes($tenant, $limit = 10)
     {
@@ -137,13 +131,11 @@ class StatisticsController extends Controller
             ->orderBy('total_quantity', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function ($item) {
-                return [
-                    'name' => $item->name,
-                    'quantity' => $item->total_quantity,
-                    'orders' => $item->order_count
-                ];
-            });
+            ->map(fn($item) => [
+                'name' => $item->name,
+                'quantity' => $item->total_quantity,
+                'orders' => $item->order_count
+            ]);
     }
 
     /**
@@ -151,9 +143,8 @@ class StatisticsController extends Controller
      */
     private function getConversionRate($tenant)
     {
-        // Pour l'instant, on simule un taux basé sur les commandes
         $totalOrders = Order::where('tenant_id', $tenant->id)->count();
-        $estimatedVisits = $totalOrders * 3; // Estimation arbitraire
+        $estimatedVisits = $totalOrders * 3;
 
         $rate = $estimatedVisits > 0 ? ($totalOrders / $estimatedVisits) * 100 : 0;
 
@@ -165,51 +156,63 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Revenus par période
+     * Revenus par période - OPTIMISE: 1 requête au lieu de 3
      */
     private function getRevenueByPeriod($tenant)
     {
-        $periods = ['7days', '30days', '90days'];
+        // Une seule requête pour toutes les périodes
+        $results = Order::where('tenant_id', $tenant->id)
+            ->where('created_at', '>=', Carbon::now()->subDays(90))
+            ->selectRaw('
+                SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN total ELSE 0 END) as revenue_7days,
+                SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN total ELSE 0 END) as revenue_30days,
+                SUM(total) as revenue_90days
+            ')
+            ->first();
 
-        $data = [];
-        foreach ($periods as $period) {
-            $days = str_replace(['7days', '30days', '90days'], [7, 30, 90], $period);
-
-            $revenue = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', '>=', Carbon::now()->subDays($days))
-                ->sum('total');
-
-            $data[$period] = [
-                'revenue' => $revenue,
-                'days' => $days,
-                'avg_daily' => $days > 0 ? round($revenue / $days, 2) : 0
-            ];
-        }
-
-        return $data;
+        return [
+            '7days' => [
+                'revenue' => (float) ($results->revenue_7days ?? 0),
+                'days' => 7,
+                'avg_daily' => round(((float) ($results->revenue_7days ?? 0)) / 7, 2)
+            ],
+            '30days' => [
+                'revenue' => (float) ($results->revenue_30days ?? 0),
+                'days' => 30,
+                'avg_daily' => round(((float) ($results->revenue_30days ?? 0)) / 30, 2)
+            ],
+            '90days' => [
+                'revenue' => (float) ($results->revenue_90days ?? 0),
+                'days' => 90,
+                'avg_daily' => round(((float) ($results->revenue_90days ?? 0)) / 90, 2)
+            ],
+        ];
     }
 
     /**
-     * Données des 7 derniers jours
+     * Données des 7 derniers jours - OPTIMISE: 1 requête au lieu de 14
      */
     private function getLast7DaysData($tenant)
     {
+        $startDate = Carbon::now()->subDays(6)->startOfDay();
+
+        // Une seule requête groupée par date
+        $dailyData = Order::where('tenant_id', $tenant->id)
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue')
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
+
         $data = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i)->toDateString();
-
-            $orders = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $date)
-                ->count();
-
-            $revenue = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $date)
-                ->sum('total');
+            $dayData = $dailyData->get($date);
 
             $data[] = [
                 'date' => Carbon::parse($date)->format('d/m'),
-                'orders' => $orders,
-                'revenue' => $revenue
+                'orders' => $dayData ? (int) $dayData->orders : 0,
+                'revenue' => $dayData ? (float) $dayData->revenue : 0
             ];
         }
 
@@ -217,26 +220,29 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Données des 30 derniers jours
+     * Données des 30 derniers jours - OPTIMISE: 1 requête au lieu de 60
      */
     private function getLast30DaysData($tenant)
     {
+        $startDate = Carbon::now()->subDays(29)->startOfDay();
+
+        // Une seule requête groupée par date
+        $dailyData = Order::where('tenant_id', $tenant->id)
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as orders, COALESCE(SUM(total), 0) as revenue')
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
+
         $data = [];
         for ($i = 29; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i)->toDateString();
-
-            $orders = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $date)
-                ->count();
-
-            $revenue = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $date)
-                ->sum('total');
+            $dayData = $dailyData->get($date);
 
             $data[] = [
                 'date' => Carbon::parse($date)->format('d/m'),
-                'orders' => $orders,
-                'revenue' => $revenue
+                'orders' => $dayData ? (int) $dayData->orders : 0,
+                'revenue' => $dayData ? (float) $dayData->revenue : 0
             ];
         }
 
@@ -244,20 +250,23 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Données horaires du jour
+     * Données horaires du jour - OPTIMISE: 1 requête au lieu de 24
      */
     private function getHourlyData($tenant)
     {
+        // Une seule requête groupée par heure
+        $hourlyData = Order::where('tenant_id', $tenant->id)
+            ->whereDate('created_at', Carbon::today())
+            ->selectRaw('HOUR(created_at) as hour, COUNT(*) as orders')
+            ->groupBy('hour')
+            ->get()
+            ->keyBy('hour');
+
         $data = [];
         for ($hour = 0; $hour < 24; $hour++) {
-            $orders = Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', Carbon::today())
-                ->whereRaw('HOUR(created_at) = ?', [$hour])
-                ->count();
-
             $data[] = [
                 'hour' => sprintf('%02d:00', $hour),
-                'orders' => $orders
+                'orders' => $hourlyData->get($hour)?->orders ?? 0
             ];
         }
 
