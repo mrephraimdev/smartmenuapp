@@ -10,6 +10,34 @@
 
 @section('content')
 <div x-data="statisticsStore()">
+
+    {{-- ── Filtre par période ──────────────────────────────── --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-3 mb-6 flex flex-wrap items-center gap-3">
+        @foreach(['today' => "Aujourd'hui", 'yesterday' => 'Hier', '7days' => '7 jours', '30days' => '30 jours', 'month' => 'Ce mois'] as $p => $label)
+        <a href="{{ route('admin.statistics', array_merge([$tenant->slug], ['period' => $p])) }}"
+           class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors
+                  {{ $period === $p ? 'bg-amber-500 text-white border-amber-500' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-amber-300' }}">
+            {{ $label }}
+        </a>
+        @endforeach
+
+        <div class="h-5 w-px bg-gray-200 hidden sm:block"></div>
+
+        <form method="GET" action="{{ route('admin.statistics', $tenant->slug) }}" class="flex items-center gap-2">
+            <input type="hidden" name="period" value="custom">
+            <input type="date" name="date_from" value="{{ $period === 'custom' ? $dateFrom : '' }}"
+                   class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <span class="text-xs text-gray-400">→</span>
+            <input type="date" name="date_to" value="{{ $period === 'custom' ? $dateTo : '' }}"
+                   class="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <button type="submit" class="px-3 py-1.5 text-xs font-semibold bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors">OK</button>
+        </form>
+
+        <span class="ml-auto text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+            📅 {{ $periodLabel }}
+        </span>
+    </div>
+
     <!-- Stats Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <x-ui.stat-card

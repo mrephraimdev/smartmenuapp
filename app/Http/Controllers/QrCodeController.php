@@ -7,6 +7,7 @@ use App\Models\Table;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class QrCodeController extends Controller
 {
@@ -25,7 +26,8 @@ class QrCodeController extends Controller
                 'table' => $table,
                 'url' => route('qrcode.show', [$tenant->id, $table->code]),
                 'menu_url' => $menuUrl,
-                'qr_image' => "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($menuUrl)
+                // Utiliser la génération locale (SVG) au lieu de l'API externe lente
+                'qr_image' => route('qrcode.generate', [$tenant->id, $table->code]),
             ];
         }
 
@@ -44,13 +46,18 @@ class QrCodeController extends Controller
 
         $menuUrl = url("/menu/{$tenantId}/{$tableCode}");
 
-        // Générer le QR code en SVG (plus fiable que PNG)
-        $qrCode = QrCode::size(300)
-                        ->format('svg')
-                        ->errorCorrection('H')
-                        ->generate($menuUrl);
+        // Cache le QR code SVG pendant 24h (évite de régénérer à chaque requête)
+        $cacheKey = "qr_svg_{$tenantId}_{$tableCode}";
+        $qrCode = Cache::remember($cacheKey, 86400, function () use ($menuUrl) {
+            return QrCode::size(300)
+                         ->format('svg')
+                         ->errorCorrection('H')
+                         ->generate($menuUrl);
+        });
 
-        return response($qrCode)->header('Content-Type', 'image/svg+xml');
+        return response($qrCode)
+            ->header('Content-Type', 'image/svg+xml')
+            ->header('Cache-Control', 'public, max-age=86400');
     }
 
     /**
@@ -80,7 +87,8 @@ class QrCodeController extends Controller
                      ->firstOrFail();
 
         $menuUrl = url("/menu/{$tenantId}/{$tableCode}");
-        $qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" . urlencode($menuUrl);
+        // Utiliser la génération locale au lieu de l'API externe
+        $qrCodeUrl = route('qrcode.generate', [$tenantId, $tableCode]);
 
         return view('qrcode', compact('tenant', 'table', 'qrCodeUrl', 'menuUrl'));
     }

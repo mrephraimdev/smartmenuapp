@@ -33,13 +33,10 @@ Route::get('/menu', function (Request $request) {
     }
 
     // Charger table (non cachée car le statut peut changer)
+    // Table optionnelle : si le code n'existe pas, on affiche quand même le menu
     $table = Table::where('tenant_id', $tenantId)
         ->where('code', $tableCode)
         ->first();
-
-    if (!$table) {
-        return response()->json(['success' => false, 'message' => 'Table introuvable'], 404);
-    }
 
     // Charger tenant et menu depuis le cache (5 minutes)
     $cacheKey = "menu_client_{$tenantId}";
@@ -50,7 +47,7 @@ Route::get('/menu', function (Request $request) {
             return null;
         }
 
-        $menu = $tenant->menus()
+        $menus = $tenant->menus()
             ->with([
                 'categories' => function ($query) {
                     $query->orderBy('sort_order')
@@ -63,7 +60,17 @@ Route::get('/menu', function (Request $request) {
                 }
             ])
             ->where('active', true)
-            ->first();
+            ->get();
+
+        // Merge all categories from all active menus into one virtual menu object
+        $allCategories = $menus->flatMap(function ($menu) {
+            return $menu->categories;
+        })->values();
+
+        $menu = $menus->first();
+        if ($menu) {
+            $menu->setRelation('categories', $allCategories);
+        }
 
         return ['tenant' => $tenant, 'menu' => $menu];
     });

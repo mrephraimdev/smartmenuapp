@@ -195,13 +195,13 @@
                 </div>
             </a>
 
-            <a href="{{ route('admin.pos.index', $tenant->slug) }}" class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in">
+            <a href="{{ route('admin.payments.index', $tenant->slug) }}" class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in">
                 <div class="bg-gradient-to-r from-green-500 to-green-600 p-5 text-white">
                     @svg('heroicon-o-banknotes', 'w-8 h-8 mb-2')
-                    <h3 class="text-lg font-bold">Caisse (POS)</h3>
+                    <h3 class="text-lg font-bold">Paiements</h3>
                 </div>
                 <div class="p-5">
-                    <p class="text-gray-600 text-sm mb-4">Point de vente et paiements</p>
+                    <p class="text-gray-600 text-sm mb-4">Historique et encaissements</p>
                     <span class="inline-flex items-center text-green-600 font-medium text-sm">
                         @svg('heroicon-o-arrow-right', 'w-4 h-4 mr-1')
                         Accéder
@@ -226,13 +226,13 @@
 
             <!-- CAISSIER -->
             @if($isCaissier && $tenant)
-            <a href="{{ route('caisse.pos.index', $tenant->slug) }}" class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in">
+            <a href="{{ route('admin.payments.index', $tenant->slug) }}" class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover animate-fade-in">
                 <div class="bg-gradient-to-r from-green-500 to-green-600 p-5 text-white">
                     @svg('heroicon-o-banknotes', 'w-8 h-8 mb-2')
-                    <h3 class="text-lg font-bold">Caisse (POS)</h3>
+                    <h3 class="text-lg font-bold">Paiements</h3>
                 </div>
                 <div class="p-5">
-                    <p class="text-gray-600 text-sm mb-4">Point de vente et paiements</p>
+                    <p class="text-gray-600 text-sm mb-4">Historique et encaissements</p>
                     <ul class="space-y-2 text-sm text-gray-600">
                         <li class="flex items-center">@svg('heroicon-o-check', 'w-4 h-4 text-green-500 mr-2')Encaissements</li>
                         <li class="flex items-center">@svg('heroicon-o-check', 'w-4 h-4 text-green-500 mr-2')Commandes</li>

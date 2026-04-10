@@ -17,8 +17,10 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\HealthController;
-use App\Http\Controllers\PosController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ComptourController;
+use App\Http\Controllers\SuiviController;
+use App\Http\Controllers\MenuImportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,6 +93,11 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         Route::post('/dishes/{dishId}/photo', [AdminMenuController::class, 'uploadDishPhoto'])->name('admin.dishes.upload-photo');
         Route::delete('/dishes/{dishId}/photo', [AdminMenuController::class, 'deleteDishPhoto'])->name('admin.dishes.delete-photo');
 
+        // Import Excel
+        Route::get('/import', [MenuImportController::class, 'index'])->name('admin.menu.import');
+        Route::post('/import', [MenuImportController::class, 'import'])->name('admin.menu.import.store');
+        Route::get('/import/template', [MenuImportController::class, 'template'])->name('admin.menu.import.template');
+
         // Tables
         Route::patch('/tables/{id}/toggle', [TableController::class, 'toggle'])->name('admin.tables.toggle');
         Route::post('/tables/generate', [TableController::class, 'generate'])->name('admin.tables.generate');
@@ -100,11 +107,6 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         Route::get('/qrcodes/download-all-pdf', [QrCodeController::class, 'downloadAllPdf'])->name('admin.qrcodes.download-all-pdf');
         Route::resource('/qrcodes', QrCodeController::class, ['as' => 'admin']);
 
-        // Themes
-        Route::get('/themes/select', [ThemeController::class, 'select'])->name('admin.themes.select');
-        Route::post('/themes/{theme}/apply', [ThemeController::class, 'apply'])->name('admin.themes.apply');
-        Route::get('/themes/{theme}/preview', [ThemeController::class, 'preview'])->name('admin.themes.preview');
-        Route::resource('/themes', ThemeController::class, ['as' => 'admin']);
 
         // Statistics (Admin only)
         Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
@@ -167,24 +169,10 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
 });
 
 // =============================================================================
-// CAISSIER + ADMIN - POS et Paiements
+// CAISSIER + ADMIN - Paiements, Comptoir, Suivi
 // =============================================================================
 Route::middleware(['auth', 'role:ADMIN,CAISSIER'])->group(function () {
     Route::prefix('/caisse/{tenantSlug}')->group(function () {
-        // Dashboard Caissier
-        Route::get('/', [PosController::class, 'index'])->name('caisse.index');
-
-        // POS (Point of Sale)
-        Route::get('/pos', [PosController::class, 'index'])->name('caisse.pos.index');
-        Route::get('/pos/sessions', [PosController::class, 'sessions'])->name('caisse.pos.sessions');
-        Route::post('/pos/sessions/open', [PosController::class, 'open'])->name('caisse.pos.sessions.open');
-        Route::post('/pos/sessions/{session}/close', [PosController::class, 'close'])->name('caisse.pos.sessions.close');
-        Route::get('/pos/sessions/{session}', [PosController::class, 'show'])->name('caisse.pos.sessions.show');
-        Route::get('/pos/sessions/{session}/z-report', [PosController::class, 'zReport'])->name('caisse.pos.z-report');
-        Route::get('/pos/sessions/{session}/x-report', [PosController::class, 'xReport'])->name('caisse.pos.x-report');
-        Route::get('/pos/sessions/{session}/z-report/export', [PosController::class, 'exportZReport'])->name('caisse.pos.z-report.export');
-        Route::get('/pos/sessions/{session}/x-report/export', [PosController::class, 'exportXReport'])->name('caisse.pos.x-report.export');
-
         // Payments Management
         Route::get('/payments', [PaymentController::class, 'index'])->name('caisse.payments.index');
         Route::get('/payments/stats', [PaymentController::class, 'stats'])->name('caisse.payments.stats');
@@ -203,10 +191,30 @@ Route::middleware(['auth', 'role:ADMIN,CAISSIER'])->group(function () {
         Route::get('/print/daily-report', [PrintController::class, 'dailyReport'])->name('caisse.print.daily-report');
     });
 
-    // Routes admin existantes pour POS (pour compatibilité)
+    // Routes admin : Comptoir + Suivi (accessibles par ADMIN et CAISSIER)
     Route::prefix('/admin/{tenantSlug}')->group(function () {
+        // ── Comptoir (prise de commande en présentiel)
+        Route::get('/comptoir', [ComptourController::class, 'index'])->name('admin.comptoir.index');
+        Route::post('/comptoir/order', [ComptourController::class, 'store'])->name('admin.comptoir.store');
+        Route::get('/comptoir/receipt/{order}', [ComptourController::class, 'receipt'])->name('admin.comptoir.receipt');
+
+        // ── Suivi des commandes (board kanban)
+        Route::get('/suivi', [SuiviController::class, 'index'])->name('admin.suivi.index');
+        Route::get('/suivi/data', [SuiviController::class, 'data'])->name('admin.suivi.data');
+        Route::post('/suivi/{order}/progress', [SuiviController::class, 'progress'])->name('admin.suivi.progress');
+        Route::post('/suivi/{order}/cancel', [SuiviController::class, 'cancel'])->name('admin.suivi.cancel');
+
         // Orders Management
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+        // Notification endpoint – must be BEFORE /orders/{order} to avoid route conflict
+        Route::get('/orders-notify', function (string $tenantSlug) {
+            $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+            return response()->json([
+                'latest_id'     => \App\Models\Order::where('tenant_id', $tenant->id)->max('id') ?? 0,
+                'pending_count' => \App\Models\Order::where('tenant_id', $tenant->id)
+                                        ->where('status', 'EN_ATTENTE')->count(),
+            ]);
+        })->name('admin.orders.notify');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
         Route::post('/orders/{order}/progress', [OrderController::class, 'progress'])->name('admin.orders.progress');
         Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
@@ -223,18 +231,6 @@ Route::middleware(['auth', 'role:ADMIN,CAISSIER'])->group(function () {
         Route::get('/print/order/{order}/kitchen', [PrintController::class, 'kitchenTicket'])->name('admin.print.kitchen');
         Route::get('/print/order/{order}/receipt', [PrintController::class, 'receipt'])->name('admin.print.receipt');
         Route::get('/print/daily-report', [PrintController::class, 'dailyReport'])->name('admin.print.daily-report');
-
-        // POS (Point of Sale)
-        Route::get('/pos', [PosController::class, 'index'])->name('admin.pos.index');
-        Route::get('/pos/sessions', [PosController::class, 'sessions'])->name('admin.pos.sessions');
-        Route::post('/pos/sessions/open', [PosController::class, 'open'])->name('admin.pos.sessions.open');
-        Route::post('/pos/sessions/{session}/close', [PosController::class, 'close'])->name('admin.pos.sessions.close');
-        Route::get('/pos/sessions/{session}', [PosController::class, 'show'])->name('admin.pos.sessions.show');
-        Route::get('/pos/sessions/{session}/z-report', [PosController::class, 'zReport'])->name('admin.pos.z-report');
-        Route::get('/pos/sessions/{session}/x-report', [PosController::class, 'xReport'])->name('admin.pos.x-report');
-        Route::get('/pos/sessions/{session}/z-report/export', [PosController::class, 'exportZReport'])->name('admin.pos.z-report.export');
-        Route::get('/pos/sessions/{session}/x-report/export', [PosController::class, 'exportXReport'])->name('admin.pos.x-report.export');
-        Route::get('/pos/statistics', [PosController::class, 'statistics'])->name('admin.pos.statistics');
     });
 });
 

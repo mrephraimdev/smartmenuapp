@@ -196,91 +196,58 @@
         </div>
     </div>
 
-    <!-- Son de notification puissant pour KDS -->
+    <!-- Alarme sonore + notifications push pour KDS -->
     <script>
-        // Classe pour générer un son d'alerte fort et répétitif
-        class PowerfulNotificationSound {
-            constructor() {
-                this.audioContext = null;
-                this.isPlaying = false;
-            }
-
-            init() {
-                if (!this.audioContext) {
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        class OrderAlarm {
+            constructor() { this.ctx = null; this.comp = null; this.playing = false; }
+            _init() {
+                if (!this.ctx) {
+                    this.ctx  = new (window.AudioContext || window.webkitAudioContext)();
+                    this.comp = this.ctx.createDynamicsCompressor();
+                    this.comp.threshold.value = -6; this.comp.knee.value = 0;
+                    this.comp.ratio.value = 20; this.comp.attack.value = 0.001;
+                    this.comp.release.value = 0.05;
+                    this.comp.connect(this.ctx.destination);
                 }
-                if (this.audioContext.state === 'suspended') {
-                    this.audioContext.resume();
-                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
             }
-
-            play(repeatCount = 3) {
-                this.init();
-                if (this.isPlaying) return;
-                this.isPlaying = true;
-
-                let currentRepeat = 0;
-
-                const playSequence = () => {
-                    if (currentRepeat >= repeatCount) {
-                        this.isPlaying = false;
-                        return;
-                    }
-                    currentRepeat++;
-
-                    const ctx = this.audioContext;
-                    const now = ctx.currentTime;
-
-                    // Séquence de 3 bips aigus puissants
-                    for (let i = 0; i < 3; i++) {
-                        const startTime = now + i * 0.18;
-
-                        const osc1 = ctx.createOscillator();
-                        osc1.type = 'square';
-                        osc1.frequency.setValueAtTime(880, startTime);
-
-                        const osc2 = ctx.createOscillator();
-                        osc2.type = 'sawtooth';
-                        osc2.frequency.setValueAtTime(1320, startTime);
-
-                        const osc3 = ctx.createOscillator();
-                        osc3.type = 'triangle';
-                        osc3.frequency.setValueAtTime(440, startTime);
-
-                        const gainNode = ctx.createGain();
-                        gainNode.gain.setValueAtTime(0, startTime);
-                        gainNode.gain.linearRampToValueAtTime(0.9, startTime + 0.01);
-                        gainNode.gain.setValueAtTime(0.9, startTime + 0.08);
-                        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
-
-                        osc1.connect(gainNode);
-                        osc2.connect(gainNode);
-                        osc3.connect(gainNode);
-                        gainNode.connect(ctx.destination);
-
-                        osc1.start(startTime);
-                        osc1.stop(startTime + 0.15);
-                        osc2.start(startTime);
-                        osc2.stop(startTime + 0.15);
-                        osc3.start(startTime);
-                        osc3.stop(startTime + 0.15);
-                    }
-
-                    if (currentRepeat < repeatCount) {
-                        setTimeout(playSequence, 800);
-                    } else {
-                        setTimeout(() => { this.isPlaying = false; }, 600);
-                    }
-                };
-
-                playSequence();
+            _tone(freq, start, dur) {
+                const osc = this.ctx.createOscillator(), gain = this.ctx.createGain();
+                osc.type = 'square'; osc.frequency.value = freq;
+                gain.gain.setValueAtTime(1.0, start);
+                gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+                osc.connect(gain); gain.connect(this.comp);
+                osc.start(start); osc.stop(start + dur);
+            }
+            // 5 sonneries de 4 alternances 1400Hz/700Hz
+            play(rings = 5) {
+                this._init(); if (this.playing) return; this.playing = true;
+                const now = this.ctx.currentTime;
+                for (let r = 0; r < rings; r++) {
+                    const b = now + r * 0.75;
+                    this._tone(1400, b+0.00, 0.10); this._tone(700, b+0.15, 0.10);
+                    this._tone(1400, b+0.30, 0.10); this._tone(700, b+0.45, 0.10);
+                }
+                setTimeout(() => { this.playing = false; }, rings * 750 + 300);
             }
         }
 
-        window.notificationSound = new PowerfulNotificationSound();
-        document.addEventListener('click', () => {
-            if (window.notificationSound) window.notificationSound.init();
-        }, { once: true });
+        window._orderAlarm = new OrderAlarm();
+        document.addEventListener('click', () => window._orderAlarm._init(), { once: true });
+
+        // Demander la permission de notification au chargement
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        function _kdsNotif(newCount) {
+            if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            const n = new Notification('🍳 Nouvelle commande cuisine !', {
+                body: `${newCount} nouvelle(s) commande(s) à préparer`,
+                icon: '/favicon.ico', tag: 'kds-order', requireInteraction: true,
+            });
+            n.onclick = () => { window.focus(); n.close(); };
+        }
     </script>
 
     <script>
@@ -333,7 +300,7 @@
 
                             // Jouer le son si nouvelles commandes
                             if (newRecuOrders.length > 0 && this.knownOrderIds.size > 0) {
-                                this.playNotificationSound();
+                                this.playNotificationSound(newRecuOrders.length);
                             }
 
                             // Mettre à jour les IDs connus
@@ -357,11 +324,10 @@
                     this.loading = false;
                 },
 
-                playNotificationSound() {
+                playNotificationSound(newCount) {
                     try {
-                        if (window.notificationSound) {
-                            window.notificationSound.play(3);
-                        }
+                        window._orderAlarm?.play(5);
+                        _kdsNotif(newCount || 1);
                     } catch (e) {
                         console.error('Erreur son notification:', e);
                     }

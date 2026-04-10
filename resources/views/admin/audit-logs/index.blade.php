@@ -1,45 +1,39 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', "Journal d'Audit")
+@section('page-title', "Journal d'Audit")
+@section('breadcrumb')
+    <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="hover:text-amber-500">Dashboard</a>
+    <span class="mx-2">/</span>
+    <span>Journal d'Audit</span>
+@endsection
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Journal d'Audit</h1>
-            <p class="text-gray-600 mt-2">Historique des actions effectuées sur votre restaurant</p>
-        </div>
-        <div class="flex space-x-4">
-            <a href="{{ route('admin.audit-logs.export', ['tenantSlug' => $tenant->slug] + request()->query()) }}"
-               class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Exporter CSV
-            </a>
-            <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                Retour
-            </a>
-        </div>
+    {{-- Export button --}}
+    <div class="flex justify-end mb-6">
+        <a href="{{ route('admin.audit-logs.export', ['tenantSlug' => $tenant->slug] + request()->query()) }}"
+           class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-xl hover:bg-amber-600 transition shadow-sm">
+            <x-heroicon-o-arrow-down-tray class="w-4 h-4" />
+            Exporter CSV
+        </a>
     </div>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    {{-- Filters --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
         <form method="GET" action="{{ route('admin.audit-logs.index', $tenant->slug) }}" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Search -->
+                {{-- Search --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Recherche</label>
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Recherche</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                            placeholder="Description, utilisateur...">
                 </div>
 
-                <!-- Action Filter -->
+                {{-- Action Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Action</label>
-                    <select name="action" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Action</label>
+                    <select name="action" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                         <option value="">Toutes les actions</option>
                         @foreach($actions as $action)
                         <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>
@@ -49,10 +43,10 @@
                     </select>
                 </div>
 
-                <!-- Entity Type Filter -->
+                {{-- Entity Type Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Type d'entité</label>
-                    <select name="entity_type" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Type d'entite</label>
+                    <select name="entity_type" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                         <option value="">Tous les types</option>
                         @foreach($entityTypes as $type)
                         <option value="App\Models\{{ $type }}" {{ request('entity_type') === "App\Models\\{$type}" ? 'selected' : '' }}>
@@ -62,10 +56,10 @@
                     </select>
                 </div>
 
-                <!-- User Filter -->
+                {{-- User Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Utilisateur</label>
-                    <select name="user_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Utilisateur</label>
+                    <select name="user_id" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                         <option value="">Tous les utilisateurs</option>
                         @foreach($users as $user)
                         <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
@@ -75,61 +69,64 @@
                     </select>
                 </div>
 
-                <!-- Date From -->
+                {{-- Date From --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date de début</label>
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Date de debut</label>
                     <input type="date" name="date_from" value="{{ request('date_from') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                 </div>
 
-                <!-- Date To -->
+                {{-- Date To --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date de fin</label>
+                    <label class="block text-base font-semibold text-gray-700 mb-1">Date de fin</label>
                     <input type="date" name="date_to" value="{{ request('date_to') }}"
-                           class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
                 </div>
             </div>
 
             <div class="flex justify-end space-x-4">
-                <a href="{{ route('admin.audit-logs.index', $tenant->slug) }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">
-                    Réinitialiser
+                <a href="{{ route('admin.audit-logs.index', $tenant->slug) }}"
+                   class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition">
+                    Reinitialiser
                 </a>
-                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                <button type="submit"
+                        class="px-5 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition">
                     Filtrer
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Audit Logs Table -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    {{-- Audit Logs Table --}}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <thead class="bg-gray-50/80">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Utilisateur</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entité</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Utilisateur</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Entite</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">IP</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-white divide-y divide-gray-100">
                 @forelse($auditLogs as $log)
-                <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('admin.audit-logs.show', [$tenant->slug, $log]) }}'">
+                <tr class="hover:bg-amber-50/40 transition-colors cursor-pointer"
+                    onclick="window.location='{{ route('admin.audit-logs.show', [$tenant->slug, $log]) }}'">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div>{{ $log->created_at->format('d/m/Y') }}</div>
                         <div class="text-xs text-gray-400">{{ $log->created_at->format('H:i:s') }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                                <span class="text-sm font-medium text-gray-600">
+                            <div class="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+                                <span class="text-sm font-medium text-amber-700">
                                     {{ $log->user ? strtoupper(substr($log->user->name, 0, 1)) : 'S' }}
                                 </span>
                             </div>
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $log->user?->name ?? 'Système' }}
+                                {{ $log->user?->name ?? 'Systeme' }}
                             </div>
                         </div>
                     </td>
@@ -165,18 +162,16 @@
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-12 text-center">
-                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun log trouvé</h3>
-                        <p class="mt-1 text-sm text-gray-500">Les actions seront enregistrées ici.</p>
+                        <x-heroicon-o-document-text class="w-12 h-12 mx-auto text-gray-400" />
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun log trouve</h3>
+                        <p class="mt-1 text-sm text-gray-500">Les actions seront enregistrees ici.</p>
                     </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
 
-        <!-- Pagination -->
+        {{-- Pagination --}}
         @if($auditLogs->hasPages())
         <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
             {{ $auditLogs->links() }}
@@ -184,30 +179,29 @@
         @endif
     </div>
 
-    <!-- Stats Summary -->
+    {{-- Stats Summary --}}
     <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-lg shadow p-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
             <div class="text-sm text-gray-500">Total des actions</div>
             <div class="text-2xl font-bold text-gray-900">{{ $auditLogs->total() }}</div>
         </div>
-        <div class="bg-green-50 rounded-lg shadow p-4">
-            <div class="text-sm text-green-600">Créations</div>
+        <div class="bg-green-50 rounded-2xl shadow-sm border border-green-100 p-4">
+            <div class="text-sm text-green-600">Creations</div>
             <div class="text-2xl font-bold text-green-900">
                 {{ $auditLogs->where('action', 'created')->count() }}
             </div>
         </div>
-        <div class="bg-blue-50 rounded-lg shadow p-4">
+        <div class="bg-blue-50 rounded-2xl shadow-sm border border-blue-100 p-4">
             <div class="text-sm text-blue-600">Modifications</div>
             <div class="text-2xl font-bold text-blue-900">
                 {{ $auditLogs->where('action', 'updated')->count() }}
             </div>
         </div>
-        <div class="bg-red-50 rounded-lg shadow p-4">
+        <div class="bg-red-50 rounded-2xl shadow-sm border border-red-100 p-4">
             <div class="text-sm text-red-600">Suppressions</div>
             <div class="text-2xl font-bold text-red-900">
                 {{ $auditLogs->where('action', 'deleted')->count() }}
             </div>
         </div>
     </div>
-</div>
 @endsection

@@ -13,7 +13,7 @@
 
     <style>
         [x-cloak] { display: none !important; }
-        body { font-family: 'DM Sans', sans-serif; }
+        body { font-family: 'DM Sans', sans-serif; font-size: 15px; }
         .nav-active {
             background: rgba(167,139,250,0.15);
             color: #a78bfa;
@@ -40,7 +40,7 @@
 
     {{-- SIDEBAR --}}
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-           class="fixed inset-y-0 left-0 w-64 bg-slate-900 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0 flex flex-col shadow-2xl">
+           class="fixed inset-y-0 left-0 w-72 bg-slate-900 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0 flex flex-col shadow-2xl">
 
         {{-- Logo --}}
         <div class="h-16 flex items-center justify-between px-5 border-b border-slate-800 flex-shrink-0">
@@ -136,7 +136,7 @@
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
 
         {{-- Top bar --}}
-        <header class="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-5 sticky top-0 z-30 shadow-sm flex-shrink-0">
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm flex-shrink-0">
             <div class="flex items-center gap-4">
                 <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-800 p-1">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -144,7 +144,7 @@
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-base font-semibold text-gray-900">@yield('page-title', 'Super Admin')</h1>
+                    <h1 class="text-lg font-bold text-gray-900">@yield('page-title', 'Super Admin')</h1>
                     @hasSection('breadcrumb')
                     <nav class="text-xs text-gray-400 mt-0.5">@yield('breadcrumb')</nav>
                     @endif

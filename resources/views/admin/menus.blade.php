@@ -194,9 +194,10 @@ document.addEventListener('alpine:init', () => {
 
             try {
                 const response = await fetch(url, {
-                    method: method,
+                    method: this.editingMenu ? 'PATCH' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify(this.form)

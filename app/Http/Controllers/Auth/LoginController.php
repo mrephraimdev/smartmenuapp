@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -20,6 +22,36 @@ class LoginController extends Controller
     */
 
     use AuthenticatesUsers;
+
+    /**
+     * Accept "login" field (email OR username).
+     */
+    public function username(): string
+    {
+        return 'login';
+    }
+
+    /**
+     * Resolve credentials: if the login field contains "@" treat it as email,
+     * otherwise look up by username and authenticate via the internal email.
+     */
+    protected function credentials(Request $request): array
+    {
+        $login    = $request->input('login');
+        $password = $request->input('password');
+
+        if (str_contains($login, '@')) {
+            return ['email' => $login, 'password' => $password];
+        }
+
+        $user = User::where('username', $login)->first();
+
+        if ($user) {
+            return ['email' => $user->email, 'password' => $password];
+        }
+
+        return ['email' => $login, 'password' => $password];
+    }
 
     /**
      * Where to redirect users after login.

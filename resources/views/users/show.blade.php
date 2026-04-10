@@ -1,132 +1,114 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails Utilisateur - {{ $user->name }}</title>
+@extends('layouts.superadmin')
 
-    <!-- Vite Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-<body class="bg-gray-100">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-2xl font-bold text-gray-800">👤 Détails Utilisateur - {{ $user->name }}</h1>
-                    <nav class="flex space-x-4">
-                        <a href="{{ route('superadmin.users.index') }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            📋 Liste Utilisateurs
-                        </a>
-                        <a href="{{ route('superadmin.users.edit', $user) }}" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                            ✏️ Modifier
-                        </a>
-                        <a href="/" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            🏠 Accueil
-                        </a>
-                    </nav>
+@section('title', $user->name)
+@section('page-title', 'Details de l\'utilisateur')
+@section('breadcrumb')
+    <a href="{{ route('superadmin.users.index') }}" class="text-violet-600 hover:text-violet-700">Utilisateurs</a>
+    <span class="mx-1 text-gray-300">/</span>
+    <span class="text-gray-500">{{ $user->name }}</span>
+@endsection
+
+@section('content')
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
+            <h2 class="text-xl font-bold text-gray-900 mb-6">Informations de l'utilisateur</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {{-- Nom --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Nom complet</label>
+                    <p class="text-base font-medium text-gray-900">{{ $user->name }}</p>
+                </div>
+
+                {{-- Email --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Adresse email</label>
+                    <p class="text-base font-medium text-gray-900">{{ $user->email }}</p>
+                </div>
+
+                {{-- Tenant --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Restaurant assigne</label>
+                    <p class="text-base font-medium text-gray-900">
+                        @if($user->tenant)
+                            {{ $user->tenant->name }}
+                            <span class="text-sm text-gray-400 ml-1">({{ $user->tenant->slug }})</span>
+                        @else
+                            <span class="text-gray-400">Aucun tenant assigne</span>
+                        @endif
+                    </p>
+                </div>
+
+                {{-- Role --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Role</label>
+                    <div class="mt-0.5">
+                        @if($user->role)
+                            @php $roleEnum = \App\Enums\UserRole::tryFrom($user->role) @endphp
+                            @if($roleEnum)
+                            <span class="inline-flex px-3 py-1 rounded-full text-sm font-bold {{ $roleEnum->badgeClass() }}">
+                                {{ $roleEnum->label() }}
+                            </span>
+                            <p class="mt-1.5 text-sm text-gray-500">{{ $roleEnum->description() }}</p>
+                            @else
+                            <span class="inline-flex px-3 py-1 rounded-full text-sm font-bold bg-gray-100 text-gray-800">
+                                {{ $user->role }}
+                            </span>
+                            @endif
+                        @else
+                            <span class="text-gray-400">Aucun role assigne</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- Statut email --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Statut</label>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold
+                        {{ $user->email_verified_at ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
+                        {{ $user->email_verified_at ? 'Email verifie' : 'Email non verifie' }}
+                    </span>
+                </div>
+
+                {{-- Date de creation --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Date de creation</label>
+                    <p class="text-base font-medium text-gray-900">{{ $user->created_at->format('d/m/Y H:i') }}</p>
+                </div>
+
+                {{-- Derniere mise a jour --}}
+                <div>
+                    <label class="block text-sm font-semibold text-gray-500 uppercase tracking-wider mb-1">Derniere mise a jour</label>
+                    <p class="text-base font-medium text-gray-900">{{ $user->updated_at->format('d/m/Y H:i') }}</p>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8">
-            <div class="bg-white rounded-lg shadow-lg p-6">
-                <h2 class="text-xl font-bold mb-6">Informations de l'utilisateur</h2>
+            {{-- Actions --}}
+            <div class="mt-8 pt-6 border-t border-gray-100 flex flex-wrap gap-3">
+                <a href="{{ route('superadmin.users.edit', $user) }}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
+                    <x-heroicon-o-pencil class="w-4 h-4" />
+                    Modifier
+                </a>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Informations de base -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nom complet</label>
-                            <p class="mt-1 text-lg">{{ $user->name }}</p>
-                        </div>
+                <form method="POST" action="{{ route('superadmin.users.destroy', $user) }}"
+                      onsubmit="return confirm('Etes-vous sur de vouloir supprimer cet utilisateur ?')"
+                      class="inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors shadow-sm">
+                        <x-heroicon-o-trash class="w-4 h-4" />
+                        Supprimer
+                    </button>
+                </form>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Adresse email</label>
-                            <p class="mt-1 text-lg">{{ $user->email }}</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Date de création</label>
-                            <p class="mt-1 text-lg">{{ $user->created_at->format('d/m/Y H:i') }}</p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Dernière mise à jour</label>
-                            <p class="mt-1 text-lg">{{ $user->updated_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Informations avancées -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tenant assigné</label>
-                            <p class="mt-1 text-lg">
-                                @if($user->tenant)
-                                    {{ $user->tenant->name }} ({{ $user->tenant->slug }})
-                                @else
-                                    <span class="text-gray-500">Aucun tenant assigné</span>
-                                @endif
-                            </p>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Rôle</label>
-                            <div class="mt-1">
-                                @if($user->role)
-                                    @php $roleEnum = \App\Enums\UserRole::tryFrom($user->role) @endphp
-                                    @if($roleEnum)
-                                    <span class="inline-flex px-3 py-1 rounded-full text-sm font-medium {{ $roleEnum->badgeClass() }}">
-                                        {{ $roleEnum->label() }}
-                                    </span>
-                                    <p class="mt-1 text-sm text-gray-500">{{ $roleEnum->description() }}</p>
-                                    @else
-                                    <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">
-                                        {{ $user->role }}
-                                    </span>
-                                    @endif
-                                @else
-                                    <span class="text-gray-500">Aucun rôle assigné</span>
-                                @endif
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Statut</label>
-                            <p class="mt-1">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                    {{ $user->email_verified_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ $user->email_verified_at ? 'Email vérifié' : 'Email non vérifié' }}
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="mt-8 pt-6 border-t border-gray-200">
-                    <h3 class="text-lg font-medium mb-4">Actions</h3>
-                    <div class="flex space-x-4">
-                        <a href="{{ route('superadmin.users.edit', $user) }}"
-                           class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-                            ✏️ Modifier l'utilisateur
-                        </a>
-
-                        <form method="POST" action="{{ route('superadmin.users.destroy', $user) }}"
-                              onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')"
-                              class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                                🗑️ Supprimer l'utilisateur
-                            </button>
-                        </form>
-                    </div>
-                </div>
+                <a href="{{ route('superadmin.users.index') }}"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+                    <x-heroicon-o-arrow-left class="w-4 h-4" />
+                    Retour a la liste
+                </a>
             </div>
-        </main>
+        </div>
     </div>
-</body>
-</html>
+@endsection

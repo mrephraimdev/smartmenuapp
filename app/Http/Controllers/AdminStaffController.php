@@ -65,10 +65,10 @@ class AdminStaffController extends Controller
         $tenant = $this->getTenant($tenantSlug);
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'name'     => 'required|string|max:255',
+            'username' => 'required|string|max:50|alpha_dash|unique:users,username',
             'password' => 'required|string|min:8|confirmed',
-            'role' => ['required', new Enum(UserRole::class)],
+            'role'     => ['required', new Enum(UserRole::class)],
         ]);
 
         // Vérifier que le rôle est autorisé
@@ -77,13 +77,17 @@ class AdminStaffController extends Controller
             return back()->withErrors(['role' => 'Ce rôle n\'est pas autorisé.'])->withInput();
         }
 
+        // Générer un email interne unique (non visible, juste pour l'auth Laravel)
+        $email = strtolower($request->username) . '_' . $tenant->id . '@smartmenu.local';
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $role->value,
-            'tenant_id' => $tenant->id,
-            'email_verified_at' => now(),
+            'name'               => $request->name,
+            'username'           => strtolower($request->username),
+            'email'              => $email,
+            'password'           => Hash::make($request->password),
+            'role'               => $role->value,
+            'tenant_id'          => $tenant->id,
+            'email_verified_at'  => now(),
         ]);
 
         return redirect()
@@ -136,10 +140,10 @@ class AdminStaffController extends Controller
         }
 
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'name'     => 'required|string|max:255',
+            'username' => 'required|string|max:50|alpha_dash|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => ['required', new Enum(UserRole::class)],
+            'role'     => ['required', new Enum(UserRole::class)],
         ]);
 
         // Vérifier que le rôle est autorisé
@@ -148,9 +152,13 @@ class AdminStaffController extends Controller
             return back()->withErrors(['role' => 'Ce rôle n\'est pas autorisé.'])->withInput();
         }
 
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->role = $role->value;
+        $newUsername = strtolower($request->username);
+
+        $user->name     = $request->name;
+        $user->username = $newUsername;
+        // Synchronise l'email interne si le username change
+        $user->email    = $newUsername . '_' . $tenant->id . '@smartmenu.local';
+        $user->role     = $role->value;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

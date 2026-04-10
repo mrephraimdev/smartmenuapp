@@ -28,58 +28,84 @@ class AdminMenuController extends Controller
     /**
      * Afficher le dashboard admin (optimisé avec cache)
      */
-    public function dashboard($tenantSlug)
+    public function dashboard(\Illuminate\Http\Request $request, $tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
         $tenantId = $tenant->id;
 
-        // Cache toutes les données du dashboard (5 minutes)
-        $cacheKey = "dashboard_full_{$tenantId}";
-        $dashboardData = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($tenantId) {
-            // Menus avec comptages
-            $menus = Menu::with(['categories' => function ($q) {
-                $q->withCount('dishes');
-            }])
-                ->where('tenant_id', $tenantId)
-                ->get();
+        // Période sélectionnée (défaut : aujourd'hui)
+        $period    = $request->get('period', 'today');
+        $dateFrom  = $request->get('date_from');
+        $dateTo    = $request->get('date_to');
 
-            // Stats combinées en une seule requête
-            $orderStats = \App\Models\Order::where('tenant_id', $tenantId)
-                ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue')
-                ->first();
+        [$from, $to] = $this->resolveDateRange($period, $dateFrom, $dateTo);
 
-            // Plats actifs
-            $activeDishes = Dish::where('tenant_id', $tenantId)
-                ->where('active', true)
-                ->count();
+        // Menus (pas de filtre date – donnée structurelle)
+        $menus = Menu::with(['categories' => function ($q) {
+            $q->withCount('dishes');
+        }])->where('tenant_id', $tenantId)->get();
 
-            // Plats populaires (top 5)
-            $popularDishes = DB::table('order_items')
-                ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
-                ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                ->where('orders.tenant_id', $tenantId)
-                ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
-                ->groupBy('dishes.id', 'dishes.name')
-                ->orderBy('order_count', 'desc')
-                ->limit(5)
-                ->get();
+        // Stats filtrées par période
+        $orderQuery = \App\Models\Order::where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [$from->startOfDay(), $to->copy()->endOfDay()]);
 
-            return [
-                'menus' => $menus,
-                'stats' => [
-                    'totalOrders' => $orderStats->total_orders ?? 0,
-                    'totalRevenue' => $orderStats->total_revenue ?? 0,
-                    'activeDishes' => $activeDishes,
-                    'popularDishes' => $popularDishes,
-                ]
-            ];
-        });
+        $orderStats = (clone $orderQuery)
+            ->selectRaw("COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue")
+            ->first();
+
+        $activeDishes = Dish::where('tenant_id', $tenantId)->where('active', true)->count();
+
+        $popularDishes = DB::table('order_items')
+            ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->where('orders.tenant_id', $tenantId)
+            ->whereBetween('orders.created_at', [$from->startOfDay(), $to->copy()->endOfDay()])
+            ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
+            ->groupBy('dishes.id', 'dishes.name')
+            ->orderBy('order_count', 'desc')
+            ->limit(5)
+            ->get();
 
         return view('admin.dashboard', [
-            'tenant' => $tenant,
-            'menus' => $dashboardData['menus'],
-            'stats' => $dashboardData['stats'],
+            'tenant'       => $tenant,
+            'menus'        => $menus,
+            'period'       => $period,
+            'dateFrom'     => $from->toDateString(),
+            'dateTo'       => $to->toDateString(),
+            'periodLabel'  => $this->periodLabel($period, $from, $to),
+            'stats'        => [
+                'totalOrders'  => $orderStats->total_orders ?? 0,
+                'totalRevenue' => $orderStats->total_revenue ?? 0,
+                'activeDishes' => $activeDishes,
+                'popularDishes'=> $popularDishes,
+            ],
         ]);
+    }
+
+    private function resolveDateRange(string $period, ?string $dateFrom, ?string $dateTo): array
+    {
+        $today = \Carbon\Carbon::today();
+        return match ($period) {
+            'yesterday' => [$today->copy()->subDay(), $today->copy()->subDay()],
+            'week'      => [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()],
+            'month'     => [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()],
+            'custom'    => [
+                \Carbon\Carbon::parse($dateFrom ?? $today),
+                \Carbon\Carbon::parse($dateTo   ?? $today),
+            ],
+            default     => [$today, $today], // today
+        };
+    }
+
+    private function periodLabel(string $period, \Carbon\Carbon $from, \Carbon\Carbon $to): string
+    {
+        return match ($period) {
+            'yesterday' => 'Hier',
+            'week'      => 'Cette semaine',
+            'month'     => 'Ce mois',
+            'custom'    => $from->format('d/m/Y') . ' – ' . $to->format('d/m/Y'),
+            default     => "Aujourd'hui",
+        };
     }
 
     /**
