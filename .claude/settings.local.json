@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan migrate:*)",
+      "Bash(php migrate-to-vite.php:*)",
+      "Bash(npm run build:*)",
+      "Bash(composer require:*)",
+      "Bash(npm install:*)",
+      "Bash(php artisan:*)",
+      "Bash(php -l:*)",
+      "Bash(php:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(dir c:UsersMr-Ephraimmenu-qr-app*.md)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Mr-Ephraim\\\\menu-qr-app\" -Filter \"*.md\" -File)",
+      "Bash(Select-Object Name)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"Get-Content storage\\\\logs\\\\laravel.log -Tail 50 | Select-String -Pattern ''exception|error'' -Context 0,2\")",
+      "Bash(powershell -Command \"Get-Content storage\\\\logs\\\\laravel.log -Tail 80 | Select-String -Pattern ''ParseError|syntax|unexpected'' -Context 2,5\")",
+      "Bash(test:*)",
+      "Bash(sqlite3:*)",
+      "Bash(composer update:*)",
+      "Bash(composer remove:*)",
+      "Bash(powershell:*)",
+      "Bash(if not exist \"storage\\\\app\\\\public\\\\dishes\" mkdir \"storage\\\\app\\\\public\\\\dishes\")",
+      "Bash(timeout 5 npm run dev:*)",
+      "Bash(copy \"C:\\\\Users\\\\Mr-Ephraim\\\\Downloads\\\\SmartMenu.png\" \"c:\\\\Users\\\\Mr-Ephraim\\\\menu-qr-app\\\\public\\\\images\\\\SmartMenu.png\")",
+      "Bash(grep:*)",
+      "Bash(dir:*)"
+    ]
+  }
+}

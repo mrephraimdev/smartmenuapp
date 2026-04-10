@@ -16,8 +16,19 @@ class TenantFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->company();
+
         return [
-            //
+            'name' => $name,
+            'slug' => \Illuminate\Support\Str::slug($name) . '-' . fake()->unique()->numberBetween(1000, 9999),
+            'logo_url' => null,
+            'cover_url' => null,
+            'branding' => null,
+            'type' => 'restaurant',
+            'currency' => 'FCFA',
+            'locale' => 'fr',
+            'is_active' => true,
+            'theme_id' => null,
         ];
     }
 }

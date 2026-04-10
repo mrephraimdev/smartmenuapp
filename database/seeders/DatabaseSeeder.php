@@ -39,26 +39,24 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Créer un super admin
-        $superAdmin = User::firstOrCreate([
-            'email' => 'superadmin@example.com'
+        User::updateOrCreate([
+            'email' => 'superadmin@smartmenu.com'
         ], [
             'name' => 'Super Admin',
-            'password' => Hash::make('password'),
-            'tenant_id' => null
+            'password' => Hash::make('SmartMenu2026!'),
+            'tenant_id' => null,
+            'role' => 'SUPER_ADMIN',
         ]);
 
-        $superAdmin->assignRole('SUPER_ADMIN');
-
         // Créer un admin pour le tenant demo
-        $admin = User::firstOrCreate([
+        User::updateOrCreate([
             'email' => 'admin@demo.com'
         ], [
             'name' => 'Admin Demo',
             'password' => Hash::make('password'),
-            'tenant_id' => $tenant->id
+            'tenant_id' => $tenant->id,
+            'role' => 'ADMIN',
         ]);
-
-        $admin->assignRole('ADMIN');
 
         // Lancer le seeder des tables
         $this->call(TableSeeder::class);

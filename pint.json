@@ -1,0 +1,32 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "simplified_null_return": true,
+        "braces": false,
+        "new_with_braces": true,
+        "method_argument_space": {
+            "on_multiline": "ensure_fully_multiline"
+        },
+        "no_unused_imports": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "single_quote": true,
+        "trailing_comma_in_multiline": true,
+        "binary_operator_spaces": {
+            "default": "single_space"
+        },
+        "blank_line_before_statement": {
+            "statements": ["return"]
+        },
+        "concat_space": {
+            "spacing": "one"
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "vendor",
+        "storage",
+        "bootstrap/cache"
+    ]
+}

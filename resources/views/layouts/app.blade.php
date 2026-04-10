@@ -10,15 +10,12 @@
     <title>@if(request()->is('login', 'register', 'password/*')) Menu QR @else {{ config('app.name', 'Menu QR') }} @endif</title>
 
     <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
-
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
     <div id="app">
-        @if(!request()->is('login', 'register', 'password/*'))
+        @if(!request()->is('login', 'register', 'password/*', 'reservation/*', 'reviews/*', 'review/*'))
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -74,7 +71,7 @@
         </nav>
         @endif
 
-        <main class="@if(request()->is('login', 'register', 'password/*')) min-h-screen @else py-4 @endif">
+        <main class="@if(request()->is('login', 'register', 'password/*', 'reservation/*', 'reviews/*', 'review/*')) min-h-screen @else py-4 @endif">
             @yield('content')
         </main>
     </div>

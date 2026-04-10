@@ -1,260 +1,245 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Gestion des Menus - {{ $tenant->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body class="bg-gray-100">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <h1 class="text-2xl font-bold text-gray-800">📋 Gestion des Menus - {{ $tenant->name }}</h1>
-                    <nav class="flex space-x-4">
-                        <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            📊 Dashboard
-                        </a>
-                        <a href="{{ route('admin.menus', $tenant->slug) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                            📋 Menus
-                        </a>
-                        @if(auth()->user()->tenant)
-                        <a href="/kds/{{ auth()->user()->tenant->slug }}" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">
-                            👨‍🍳 KDS
-                        </a>
-                        @else
-                        <span class="bg-gray-500 text-white px-4 py-2 rounded">
-                            👨‍🍳 Aucun tenant
-                        </span>
-                        @endif
-                        <a href="/" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            🏠 Accueil
-                        </a>
-                    </nav>
+@extends('layouts.admin')
+
+@section('title', 'Gestion des Menus')
+@section('page-title', 'Gestion des Menus')
+@section('breadcrumb')
+    <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="hover:text-indigo-600">Dashboard</a>
+    <span class="mx-2">/</span>
+    <span>Menus</span>
+@endsection
+
+@section('content')
+<div x-data="menusStore()">
+    <!-- Actions Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex items-center space-x-3">
+            <span class="text-gray-500">{{ $menus->count() }} menu(s)</span>
+        </div>
+        <x-ui.button variant="primary" @click="openModal()">
+            <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+            Nouveau Menu
+        </x-ui.button>
+    </div>
+
+    <!-- Menus Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach($menus as $menu)
+        <x-ui.card hover class="group">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <x-heroicon-o-clipboard-document-list class="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-gray-800">{{ $menu->title }}</h3>
+                        <span class="text-xs text-gray-500">Créé le {{ $menu->created_at->format('d/m/Y') }}</span>
+                    </div>
+                </div>
+                <x-ui.badge :variant="$menu->active ? 'success' : 'danger'">
+                    {{ $menu->active ? 'Actif' : 'Inactif' }}
+                </x-ui.badge>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="flex items-center justify-center text-indigo-600 mb-1">
+                        <x-heroicon-o-folder class="w-5 h-5 mr-1" />
+                        <span class="font-bold text-lg">{{ $menu->categories->count() }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Catégories</span>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3 text-center">
+                    <div class="flex items-center justify-center text-green-600 mb-1">
+                        <x-heroicon-o-cake class="w-5 h-5 mr-1" />
+                        <span class="font-bold text-lg">{{ $menu->categories->flatMap->dishes->count() }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500">Plats</span>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8">
-            <!-- En-tête avec bouton nouveau menu -->
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold">Tous vos menus</h2>
-                <button onclick="openMenuModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                    <i class="fas fa-plus mr-2"></i>Nouveau Menu
+            <div class="flex space-x-2">
+                <a href="{{ route('admin.categories', [$tenant->slug, $menu->id]) }}"
+                   class="flex-1 bg-indigo-50 text-indigo-700 text-center py-2.5 rounded-lg hover:bg-indigo-100 font-medium transition-colors text-sm">
+                    <x-heroicon-o-eye class="w-4 h-4 inline mr-1" />
+                    Gérer
+                </a>
+                <button @click="editMenu({{ json_encode($menu) }})"
+                        class="p-2.5 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-100 transition-colors">
+                    <x-heroicon-o-pencil class="w-5 h-5" />
+                </button>
+                <button @click="deleteMenu({{ $menu->id }}, '{{ $menu->title }}')"
+                        class="p-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                    <x-heroicon-o-trash class="w-5 h-5" />
+                </button>
+            </div>
+        </x-ui.card>
+        @endforeach
+
+        <!-- New Menu Card -->
+        <div @click="openModal()"
+             class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 hover:bg-indigo-50/50 transition-all cursor-pointer group">
+            <div class="py-6">
+                <div class="w-14 h-14 mx-auto bg-gray-100 group-hover:bg-indigo-100 rounded-xl flex items-center justify-center mb-3 transition-colors">
+                    <x-heroicon-o-plus class="w-8 h-8 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                </div>
+                <div class="text-gray-600 font-medium group-hover:text-indigo-600">Nouveau Menu</div>
+                <div class="text-sm text-gray-500 mt-1">Cliquez pour créer un nouveau menu</div>
+            </div>
+        </div>
+    </div>
+
+    @if($menus->isEmpty())
+        <x-ui.empty-state
+            icon="clipboard-document-list"
+            title="Aucun menu"
+            description="Commencez par créer votre premier menu pour organiser vos plats."
+            class="mt-8"
+        >
+            <x-slot name="action">
+                <x-ui.button variant="primary" @click="openModal()">
+                    <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+                    Créer un menu
+                </x-ui.button>
+            </x-slot>
+        </x-ui.empty-state>
+    @endif
+
+    <!-- Menu Modal -->
+    <div x-show="showModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+         @click.self="showModal = false">
+        <div x-show="showModal"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-clipboard-document-list class="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800" x-text="editingMenu ? 'Modifier le Menu' : 'Nouveau Menu'"></h3>
+                </div>
+                <button @click="showModal = false" class="text-gray-400 hover:text-gray-600">
+                    <x-heroicon-o-x-mark class="w-6 h-6" />
                 </button>
             </div>
 
-            <!-- Liste des menus -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($menus as $menu)
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="font-bold text-lg">{{ $menu->title }}</h3>
-                        <span class="px-2 py-1 rounded text-xs {{ $menu->active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            {{ $menu->active ? 'Actif' : 'Inactif' }}
-                        </span>
-                    </div>
-                    
-                    <div class="text-sm text-gray-600 mb-4">
-                        <div>📁 {{ $menu->categories->count() }} catégories</div>
-                        <div>🍽️ {{ $menu->categories->flatMap->dishes->count() }} plats</div>
-                        <div>📅 Créé le: {{ $menu->created_at->format('d/m/Y') }}</div>
-                    </div>
+            <form @submit.prevent="saveMenu()">
+                <div class="space-y-4">
+                    <x-ui.input
+                        label="Nom du menu"
+                        placeholder="Ex: Menu Principal"
+                        x-model="form.title"
+                        required
+                    />
 
-                    <div class="flex space-x-2">
-                        <a href="{{ route('admin.categories', [$tenant->slug, $menu->id]) }}"
-                           class="flex-1 bg-blue-500 text-white text-center py-2 rounded hover:bg-blue-600 text-sm">
-                            👁️ Gérer
-                        </a>
-                        <button onclick="editMenu({{ json_encode($menu) }})" 
-                                class="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 text-sm">
-                            ✏️ Modifier
-                        </button>
-                        <button onclick="deleteMenu({{ $menu->id }})" 
-                                class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm">
-                            🗑️ Supprimer
-                        </button>
-                    </div>
-                </div>
-                @endforeach
-
-                <!-- Carte nouveau menu -->
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer"
-                     onclick="openMenuModal()">
-                    <div class="py-8">
-                        <i class="fas fa-plus text-4xl text-gray-400 mb-3"></i>
-                        <div class="text-gray-600 font-medium">Nouveau Menu</div>
-                        <div class="text-sm text-gray-500 mt-1">Cliquez pour créer un nouveau menu</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal Nouveau/Édition Menu -->
-    <div id="menuModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-6 w-96">
-            <h3 id="modalTitle" class="text-xl font-bold mb-4">Nouveau Menu</h3>
-            <form id="menuForm">
-                <input type="hidden" id="menuId" name="id">
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Nom du menu:</label>
-                    <input type="text" id="menuTitle" name="title" required 
-                           class="w-full border rounded px-3 py-2" placeholder="Ex: Menu Principal">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="menuActive" name="active" checked class="mr-2">
-                        <span>Menu actif</span>
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" x-model="form.active"
+                               class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <span class="text-gray-700">Menu actif</span>
                     </label>
                 </div>
-                
-                <div class="flex space-x-2">
-                    <button type="button" onclick="closeMenuModal()" 
-                            class="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600">
+
+                <div class="flex space-x-3 mt-6">
+                    <x-ui.button type="button" variant="secondary" class="flex-1" @click="showModal = false">
                         Annuler
-                    </button>
-                    <button type="submit" id="submitButton"
-                            class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-                        Créer
-                    </button>
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="primary" class="flex-1">
+                        <x-heroicon-o-check class="w-5 h-5 mr-2" />
+                        <span x-text="editingMenu ? 'Modifier' : 'Créer'"></span>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentEditingMenu = null;
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('menusStore', () => ({
+        showModal: false,
+        editingMenu: null,
+        form: {
+            title: '',
+            active: true
+        },
 
-        // Fonction pour récupérer le token CSRF
-        function getCsrfToken() {
-            const token = document.querySelector('meta[name="csrf-token"]');
-            if (!token) {
-                console.error('CSRF token not found!');
-                return null;
-            }
-            return token.getAttribute('content');
-        }
+        openModal() {
+            this.editingMenu = null;
+            this.form = { title: '', active: true };
+            this.showModal = true;
+        },
 
-        // Ouvrir modal nouveau menu
-        function openMenuModal() {
-            currentEditingMenu = null;
-            document.getElementById('modalTitle').textContent = 'Nouveau Menu';
-            document.getElementById('submitButton').textContent = 'Créer';
-            document.getElementById('menuId').value = '';
-            document.getElementById('menuTitle').value = '';
-            document.getElementById('menuActive').checked = true;
-            document.getElementById('menuModal').classList.remove('hidden');
-        }
-
-        // Éditer un menu
-        function editMenu(menu) {
-            currentEditingMenu = menu;
-            document.getElementById('modalTitle').textContent = 'Modifier le Menu';
-            document.getElementById('submitButton').textContent = 'Modifier';
-            document.getElementById('menuId').value = menu.id;
-            document.getElementById('menuTitle').value = menu.title;
-            document.getElementById('menuActive').checked = menu.active;
-            document.getElementById('menuModal').classList.remove('hidden');
-        }
-
-        // Fermer modal
-        function closeMenuModal() {
-            document.getElementById('menuModal').classList.add('hidden');
-        }
-
-        // Soumission du formulaire avec CSRF
-        document.getElementById('menuForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                alert('❌ Erreur: Token CSRF manquant');
-                return;
-            }
-            
-            const formData = new FormData(this);
-            const data = {
-                title: formData.get('title'),
-                active: formData.get('active') ? true : false
+        editMenu(menu) {
+            this.editingMenu = menu;
+            this.form = {
+                title: menu.title,
+                active: menu.active
             };
+            this.showModal = true;
+        },
 
-            const url = currentEditingMenu ? `{{ route('admin.menus.update', [$tenant->slug, ':id']) }}`.replace(':id', currentEditingMenu.id) : '{{ route('admin.menus.store', $tenant->slug) }}';
-            const method = currentEditingMenu ? 'PUT' : 'POST';
+        async saveMenu() {
+            const url = this.editingMenu
+                ? '{{ route("admin.menus.update", [$tenant->slug, ":id"]) }}'.replace(':id', this.editingMenu.id)
+                : '{{ route("admin.menus.store", $tenant->slug) }}';
+
+            const method = this.editingMenu ? 'PUT' : 'POST';
 
             try {
                 const response = await fetch(url, {
-                    method: method,
+                    method: this.editingMenu ? 'PATCH' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(this.form)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    alert(currentEditingMenu ? '✅ Menu modifié avec succès!' : '✅ Menu créé avec succès!');
-                    closeMenuModal();
+                    this.showModal = false;
                     location.reload();
                 } else {
-                    alert('❌ Erreur: ' + (result.message || 'Erreur inconnue'));
+                    alert('Erreur: ' + (result.message || 'Erreur inconnue'));
                 }
             } catch (error) {
-                console.error('Erreur complète:', error);
-                alert('❌ Erreur réseau: ' + error.message);
+                alert('Erreur réseau: ' + error.message);
             }
-        });
+        },
 
-        // Supprimer un menu avec CSRF
-        async function deleteMenu(menuId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce menu ? Cette action est irréversible.')) {
-                return;
-            }
-
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                alert('❌ Erreur: Token CSRF manquant');
-                return;
-            }
+        async deleteMenu(menuId, menuTitle) {
+            if (!confirm(`Supprimer le menu "${menuTitle}" ? Cette action est irréversible.`)) return;
 
             try {
-                const response = await fetch(`{{ route('admin.menus.destroy', [$tenant->slug, ':id']) }}`.replace(':id', menuId), {
+                const response = await fetch('{{ route("admin.menus.destroy", [$tenant->slug, ":id"]) }}'.replace(':id', menuId), {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    alert('✅ Menu supprimé avec succès!');
                     location.reload();
                 } else {
-                    alert('❌ Erreur: ' + result.message);
+                    alert('Erreur: ' + result.message);
                 }
             } catch (error) {
-                console.error('Erreur:', error);
-                alert('❌ Erreur réseau: ' + error.message);
+                alert('Erreur réseau: ' + error.message);
             }
         }
-    </script>
-</body>
-</html>
+    }));
+});
+</script>
+@endpush
+@endsection

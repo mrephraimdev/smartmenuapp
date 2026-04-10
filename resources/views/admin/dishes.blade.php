@@ -1,450 +1,499 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Plats - {{ $category->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body class="bg-gray-100">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">🍽️ Plats - {{ $category->name }}</h1>
-                        <nav class="text-sm text-gray-600 mt-1">
-                            <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="hover:text-blue-600">Dashboard</a>
-                            > <a href="{{ route('admin.menus', $tenant->slug) }}" class="hover:text-blue-600">Menus</a>
-                            > <a href="{{ route('admin.categories', [$tenant->slug, $category->menu->id]) }}" class="hover:text-blue-600">Catégories</a>
-                            > <span>Plats</span>
-                        </nav>
+@extends('layouts.admin')
+
+@section('title', 'Plats - ' . $category->name)
+@section('page-title', 'Gestion des Plats')
+@section('breadcrumb')
+    <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="hover:text-indigo-600">Dashboard</a>
+    <span class="mx-2">/</span>
+    <a href="{{ route('admin.menus', $tenant->slug) }}" class="hover:text-indigo-600">Menus</a>
+    <span class="mx-2">/</span>
+    <a href="{{ route('admin.categories', [$tenant->slug, $category->menu->id]) }}" class="hover:text-indigo-600">{{ $category->menu->title }}</a>
+    <span class="mx-2">/</span>
+    <span>{{ $category->name }}</span>
+@endsection
+
+@section('content')
+<div x-data="dishesStore()">
+    <!-- Actions Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg">
+                <x-heroicon-o-folder class="w-5 h-5" />
+                <span class="font-medium">{{ $category->name }}</span>
+            </div>
+            <span class="text-gray-500">{{ $category->dishes->count() }} plat(s)</span>
+        </div>
+        <x-ui.button variant="primary" @click="openModal()">
+            <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+            Nouveau Plat
+        </x-ui.button>
+    </div>
+
+    <!-- Dishes Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach($category->dishes as $dish)
+        <x-ui.card hover class="group overflow-hidden">
+            <!-- Photo du plat -->
+            <div class="relative -mx-5 -mt-5 mb-4">
+                @if($dish->photo_url)
+                    <img src="{{ $dish->photo_url }}" alt="{{ $dish->name }}" class="w-full h-40 object-cover">
+                    <button @click="deleteDishPhoto({{ $dish->id }})"
+                            class="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg opacity-0 group-hover:opacity-100">
+                        <x-heroicon-o-x-mark class="w-4 h-4" />
+                    </button>
+                    <label class="absolute bottom-2 right-2 p-1.5 bg-white text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-lg cursor-pointer opacity-0 group-hover:opacity-100">
+                        <x-heroicon-o-camera class="w-4 h-4" />
+                        <input type="file" class="hidden" accept="image/*" @change="uploadPhoto($event, {{ $dish->id }})">
+                    </label>
+                @else
+                    <div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex flex-col items-center justify-center">
+                        <x-heroicon-o-photo class="w-10 h-10 text-gray-400 mb-2" />
+                        <label class="cursor-pointer text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                            <span>Ajouter une photo</span>
+                            <input type="file" class="hidden" accept="image/*" @change="uploadPhoto($event, {{ $dish->id }})">
+                        </label>
                     </div>
-                    <nav class="flex space-x-4">
-                        <a href="{{ route('admin.dashboard', $tenant->slug) }}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                            📊 Dashboard
-                        </a>
-                        <a href="{{ route('admin.menus', $tenant->slug) }}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                            📋 Menus
-                        </a>
-                        <a href="/" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            🏠 Accueil
-                        </a>
-                    </nav>
+                @endif
+            </div>
+
+            <div class="flex items-start justify-between mb-3">
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-lg text-gray-800 truncate">{{ $dish->name }}</h3>
+                    @if($dish->description)
+                        <p class="text-sm text-gray-500 line-clamp-2 mt-1">{{ $dish->description }}</p>
+                    @endif
+                </div>
+                <div class="flex flex-col items-end space-y-1 ml-3">
+                    <x-ui.badge :variant="$dish->active ? 'success' : 'danger'">
+                        {{ $dish->active ? 'Actif' : 'Inactif' }}
+                    </x-ui.badge>
+                    <span class="text-lg font-bold text-green-600">{{ number_format($dish->price_base, 0, ',', ' ') }} FCFA</span>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 py-8">
-            <!-- En-tête -->
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold">Gestion des plats</h2>
-                <button onclick="openDishModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                    <i class="fas fa-plus mr-2"></i>Nouveau Plat
+            <div class="flex items-center space-x-4 text-xs text-gray-500 mb-4">
+                <div class="flex items-center">
+                    <x-heroicon-o-rectangle-stack class="w-4 h-4 mr-1" />
+                    {{ $dish->variants->count() }} variantes
+                </div>
+                <div class="flex items-center">
+                    <x-heroicon-o-cog-6-tooth class="w-4 h-4 mr-1" />
+                    {{ $dish->options->count() }} options
+                </div>
+            </div>
+
+            <div class="flex space-x-2">
+                <button @click="editDish({{ $dish->id }})"
+                        class="flex-1 bg-indigo-50 text-indigo-700 text-center py-2 rounded-lg hover:bg-indigo-100 font-medium transition-colors text-sm">
+                    <x-heroicon-o-pencil class="w-4 h-4 inline mr-1" />
+                    Modifier
+                </button>
+                <button @click="toggleDish({{ $dish->id }})"
+                        class="p-2 {{ $dish->active ? 'bg-amber-50 text-amber-600 hover:bg-amber-100' : 'bg-green-50 text-green-600 hover:bg-green-100' }} rounded-lg transition-colors">
+                    @if($dish->active)
+                        <x-heroicon-o-pause class="w-5 h-5" />
+                    @else
+                        <x-heroicon-o-play class="w-5 h-5" />
+                    @endif
+                </button>
+                <button @click="deleteDish({{ $dish->id }}, '{{ addslashes($dish->name) }}')"
+                        class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                    <x-heroicon-o-trash class="w-5 h-5" />
+                </button>
+            </div>
+        </x-ui.card>
+        @endforeach
+
+        <!-- New Dish Card -->
+        <div @click="openModal()"
+             class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 hover:bg-indigo-50/50 transition-all cursor-pointer group">
+            <div class="py-6">
+                <div class="w-14 h-14 mx-auto bg-gray-100 group-hover:bg-indigo-100 rounded-xl flex items-center justify-center mb-3 transition-colors">
+                    <x-heroicon-o-plus class="w-8 h-8 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                </div>
+                <div class="text-gray-600 font-medium group-hover:text-indigo-600">Nouveau Plat</div>
+                <div class="text-sm text-gray-500 mt-1">Cliquez pour créer un nouveau plat</div>
+            </div>
+        </div>
+    </div>
+
+    @if($category->dishes->isEmpty())
+        <x-ui.empty-state
+            icon="cake"
+            title="Aucun plat"
+            description="Commencez par créer votre premier plat dans cette catégorie."
+            class="mt-8"
+        >
+            <x-slot name="action">
+                <x-ui.button variant="primary" @click="openModal()">
+                    <x-heroicon-o-plus class="w-5 h-5 mr-2" />
+                    Créer un plat
+                </x-ui.button>
+            </x-slot>
+        </x-ui.empty-state>
+    @endif
+
+    <!-- Dish Modal -->
+    <div x-show="showModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+         @click.self="showModal = false"
+         @keydown.escape.window="showModal = false">
+        <div x-show="showModal"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <x-heroicon-o-cake class="w-5 h-5 text-indigo-600" />
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800" x-text="editingDish ? 'Modifier le Plat' : 'Nouveau Plat'"></h3>
+                </div>
+                <button @click="showModal = false" class="text-gray-400 hover:text-gray-600">
+                    <x-heroicon-o-x-mark class="w-6 h-6" />
                 </button>
             </div>
 
-            <!-- Liste des plats -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($category->dishes as $dish)
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex justify-between items-start mb-3">
-                        <h3 class="font-bold text-lg">{{ $dish->name }}</h3>
-                        <div class="flex space-x-2">
-                            <span class="px-2 py-1 rounded text-xs {{ $dish->active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $dish->active ? 'Actif' : 'Inactif' }}
-                            </span>
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                                {{ $dish->price_base }} FCFA
-                            </span>
-                        </div>
-                    </div>
-                    
-                    @if($dish->description)
-                    <p class="text-sm text-gray-600 mb-3">{{ $dish->description }}</p>
-                    @endif
-                    
-                    <div class="text-xs text-gray-500 mb-4">
-                        <div>🔄 {{ $dish->variants->count() }} variantes</div>
-                        <div>⚙️ {{ $dish->options->count() }} options</div>
-                    </div>
-
-                    <div class="flex space-x-2">
-                        <button onclick="editDish({{ $dish->id }})" 
-                                class="flex-1 bg-blue-500 text-white text-center py-2 rounded hover:bg-blue-600 text-sm">
-                            ✏️ Modifier
-                        </button>
-                        <button onclick="toggleDish({{ $dish->id }})" 
-                                class="bg-yellow-500 text-white px-3 py-2 rounded hover:bg-yellow-600 text-sm">
-                            {{ $dish->active ? '❌' : '✅' }}
-                        </button>
-                        <button onclick="deleteDish({{ $dish->id }})" 
-                                class="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 text-sm">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-                @endforeach
-
-                <!-- Carte nouveau plat -->
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer"
-                     onclick="openDishModal()">
-                    <div class="py-8">
-                        <i class="fas fa-plus text-4xl text-gray-400 mb-3"></i>
-                        <div class="text-gray-600 font-medium">Nouveau Plat</div>
-                        <div class="text-sm text-gray-500 mt-1">Cliquez pour créer un nouveau plat</div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal Nouveau/Édition Plat -->
-    <div id="dishModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 id="modalDishTitle" class="text-xl font-bold mb-4">Nouveau Plat</h3>
-            <form id="dishForm">
-                <input type="hidden" id="dishId" name="id">
-                
-                <!-- Informations de base -->
+            <form @submit.prevent="saveDish()">
+                <!-- Basic Info -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Nom du plat:</label>
-                        <input type="text" id="dishName" name="name" required 
-                               class="w-full border rounded px-3 py-2" placeholder="Ex: Salade César">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Prix de base (FCFA):</label>
-                        <input type="number" id="dishPrice" name="price_base" required min="0" step="100"
-                               class="w-full border rounded px-3 py-2" placeholder="Ex: 4500">
-                    </div>
+                    <x-ui.input
+                        label="Nom du plat"
+                        placeholder="Ex: Salade César"
+                        x-model="form.name"
+                        required
+                    />
+                    <x-ui.input
+                        label="Prix de base (FCFA)"
+                        type="number"
+                        placeholder="Ex: 4500"
+                        x-model="form.price_base"
+                        min="0"
+                        step="100"
+                        required
+                    />
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Description:</label>
-                    <textarea id="dishDescription" name="description" 
-                              class="w-full border rounded px-3 py-2" rows="3" 
-                              placeholder="Description du plat..."></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea x-model="form.description"
+                              rows="3"
+                              placeholder="Description du plat..."
+                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"></textarea>
                 </div>
 
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="dishActive" name="active" checked class="mr-2">
-                        <span>Plat actif (visible dans le menu)</span>
-                    </label>
-                </div>
+                <label class="flex items-center space-x-3 cursor-pointer mb-6">
+                    <input type="checkbox" x-model="form.active"
+                           class="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-gray-700">Plat actif (visible dans le menu)</span>
+                </label>
 
-                <!-- Variantes -->
+                <!-- Variants -->
                 <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">📏 Variantes (tailles, portions)</h4>
-                        <button type="button" onclick="addVariant()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
-                            + Ajouter
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <x-heroicon-o-rectangle-stack class="w-5 h-5 mr-2 text-indigo-500" />
+                            Variantes (tailles, portions)
+                        </h4>
+                        <button type="button" @click="addVariant()"
+                                class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center">
+                            <x-heroicon-o-plus class="w-4 h-4 mr-1" />
+                            Ajouter
                         </button>
                     </div>
-                    <div id="variantsContainer" class="space-y-2">
-                        <!-- Les variantes seront ajoutées ici dynamiquement -->
+                    <div class="space-y-2">
+                        <template x-for="(variant, index) in form.variants" :key="index">
+                            <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                                <input type="text" x-model="variant.name"
+                                       placeholder="Nom (ex: Grand, Moyen...)"
+                                       class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                                <input type="number" x-model="variant.extra_price"
+                                       placeholder="Supplément"
+                                       min="0" step="100"
+                                       class="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                                <button type="button" @click="form.variants.splice(index, 1)"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                                </button>
+                            </div>
+                        </template>
+                        <div x-show="form.variants.length === 0" class="text-center py-4 text-gray-500 text-sm">
+                            Aucune variante ajoutée
+                        </div>
                     </div>
                 </div>
 
                 <!-- Options -->
                 <div class="mb-6">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">⚙️ Options de personnalisation</h4>
-                        <button type="button" onclick="addOption()" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
-                            + Ajouter
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-gray-800 flex items-center">
+                            <x-heroicon-o-cog-6-tooth class="w-5 h-5 mr-2 text-indigo-500" />
+                            Options de personnalisation
+                        </h4>
+                        <button type="button" @click="addOption()"
+                                class="text-indigo-600 hover:text-indigo-700 text-sm font-medium flex items-center">
+                            <x-heroicon-o-plus class="w-4 h-4 mr-1" />
+                            Ajouter
                         </button>
                     </div>
-                    <div id="optionsContainer" class="space-y-2">
-                        <!-- Les options seront ajoutées ici dynamiquement -->
+                    <div class="space-y-2">
+                        <template x-for="(option, index) in form.options" :key="index">
+                            <div class="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                                <input type="text" x-model="option.name"
+                                       placeholder="Nom (ex: Sans gluten...)"
+                                       class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                                <select x-model="option.kind"
+                                        class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                                    <option value="toggle">Toggle</option>
+                                    <option value="multiple">Multiple</option>
+                                </select>
+                                <input type="number" x-model="option.extra_price"
+                                       placeholder="Supplément"
+                                       min="0" step="100"
+                                       class="w-28 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                                <button type="button" @click="form.options.splice(index, 1)"
+                                        class="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                    <x-heroicon-o-x-mark class="w-5 h-5" />
+                                </button>
+                            </div>
+                        </template>
+                        <div x-show="form.options.length === 0" class="text-center py-4 text-gray-500 text-sm">
+                            Aucune option ajoutée
+                        </div>
                     </div>
                 </div>
 
-                <div class="flex space-x-2">
-                    <button type="button" onclick="closeDishModal()" 
-                            class="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600">
+                <div class="flex space-x-3">
+                    <x-ui.button type="button" variant="secondary" class="flex-1" @click="showModal = false">
                         Annuler
-                    </button>
-                    <button type="submit" id="submitDishButton"
-                            class="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-                        Créer
-                    </button>
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="primary" class="flex-1">
+                        <x-heroicon-o-check class="w-5 h-5 mr-2" />
+                        <span x-text="editingDish ? 'Modifier' : 'Créer'"></span>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
     </div>
+</div>
 
-    <script>
-        let currentEditingDish = null;
-        let variantCount = 0;
-        let optionCount = 0;
+@push('scripts')
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('dishesStore', () => ({
+        showModal: false,
+        editingDish: null,
+        form: {
+            name: '',
+            description: '',
+            price_base: '',
+            active: true,
+            variants: [],
+            options: []
+        },
 
-        // Fonction pour récupérer le token CSRF
-        function getCsrfToken() {
-            const token = document.querySelector('meta[name="csrf-token"]');
-            if (!token) {
-                console.error('CSRF token not found!');
-                return null;
-            }
-            return token.getAttribute('content');
-        }
+        openModal() {
+            this.editingDish = null;
+            this.form = {
+                name: '',
+                description: '',
+                price_base: '',
+                active: true,
+                variants: [],
+                options: []
+            };
+            this.showModal = true;
+        },
 
-        // Ouvrir modal nouveau plat
-        function openDishModal() {
-            currentEditingDish = null;
-            document.getElementById('modalDishTitle').textContent = 'Nouveau Plat';
-            document.getElementById('submitDishButton').textContent = 'Créer';
-            document.getElementById('dishId').value = '';
-            document.getElementById('dishName').value = '';
-            document.getElementById('dishPrice').value = '';
-            document.getElementById('dishDescription').value = '';
-            document.getElementById('dishActive').checked = true;
-            
-            // Réinitialiser variantes et options
-            document.getElementById('variantsContainer').innerHTML = '';
-            document.getElementById('optionsContainer').innerHTML = '';
-            variantCount = 0;
-            optionCount = 0;
-            
-            document.getElementById('dishModal').classList.remove('hidden');
-        }
-
-        // Éditer un plat
-        async function editDish(dishId) {
+        async editDish(dishId) {
             try {
                 const response = await fetch(`/admin/{{ $tenant->slug }}/dishes/${dishId}`);
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    currentEditingDish = result.dish;
-                    document.getElementById('modalDishTitle').textContent = 'Modifier le Plat';
-                    document.getElementById('submitDishButton').textContent = 'Modifier';
-                    document.getElementById('dishId').value = result.dish.id;
-                    document.getElementById('dishName').value = result.dish.name;
-                    document.getElementById('dishPrice').value = result.dish.price_base;
-                    document.getElementById('dishDescription').value = result.dish.description || '';
-                    document.getElementById('dishActive').checked = result.dish.active;
-                    
-                    // Charger les variantes
-                    document.getElementById('variantsContainer').innerHTML = '';
-                    variantCount = 0;
-                    result.dish.variants.forEach(variant => {
-                        addVariant(variant.name, variant.extra_price);
-                    });
-                    
-                    // Charger les options
-                    document.getElementById('optionsContainer').innerHTML = '';
-                    optionCount = 0;
-                    result.dish.options.forEach(option => {
-                        addOption(option.name, option.kind, option.extra_price);
-                    });
-                    
-                    document.getElementById('dishModal').classList.remove('hidden');
+                    this.editingDish = result.dish;
+                    this.form = {
+                        name: result.dish.name,
+                        description: result.dish.description || '',
+                        price_base: result.dish.price_base,
+                        active: result.dish.active,
+                        variants: result.dish.variants.map(v => ({
+                            name: v.name,
+                            extra_price: v.extra_price
+                        })),
+                        options: result.dish.options.map(o => ({
+                            name: o.name,
+                            kind: o.kind,
+                            extra_price: o.extra_price
+                        }))
+                    };
+                    this.showModal = true;
                 } else {
                     alert('Erreur: ' + result.message);
                 }
             } catch (error) {
-                console.error('Erreur:', error);
                 alert('Erreur réseau: ' + error.message);
             }
-        }
+        },
 
-        // Fermer modal
-        function closeDishModal() {
-            document.getElementById('dishModal').classList.add('hidden');
-        }
+        addVariant() {
+            this.form.variants.push({ name: '', extra_price: 0 });
+        },
 
-        // Ajouter une variante
-        function addVariant(name = '', extraPrice = 0) {
-            variantCount++;
-            const variantHtml = `
-                <div class="flex items-center space-x-2 p-2 border rounded variant-item">
-                    <input type="text" name="variants[${variantCount}][name]" 
-                           value="${name}" placeholder="Nom (ex: Grand, Moyen...)" 
-                           class="flex-1 border rounded px-2 py-1 text-sm">
-                    <input type="number" name="variants[${variantCount}][extra_price]" 
-                           value="${extraPrice}" placeholder="Supplément" min="0" step="100"
-                           class="w-24 border rounded px-2 py-1 text-sm">
-                    <button type="button" onclick="this.parentElement.remove()" 
-                            class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                        ❌
-                    </button>
-                </div>
-            `;
-            document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantHtml);
-        }
+        addOption() {
+            this.form.options.push({ name: '', kind: 'toggle', extra_price: 0 });
+        },
 
-        // Ajouter une option
-        function addOption(name = '', kind = 'toggle', extraPrice = 0) {
-            optionCount++;
-            const optionHtml = `
-                <div class="flex items-center space-x-2 p-2 border rounded option-item">
-                    <input type="text" name="options[${optionCount}][name]" 
-                           value="${name}" placeholder="Nom (ex: Sans gluten, Extra sauce...)" 
-                           class="flex-1 border rounded px-2 py-1 text-sm">
-                    <select name="options[${optionCount}][kind]" class="border rounded px-2 py-1 text-sm">
-                        <option value="toggle" ${kind === 'toggle' ? 'selected' : ''}>Toggle</option>
-                        <option value="multiple" ${kind === 'multiple' ? 'selected' : ''}>Multiple</option>
-                    </select>
-                    <input type="number" name="options[${optionCount}][extra_price]" 
-                           value="${extraPrice}" placeholder="Supplément" min="0" step="100"
-                           class="w-24 border rounded px-2 py-1 text-sm">
-                    <button type="button" onclick="this.parentElement.remove()" 
-                            class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                        ❌
-                    </button>
-                </div>
-            `;
-            document.getElementById('optionsContainer').insertAdjacentHTML('beforeend', optionHtml);
-        }
-
-        // Soumission du formulaire avec CSRF
-        document.getElementById('dishForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                alert('Erreur: Token CSRF manquant');
-                return;
-            }
-            
-            const formData = new FormData(this);
+        async saveDish() {
             const data = {
-                name: formData.get('name'),
-                description: formData.get('description'),
-                price_base: parseFloat(formData.get('price_base')),
-                active: formData.get('active') ? true : false,
-                variants: [],
-                options: []
+                ...this.form,
+                price_base: parseFloat(this.form.price_base),
+                variants: this.form.variants.filter(v => v.name.trim()),
+                options: this.form.options.filter(o => o.name.trim())
             };
 
-            // Récupérer les variantes
-            document.querySelectorAll('.variant-item').forEach(item => {
-                const name = item.querySelector('input[name$="[name]"]').value;
-                const extraPrice = parseFloat(item.querySelector('input[name$="[extra_price]"]').value) || 0;
-                if (name.trim()) {
-                    data.variants.push({ name, extra_price: extraPrice });
-                }
-            });
+            const url = this.editingDish
+                ? `/admin/{{ $tenant->slug }}/dishes/${this.editingDish.id}`
+                : `/admin/{{ $tenant->slug }}/categories/{{ $category->id }}/dishes`;
 
-            // Récupérer les options
-            document.querySelectorAll('.option-item').forEach(item => {
-                const name = item.querySelector('input[name$="[name]"]').value;
-                const kind = item.querySelector('select[name$="[kind]"]').value;
-                const extraPrice = parseFloat(item.querySelector('input[name$="[extra_price]"]').value) || 0;
-                if (name.trim()) {
-                    data.options.push({ name, kind, extra_price: extraPrice });
-                }
-            });
-
-            const url = currentEditingDish ? `/admin/{{ $tenant->slug }}/dishes/${currentEditingDish.id}` : `/admin/{{ $tenant->slug }}/categories/{{ $category->id }}/dishes`;
-            const method = currentEditingDish ? 'PUT' : 'POST';
+            const method = this.editingDish ? 'PUT' : 'POST';
 
             try {
                 const response = await fetch(url, {
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify(data)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    alert(currentEditingDish ? 'Plat modifié avec succès!' : 'Plat créé avec succès!');
-                    closeDishModal();
+                    this.showModal = false;
                     location.reload();
                 } else {
                     alert('Erreur: ' + (result.message || 'Erreur inconnue'));
                 }
             } catch (error) {
-                console.error('Erreur complète:', error);
                 alert('Erreur réseau: ' + error.message);
             }
-        });
+        },
 
-        // Toggle activation plat avec CSRF
-        async function toggleDish(dishId) {
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                alert('Erreur: Token CSRF manquant');
-                return;
-            }
-
+        async toggleDish(dishId) {
             try {
                 const response = await fetch(`/admin/{{ $tenant->slug }}/dishes/${dishId}/toggle`, {
                     method: 'POST',
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    alert('Statut du plat mis à jour!');
                     location.reload();
                 } else {
                     alert('Erreur: ' + result.message);
                 }
             } catch (error) {
-                console.error('Erreur:', error);
                 alert('Erreur réseau: ' + error.message);
             }
-        }
+        },
 
-        // Supprimer un plat avec CSRF
-        async function deleteDish(dishId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce plat ? Cette action est irréversible.')) {
-                return;
-            }
-
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                alert('Erreur: Token CSRF manquant');
-                return;
-            }
+        async deleteDish(dishId, dishName) {
+            if (!confirm(`Supprimer le plat "${dishName}" ? Cette action est irréversible.`)) return;
 
             try {
                 const response = await fetch(`/admin/{{ $tenant->slug }}/dishes/${dishId}`, {
                     method: 'DELETE',
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    alert('Plat supprimé avec succès!');
                     location.reload();
                 } else {
                     alert('Erreur: ' + result.message);
                 }
             } catch (error) {
-                console.error('Erreur:', error);
+                alert('Erreur réseau: ' + error.message);
+            }
+        },
+
+        async uploadPhoto(event, dishId) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Vérifier le type de fichier
+            if (!file.type.startsWith('image/')) {
+                alert('Veuillez sélectionner une image valide.');
+                return;
+            }
+
+            // Vérifier la taille (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('L\'image ne doit pas dépasser 2 Mo.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('photo', file);
+
+            try {
+                const response = await fetch(`/admin/{{ $tenant->slug }}/dishes/${dishId}/photo`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + (result.message || 'Erreur lors de l\'upload'));
+                }
+            } catch (error) {
+                alert('Erreur réseau: ' + error.message);
+            }
+        },
+
+        async deleteDishPhoto(dishId) {
+            if (!confirm('Supprimer la photo de ce plat ?')) return;
+
+            try {
+                const response = await fetch(`/admin/{{ $tenant->slug }}/dishes/${dishId}/photo`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Erreur: ' + result.message);
+                }
+            } catch (error) {
                 alert('Erreur réseau: ' + error.message);
             }
         }
-    </script>
-</body>
-</html>
+    }));
+});
+</script>
+@endpush
+@endsection

@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aperçu - {{ $theme->name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family={{ urlencode($theme->getHeadingFont()) }}:wght@400;700&family={{ urlencode($theme->getBodyFont()) }}:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    getHeadingFont()) }}:wght@400;700&family={{ urlencode($theme->getBodyFont()) }}:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: {{ $theme->getPrimaryColor() }};
@@ -129,7 +132,7 @@
     </style>
 </head>
 <body>
-    <a href="{{ route('themes.show', $theme) }}" class="back-btn">← Retour</a>
+    <a href="javascript:history.back()" class="back-btn">← Retour</a>
 
     <header class="header">
         <h1>🍽️ Restaurant Exemple</h1>
