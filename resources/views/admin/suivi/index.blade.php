@@ -210,7 +210,7 @@
                         <div x-show="order.notes" class="text-xs text-gray-400 italic mb-2 line-clamp-2" x-text="'📝 ' + order.notes"></div>
                         <div class="flex gap-1.5 mt-2">
                             <button @click="progress(order.id)"
-                                    class="flex-1 py-2 text-xs font-bold bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                                    class="flex-1 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-colors">
                                 Marquer Servie →
                             </button>
                             <button @click="cancel(order.id)"
