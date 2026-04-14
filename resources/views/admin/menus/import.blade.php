@@ -99,9 +99,9 @@
     @endif
 
     {{-- ── Import form ──────────────────────────────────────────── --}}
-    <div class="rounded-2xl bg-slate-800/60 border border-slate-700/50 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-700/50">
-            <h2 class="font-semibold text-white flex items-center gap-2">
+    <div class="rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-gray-800 flex items-center gap-2">
                 <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
                 </svg>
@@ -118,15 +118,15 @@
 
             {{-- File drag-zone --}}
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-2">
-                    Fichier Excel / CSV <span class="text-red-400">*</span>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Fichier Excel / CSV <span class="text-red-500">*</span>
                 </label>
 
                 <div
                     @dragover.prevent="isDragging = true"
                     @dragleave.prevent="isDragging = false"
                     @drop.prevent="handleDrop($event)"
-                    :class="isDragging ? 'border-amber-400 bg-amber-400/10' : 'border-slate-600 hover:border-amber-400/50 hover:bg-slate-700/30'"
+                    :class="isDragging ? 'border-amber-400 bg-amber-50' : 'border-gray-300 hover:border-amber-400 hover:bg-gray-50'"
                     class="relative rounded-2xl border-2 border-dashed transition-colors cursor-pointer p-8 text-center"
                     @click="$refs.fileInput.click()"
                 >
@@ -141,15 +141,15 @@
 
                     <template x-if="!fileName">
                         <div class="space-y-3">
-                            <div class="w-14 h-14 rounded-2xl bg-slate-700 flex items-center justify-center mx-auto">
-                                <svg class="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto">
+                                <svg class="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-slate-300 font-medium">Glissez votre fichier ici</p>
-                                <p class="text-slate-500 text-sm mt-1">ou cliquez pour parcourir</p>
-                                <p class="text-slate-600 text-xs mt-2">XLSX, XLS ou CSV — max 10 Mo</p>
+                                <p class="text-gray-700 font-medium">Glissez votre fichier ici</p>
+                                <p class="text-gray-500 text-sm mt-1">ou cliquez pour parcourir</p>
+                                <p class="text-gray-400 text-xs mt-2">XLSX, XLS ou CSV — max 10 Mo</p>
                             </div>
                         </div>
                     </template>
@@ -162,12 +162,12 @@
                                 </svg>
                             </div>
                             <div class="text-left">
-                                <p class="text-white font-medium text-sm" x-text="fileName"></p>
-                                <p class="text-slate-400 text-xs" x-text="fileSize"></p>
+                                <p class="text-gray-800 font-medium text-sm" x-text="fileName"></p>
+                                <p class="text-gray-500 text-xs" x-text="fileSize"></p>
                             </div>
                             <button type="button"
                                     @click.stop="clearFile()"
-                                    class="ml-2 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-colors">
+                                    class="ml-2 p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition-colors">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
                                 </svg>
@@ -179,8 +179,8 @@
 
             {{-- Menu select --}}
             <div>
-                <label for="menu_id" class="block text-sm font-medium text-slate-300 mb-2">
-                    Menu cible <span class="text-red-400">*</span>
+                <label for="menu_id" class="block text-sm font-medium text-gray-700 mb-2">
+                    Menu cible <span class="text-red-500">*</span>
                 </label>
                 @if($menus->isEmpty())
                     <div class="rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-3 text-sm text-amber-300">
@@ -189,7 +189,7 @@
                     </div>
                 @else
                     <select name="menu_id" id="menu_id" required
-                            class="w-full rounded-xl bg-slate-700/60 border border-slate-600 text-white px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 transition-colors appearance-none">
+                            class="w-full rounded-xl bg-white border border-gray-300 text-gray-900 px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400 transition-colors appearance-none">
                         <option value="" disabled selected>-- Choisir un menu --</option>
                         @foreach($menus as $menu)
                             <option value="{{ $menu->id }}" {{ old('menu_id') == $menu->id ? 'selected' : '' }}>
@@ -203,12 +203,12 @@
             {{-- Submit --}}
             <div class="flex items-center justify-end gap-3 pt-2">
                 <a href="{{ route('admin.menus', $tenant->slug) }}"
-                   class="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                   class="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
                     Annuler
                 </a>
                 <button type="submit"
                         :disabled="!fileName"
-                        :class="fileName ? 'bg-amber-400 hover:bg-amber-300 text-slate-900 cursor-pointer' : 'bg-slate-700 text-slate-500 cursor-not-allowed'"
+                        :class="fileName ? 'bg-amber-500 hover:bg-amber-400 text-white cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-colors">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/>
@@ -220,9 +220,9 @@
     </div>
 
     {{-- ── Column format reference ──────────────────────────────── --}}
-    <div class="rounded-2xl bg-slate-800/60 border border-slate-700/50 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-700/50">
-            <h2 class="font-semibold text-white flex items-center gap-2">
+    <div class="rounded-2xl bg-white border border-gray-200 overflow-hidden shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h2 class="font-semibold text-gray-800 flex items-center gap-2">
                 <svg class="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/>
                 </svg>
@@ -231,25 +231,25 @@
         </div>
 
         <div class="p-6">
-            <p class="text-sm text-slate-400 mb-4">
+            <p class="text-sm text-gray-500 mb-4">
                 La première ligne doit contenir les en-têtes exactement comme indiqué ci-dessous.
-                Le séparateur pour CSV doit être le point-virgule <code class="bg-slate-700 text-amber-300 px-1.5 py-0.5 rounded text-xs">;</code>.
+                Le séparateur pour CSV doit être le point-virgule <code class="bg-gray-100 text-amber-600 px-1.5 py-0.5 rounded text-xs">;</code>.
             </p>
 
-            <div class="overflow-x-auto rounded-xl border border-slate-700">
+            <div class="overflow-x-auto rounded-xl border border-gray-200">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="bg-slate-700/60 border-b border-slate-700">
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Colonne</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Obligatoire</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Description</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-300 uppercase tracking-wider">Exemple</th>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Colonne</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Obligatoire</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exemple</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-700/50">
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                    <tbody class="divide-y divide-gray-100">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">categorie</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">categorie</code>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1 text-xs font-medium text-red-400">
@@ -257,12 +257,12 @@
                                     Oui
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300">Nom de la catégorie (sera créée si elle n'existe pas)</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">Entrées</td>
+                            <td class="px-4 py-3 text-gray-700">Nom de la catégorie (sera créée si elle n'existe pas)</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">Entrées</td>
                         </tr>
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">nom_plat</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">nom_plat</code>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1 text-xs font-medium text-red-400">
@@ -270,24 +270,24 @@
                                     Oui
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300">Nom du plat (ignoré si existe déjà dans la catégorie)</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">Soupe à l'oignon</td>
+                            <td class="px-4 py-3 text-gray-700">Nom du plat (ignoré si existe déjà dans la catégorie)</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">Soupe à l'oignon</td>
                         </tr>
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">description</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">description</code>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
                                     Non
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300">Description courte du plat</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">Gratinée au four</td>
+                            <td class="px-4 py-3 text-gray-700">Description courte du plat</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">Gratinée au four</td>
                         </tr>
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">prix</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">prix</code>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1 text-xs font-medium text-red-400">
@@ -295,44 +295,44 @@
                                     Oui
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300">Prix en chiffres, virgule ou point décimal acceptés. Doit être &gt; 0.</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">8.50 ou 8,50</td>
+                            <td class="px-4 py-3 text-gray-700">Prix en chiffres, virgule ou point décimal acceptés. Doit être &gt; 0.</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">8.50 ou 8,50</td>
                         </tr>
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">actif</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">actif</code>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
                                     Non
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300"><code class="text-xs bg-slate-700 px-1 rounded">1</code> = visible, <code class="text-xs bg-slate-700 px-1 rounded">0</code> = masqué. Par défaut : 1.</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">1</td>
+                            <td class="px-4 py-3 text-gray-700"><code class="text-xs bg-gray-100 text-amber-700 px-1 rounded">1</code> = visible, <code class="text-xs bg-gray-100 text-amber-700 px-1 rounded">0</code> = masqué. Par défaut : 1.</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">1</td>
                         </tr>
-                        <tr class="hover:bg-slate-700/20 transition-colors">
+                        <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-4 py-3">
-                                <code class="bg-slate-700 text-amber-300 px-2 py-0.5 rounded text-xs font-mono">image_url</code>
+                                <code class="bg-gray-100 text-amber-700 px-2 py-0.5 rounded text-xs font-mono">image_url</code>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
                                     Non
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-slate-300">URL publique de l'image du plat (sera téléchargée automatiquement)</td>
-                            <td class="px-4 py-3 text-slate-500 font-mono text-xs">https://…/photo.jpg</td>
+                            <td class="px-4 py-3 text-gray-700">URL publique de l'image du plat (sera téléchargée automatiquement)</td>
+                            <td class="px-4 py-3 text-gray-500 font-mono text-xs">https://…/photo.jpg</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             {{-- Tip --}}
-            <div class="mt-4 flex items-start gap-3 rounded-xl bg-slate-700/30 border border-slate-700 px-4 py-3">
-                <svg class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <div class="mt-4 flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+                <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"/>
                 </svg>
-                <p class="text-sm text-slate-300">
-                    <span class="font-semibold text-amber-400">Astuce :</span>
+                <p class="text-sm text-gray-700">
+                    <span class="font-semibold text-amber-600">Astuce :</span>
                     Les catégories sont créées automatiquement si elles n'existent pas encore dans le menu cible.
                     Les plats déjà présents (même nom dans la même catégorie) sont ignorés pour éviter les doublons.
                 </p>
