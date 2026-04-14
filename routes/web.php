@@ -152,6 +152,9 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         Route::get('/exports/orders-excel', [ExportController::class, 'exportOrdersExcel'])->name('admin.exports.orders.excel');
         Route::get('/exports/statistics-excel', [ExportController::class, 'exportStatisticsExcel'])->name('admin.exports.statistics.excel');
 
+        // Notification Settings (Admin only)
+        Route::patch('/settings/notifications', [AdminMenuController::class, 'updateNotificationSettings'])->name('admin.settings.notifications');
+
         // Audit Logs (Admin only)
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('admin.audit-logs.index');
         Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('admin.audit-logs.export');

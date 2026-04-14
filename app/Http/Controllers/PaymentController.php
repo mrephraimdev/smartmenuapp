@@ -32,17 +32,16 @@ class PaymentController extends Controller
             ->with(['order.table', 'processedBy'])
             ->orderBy('created_at', 'desc');
 
-        // Filtres
+        // Filtres — date par défaut = aujourd'hui
+        $filterDate = $request->filled('date') ? $request->date : now()->format('Y-m-d');
+        $query->whereDate('created_at', $filterDate);
+
         if ($request->filled('method')) {
             $query->where('method', $request->method);
         }
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
-        }
-
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
         }
 
         $payments = $query->paginate(20)->withQueryString();
@@ -71,6 +70,7 @@ class PaymentController extends Controller
             'tenantSlug' => $tenantSlug,
             'tenant' => $tenant,
             'paymentMethods' => PaymentMethod::cashierMethods(),
+            'filterDate' => $filterDate,
         ]);
     }
 

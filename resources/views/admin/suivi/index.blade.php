@@ -33,6 +33,9 @@
                 <span class="text-sm text-gray-500 font-medium">Actualisation auto (20s)</span>
             </div>
             <span class="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg" x-text="'Mis à jour ' + lastUpdate"></span>
+            <span class="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg">
+                📅 {{ now()->translatedFormat('d M Y') }}
+            </span>
         </div>
         <div class="flex items-center gap-3">
             <span class="text-sm text-gray-500">

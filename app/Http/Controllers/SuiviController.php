@@ -27,7 +27,7 @@ class SuiviController extends Controller
     }
 
     /**
-     * API : retourne les commandes actives groupées par statut (JSON).
+     * API : retourne les commandes actives du jour groupées par statut (JSON).
      * Utilisé pour l'auto-refresh côté Alpine.js.
      */
     public function data(string $tenantSlug): JsonResponse
@@ -36,9 +36,11 @@ class SuiviController extends Controller
 
         $activeStatuses = OrderStatus::activeValues();
 
+        // Par défaut : commandes actives d'aujourd'hui uniquement
         $orders = Order::with(['items.dish', 'table'])
             ->where('tenant_id', $tenant->id)
             ->whereIn('status', $activeStatuses)
+            ->whereDate('created_at', now()->toDateString())
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($order) {

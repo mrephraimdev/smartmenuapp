@@ -124,7 +124,7 @@
     <form method="GET" class="flex flex-wrap gap-3 items-end">
         <div class="flex-1 min-w-[150px]">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Mode</label>
-            <select name="method" class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <select name="method" class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
                 <option value="">Tous les modes</option>
                 @foreach($paymentMethods as $method)
                     <option value="{{ $method->value }}" {{ request('method') == $method->value ? 'selected' : '' }}>
@@ -135,16 +135,29 @@
         </div>
         <div class="flex-1 min-w-[140px]">
             <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Statut</label>
-            <select name="status" class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <select name="status" class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
                 <option value="">Tous</option>
                 <option value="SUCCESS" {{ request('status') == 'SUCCESS' ? 'selected' : '' }}>Succès</option>
                 <option value="REFUNDED" {{ request('status') == 'REFUNDED' ? 'selected' : '' }}>Remboursé</option>
             </select>
         </div>
-        <div class="flex-1 min-w-[140px]">
-            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Date</label>
-            <input type="date" name="date" value="{{ request('date') }}"
-                   class="w-full border border-gray-200 rounded-xl text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <div class="flex-1 min-w-[180px]">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+                Date
+                @if($filterDate === now()->format('Y-m-d'))
+                    <span class="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded text-xs font-bold">Aujourd'hui</span>
+                @else
+                    <span class="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">{{ \Carbon\Carbon::parse($filterDate)->format('d/m/Y') }}</span>
+                @endif
+            </label>
+            <div class="flex gap-1.5">
+                <input type="date" name="date" value="{{ $filterDate }}"
+                       class="flex-1 border border-gray-200 rounded-xl text-sm px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <a href="{{ route('admin.payments.index', [$tenantSlug]) }}?date={{ now()->format('Y-m-d') }}"
+                   class="px-2.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl text-xs font-bold transition-colors whitespace-nowrap">
+                    Auj.
+                </a>
+            </div>
         </div>
         <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition-colors">
             Filtrer

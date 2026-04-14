@@ -20,7 +20,7 @@
             <div class="flex flex-wrap gap-3">
                 <x-ui.button variant="primary" @click="printAllQRCodes()">
                     <x-heroicon-o-printer class="w-5 h-5 mr-2" />
-                    Imprimer tous
+                    Imprimer tous (PDF)
                 </x-ui.button>
                 <x-ui.button variant="success" @click="downloadAllQRCodes()">
                     <x-heroicon-o-arrow-down-tray class="w-5 h-5 mr-2" />
@@ -115,22 +115,14 @@ document.addEventListener('alpine:init', () => {
         },
 
         printAllQRCodes() {
-            const tables = @json(collect($qrCodes)->pluck('table.code'));
-            let index = 0;
-
-            const printNext = () => {
-                if (index < tables.length) {
-                    const printWindow = window.open(`/qrcode/{{ $tenant->id }}/${tables[index]}`, '_blank');
-                    printWindow.onload = function() {
-                        printWindow.print();
-                        printWindow.close();
-                        index++;
-                        setTimeout(printNext, 1000);
-                    };
-                }
-            };
-
-            printNext();
+            // Ouvrir le PDF dans un nouvel onglet pour impression
+            const pdfUrl = '{{ route("admin.qrcodes.download-all-pdf", $tenant->slug) }}';
+            const win = window.open(pdfUrl, '_blank');
+            if (win) {
+                win.onload = function() {
+                    try { win.print(); } catch(e) {}
+                };
+            }
         },
 
         downloadAllQRCodes() {

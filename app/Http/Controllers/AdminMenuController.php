@@ -15,6 +15,23 @@ use Illuminate\Support\Facades\Log;
 class AdminMenuController extends Controller
 {
     /**
+     * Sauvegarder les préférences de notification (Admin uniquement)
+     */
+    public function updateNotificationSettings(Request $request, string $tenantSlug)
+    {
+        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+
+        $allowed = ['SERVEUR', 'CAISSIER', 'ADMIN'];
+        $targets = array_values(array_filter($request->input('targets', []), fn($t) => in_array($t, $allowed)));
+
+        $branding = $tenant->branding ?? [];
+        $branding['notification_targets'] = $targets ?: ['SERVEUR', 'CAISSIER', 'ADMIN'];
+        $tenant->update(['branding' => $branding]);
+
+        return response()->json(['success' => true, 'targets' => $branding['notification_targets']]);
+    }
+
+    /**
      * Invalider tous les caches liés au tenant
      */
     private function invalidateTenantCache(int $tenantId): void

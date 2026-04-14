@@ -4,7 +4,14 @@
 
 @php
     $user = auth()->user();
-    $showWaiterCalls = $user && ($user->hasRole(\App\Enums\UserRole::SERVEUR) || $user->hasRole(\App\Enums\UserRole::CAISSIER));
+    $isAdmin = $user && ($user->hasRole(\App\Enums\UserRole::ADMIN) || $user->hasRole(\App\Enums\UserRole::SUPER_ADMIN));
+    $notifTargets = $tenant->branding['notification_targets'] ?? ['SERVEUR', 'CAISSIER', 'ADMIN'];
+    $showWaiterCalls = $user && (
+        ($user->hasRole(\App\Enums\UserRole::SERVEUR)  && in_array('SERVEUR',  $notifTargets)) ||
+        ($user->hasRole(\App\Enums\UserRole::CAISSIER) && in_array('CAISSIER', $notifTargets)) ||
+        ($user->hasRole(\App\Enums\UserRole::ADMIN)    && in_array('ADMIN',    $notifTargets)) ||
+        $user->hasRole(\App\Enums\UserRole::SUPER_ADMIN)
+    );
     $tenantId = $tenant->id ?? 0;
 @endphp
 
@@ -67,72 +74,146 @@
         </button>
     </div>
 
-    <!-- Waiter Calls Panel (SERVEUR & CAISSIER only) -->
+    <!-- Waiter Calls Panel -->
     @if($showWaiterCalls)
     <div x-show="waiterCalls.length > 0"
          x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 transform -translate-y-2"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         class="mb-6 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 shadow-lg">
-        <div class="flex items-center justify-between mb-3">
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         class="mb-6 bg-white border-2 rounded-xl shadow-sm overflow-hidden"
+         :class="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING')
+                    ? 'border-red-400'
+                    : 'border-amber-300'">
+        {{-- Header --}}
+        <div class="px-4 py-3 flex items-center justify-between"
+             :class="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING')
+                        ? 'bg-red-50'
+                        : 'bg-amber-50'">
             <div class="flex items-center gap-3">
-                <div class="bg-white/20 rounded-lg p-2 animate-pulse">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                    </svg>
-                </div>
-                <div class="text-white">
-                    <h3 class="font-bold">Appels Clients</h3>
-                    <p class="text-sm text-white/80" x-text="waiterCalls.filter(c => c.status === 'PENDING').length + ' en attente'"></p>
-                </div>
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                          :class="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING') ? 'bg-red-400' : 'bg-amber-400'"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3"
+                          :class="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING') ? 'bg-red-500' : 'bg-amber-500'"></span>
+                </span>
+                <span class="font-bold text-gray-900">
+                    Appels clients
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold"
+                      :class="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING')
+                                 ? 'bg-red-500 text-white'
+                                 : 'bg-amber-500 text-white'"
+                      x-text="waiterCalls.filter(c => c.status === 'PENDING').length + ' en attente'">
+                </span>
+                <template x-if="waiterCalls.some(c => c.call_type === 'URGENCE' && c.status === 'PENDING')">
+                    <span class="px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">
+                        🚨 URGENCE
+                    </span>
+                </template>
             </div>
-            <button @click="showWaiterCallsPanel = !showWaiterCallsPanel"
-                    class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                <span x-text="showWaiterCallsPanel ? 'Masquer' : 'Voir tout'"></span>
-            </button>
+            <div class="flex items-center gap-2">
+                <button @click="showWaiterCallsPanel = !showWaiterCallsPanel"
+                        class="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-lg text-xs font-semibold transition-colors">
+                    <span x-text="showWaiterCallsPanel ? 'Réduire' : 'Afficher'"></span>
+                </button>
+                @if($isAdmin)
+                <button @click="showNotifSettings = true"
+                        class="p-1.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-600 rounded-lg transition-colors" title="Paramètres notifications">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                    </svg>
+                </button>
+                @endif
+            </div>
         </div>
 
-        <!-- Liste des appels -->
-        <div x-show="showWaiterCallsPanel" x-collapse class="space-y-2">
+        {{-- Liste des appels --}}
+        <div x-show="showWaiterCallsPanel" class="divide-y divide-gray-100">
             <template x-for="call in waiterCalls" :key="call.id">
-                <div class="bg-white rounded-lg p-4 flex items-center justify-between shadow-sm"
+                <div class="px-4 py-3 flex items-center justify-between"
                      :class="{
-                         'ring-2 ring-red-400 animate-pulse': call.call_type === 'URGENCE' && call.status === 'PENDING',
-                         'opacity-60': call.status === 'RESOLVED'
+                         'bg-red-50': call.call_type === 'URGENCE' && call.status === 'PENDING',
+                         'bg-white': call.call_type !== 'URGENCE',
+                         'opacity-50': call.status === 'RESOLVED'
                      }">
-                    <div class="flex items-center gap-4">
-                        <div class="text-3xl">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+                             :class="{
+                                 'bg-blue-100': call.call_type === 'SERVICE',
+                                 'bg-yellow-100': call.call_type === 'QUESTION',
+                                 'bg-red-100': call.call_type === 'URGENCE'
+                             }">
                             <span x-show="call.call_type === 'SERVICE'">🔔</span>
                             <span x-show="call.call_type === 'QUESTION'">❓</span>
-                            <span x-show="call.call_type === 'URGENCE'">🚨</span>
+                            <span x-show="call.call_type === 'URGENCE'" class="animate-bounce">🚨</span>
                         </div>
                         <div>
-                            <div class="font-bold text-gray-900" x-text="'Table ' + call.table_code"></div>
-                            <div class="text-sm" :class="{
-                                'text-blue-600': call.call_type === 'SERVICE',
-                                'text-yellow-600': call.call_type === 'QUESTION',
-                                'text-red-600 font-semibold': call.call_type === 'URGENCE'
-                            }" x-text="call.call_type_label"></div>
-                            <div class="text-xs text-gray-500" x-text="call.time_ago"></div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-900 text-sm" x-text="'Table ' + call.table_code"></span>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                      :class="{
+                                          'bg-blue-100 text-blue-700': call.call_type === 'SERVICE',
+                                          'bg-yellow-100 text-yellow-700': call.call_type === 'QUESTION',
+                                          'bg-red-100 text-red-700': call.call_type === 'URGENCE'
+                                      }"
+                                      x-text="call.call_type_label"></span>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-0.5" x-text="call.time_ago"></div>
                         </div>
                     </div>
-                    <div class="flex gap-2">
-                        <template x-if="call.status !== 'RESOLVED'">
-                            <button @click="resolveCallDirectly(call.id)"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                                OK
-                            </button>
-                        </template>
-                        <template x-if="call.status === 'RESOLVED'">
-                            <span class="text-green-600 text-sm font-medium flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                            </span>
-                        </template>
-                    </div>
+                    <template x-if="call.status !== 'RESOLVED'">
+                        <button @click="resolveCallDirectly(call.id)"
+                                class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+                            ✓ Traité
+                        </button>
+                    </template>
+                    <template x-if="call.status === 'RESOLVED'">
+                        <span class="text-emerald-600 text-xs font-semibold">✓ Traité</span>
+                    </template>
                 </div>
             </template>
+        </div>
+    </div>
+    @endif
+
+    @if($isAdmin)
+    {{-- Modal paramètres notifications (admin uniquement) --}}
+    <div x-show="showNotifSettings"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+         @click.self="showNotifSettings = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm" @click.stop>
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900">Paramètres notifications</h3>
+                <button @click="showNotifSettings = false" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-sm text-gray-500">Choisissez quels rôles reçoivent les notifications d'appels clients :</p>
+                <div class="space-y-3">
+                    @foreach(['SERVEUR' => 'Serveur', 'CAISSIER' => 'Caissier', 'ADMIN' => 'Administrateur'] as $role => $label)
+                    <label class="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <input type="checkbox"
+                               value="{{ $role }}"
+                               x-model="notifTargets"
+                               class="w-4 h-4 text-amber-500 rounded border-gray-300 focus:ring-amber-400">
+                        <span class="text-sm font-medium text-gray-800">{{ $label }}</span>
+                    </label>
+                    @endforeach
+                </div>
+                <button @click="saveNotifSettings()"
+                        :disabled="savingNotif"
+                        class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors text-sm">
+                    <span x-text="savingNotif ? 'Enregistrement...' : 'Enregistrer'"></span>
+                </button>
+                <p x-show="notifSaved" class="text-center text-sm text-emerald-600 font-semibold">✓ Paramètres sauvegardés</p>
+            </div>
         </div>
     </div>
     @endif
@@ -164,33 +245,34 @@
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <select x-model="filters.status" class="border-gray-300 rounded-lg text-sm">
+            <select x-model="filters.status" class="border border-gray-300 rounded-lg text-sm px-2 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <option value="">Tous les statuts</option>
                 <option value="RECU">Reçu</option>
                 <option value="PREP">En préparation</option>
                 <option value="PRET">Prêt</option>
                 <option value="SERVI">Servi</option>
             </select>
-            <select x-model="filters.paymentStatus" class="border-gray-300 rounded-lg text-sm">
+            <select x-model="filters.paymentStatus" class="border border-gray-300 rounded-lg text-sm px-2 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <option value="">Tous les paiements</option>
                 <option value="PENDING">Non payé</option>
                 <option value="PAID">Payé</option>
             </select>
-            <select x-model="filters.table" class="border-gray-300 rounded-lg text-sm">
+            <select x-model="filters.table" class="border border-gray-300 rounded-lg text-sm px-2 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <option value="">Toutes les tables</option>
                 @foreach($tables as $table)
                     <option value="{{ $table->id }}">{{ $table->label }}</option>
                 @endforeach
             </select>
             <div class="flex gap-2">
-                <input type="date" x-model="filters.date" @change="refresh()" class="border-gray-300 rounded-lg text-sm flex-1">
+                <input type="date" x-model="filters.date" @change="refresh()" class="border border-gray-300 rounded-lg text-sm px-2 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 flex-1">
                 <button @click="filters.date = '{{ now()->format('Y-m-d') }}'; refresh()"
-                        :class="filters.date === '{{ now()->format('Y-m-d') }}' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'"
-                        class="px-3 rounded-lg text-sm font-medium whitespace-nowrap">
+                        :class="filters.date === '{{ now()->format('Y-m-d') }}' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                        class="px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors">
                     Aujourd'hui
                 </button>
             </div>
-            <button @click="filters = {status:'', paymentStatus:'', table:'', date:'{{ now()->format('Y-m-d') }}'}; refresh()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm">
+            <button @click="filters = {status:'', paymentStatus:'', table:'', date:'{{ now()->format('Y-m-d') }}'}; refresh()"
+                    class="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-semibold transition-colors">
                 Réinitialiser
             </button>
         </div>
@@ -243,7 +325,7 @@
                                 <div class="flex gap-1">
                                     <!-- Voir -->
                                     <a :href="`/admin/{{ $tenantSlug }}/orders/${order.id}`"
-                                       class="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded" title="Voir">
+                                       class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg" title="Voir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -252,7 +334,7 @@
                                     <!-- Encaisser (si non payé) -->
                                     <template x-if="order.payment_status !== 'PAID' && order.status !== 'ANNULE'">
                                         <button @click="openPaymentModal(order)"
-                                                class="p-1.5 text-green-600 hover:bg-green-50 rounded" title="Encaisser">
+                                                class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg" title="Encaisser">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                             </svg>
@@ -261,7 +343,7 @@
                                     <!-- Avancer statut -->
                                     <template x-if="order.status !== 'SERVI' && order.status !== 'ANNULE'">
                                         <button @click="progressOrder(order.id)"
-                                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Avancer">
+                                                class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg" title="Avancer">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                             </svg>
@@ -270,7 +352,7 @@
                                     <!-- Annuler -->
                                     <template x-if="order.status !== 'ANNULE'">
                                         <button @click="cancelOrder(order.id)"
-                                                class="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Annuler">
+                                                class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg" title="Annuler">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                             </svg>
@@ -573,6 +655,10 @@ function ordersManager(tenantSlug, tenantId, showWaiterCalls) {
         waiterCalls: [],
         showWaiterCallsPanel: true,
         knownCallIds: new Set(),
+        showNotifSettings: false,
+        notifTargets: @json($notifTargets),
+        savingNotif: false,
+        notifSaved: false,
 
         init() {
             this.orders = @json($orders->items());
@@ -820,12 +906,35 @@ function ordersManager(tenantSlug, tenantId, showWaiterCalls) {
                 });
 
                 if (res.ok) {
-                    // Retirer l'appel de la liste immédiatement
                     this.waiterCalls = this.waiterCalls.filter(c => c.id !== callId);
                 }
             } catch (e) {
                 console.error('Erreur resolve:', e);
             }
+        },
+
+        async saveNotifSettings() {
+            this.savingNotif = true;
+            this.notifSaved = false;
+            try {
+                const res = await fetch(`/admin/${this.tenantSlug}/settings/notifications`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({ targets: this.notifTargets }),
+                });
+                if (res.ok) {
+                    this.notifSaved = true;
+                    setTimeout(() => { this.notifSaved = false; this.showNotifSettings = false; }, 1500);
+                }
+            } catch (e) {
+                console.error('Erreur save notif settings:', e);
+            }
+            this.savingNotif = false;
         },
 
         printReceipt() {
