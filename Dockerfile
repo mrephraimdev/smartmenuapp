@@ -158,20 +158,22 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Copy PHP-FPM configuration
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+# Copy entrypoint script
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Create healthcheck script
 RUN echo '#!/bin/sh' > /healthcheck.sh \
-    && echo 'php -r "echo \"OK\";" || exit 1' >> /healthcheck.sh \
+    && echo 'wget -q --spider http://localhost/health || exit 1' >> /healthcheck.sh \
     && chmod +x /healthcheck.sh
 
-# Expose port
-EXPOSE 9000
+# Expose HTTP port
+EXPOSE 80
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD /healthcheck.sh
 
-# Switch to non-root user
-USER www-data
-
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Entrypoint: migrations + cache, puis supervisord (nginx + php-fpm + queue + scheduler)
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
