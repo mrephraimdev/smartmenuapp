@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  * - Récupération pour le KDS (Kitchen Display System)
  *
  * @package App\Services
- * @author SmartMenu Team
+ * @author HorusPOS Team
  */
 class OrderService
 {
@@ -93,11 +93,12 @@ class OrderService
             }
 
             $order = Order::createWithNumber([
-                'tenant_id' => $data['tenant_id'],
-                'table_id' => $data['table_id'],
-                'status' => OrderStatus::RECEIVED->value,
-                'total' => $total,
-                'notes' => $data['notes'] ?? ''
+                'tenant_id'  => $data['tenant_id'],
+                'table_id'   => $data['table_id'],
+                'serveur_id' => $data['serveur_id'] ?? null,
+                'status'     => OrderStatus::RECEIVED->value,
+                'total'      => $total,
+                'notes'      => $data['notes'] ?? '',
             ]);
 
             foreach ($orderItems as $itemData) {

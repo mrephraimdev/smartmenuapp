@@ -1,5 +1,5 @@
 # ===========================================
-# SmartMenu SaaS - Production Dockerfile
+# HorusPOS SaaS - Production Dockerfile
 # Multi-stage build for optimized image size
 # ===========================================
 
@@ -51,8 +51,8 @@ RUN npm run build
 FROM php:8.2-fpm-alpine
 
 # Set labels
-LABEL maintainer="SmartMenu Team"
-LABEL description="SmartMenu SaaS Application"
+LABEL maintainer="HorusPOS Team"
+LABEL description="HorusPOS SaaS Application"
 LABEL version="1.0"
 
 # Install system dependencies

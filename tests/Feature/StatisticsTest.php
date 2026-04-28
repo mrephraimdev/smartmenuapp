@@ -48,8 +48,8 @@ class StatisticsTest extends TestCase
             'email' => 'admin@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant->id,
+            'role' => 'ADMIN',
         ]);
-        $this->admin->roles()->attach(Role::where('name', 'ADMIN')->first());
 
         // Create table
         $this->table = Table::create([
@@ -168,12 +168,9 @@ class StatisticsTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->getJson("/admin/{$this->tenant->slug}/statistics/chart-data");
 
+        // Chart endpoint returns array of data points {date, orders, revenue}
         $response->assertStatus(200)
-            ->assertJsonStructure([
-                'hourly_peaks',
-                'daily_revenue',
-                'orders_by_status',
-            ]);
+            ->assertJsonStructure([['date', 'orders', 'revenue']]);
     }
 
     /** @test */
@@ -230,7 +227,7 @@ class StatisticsTest extends TestCase
 
         $otherTable = Table::create([
             'tenant_id' => $otherTenant->id,
-            'code' => 'T01',
+            'code' => 'T02',
             'label' => 'Table 1',
             'capacity' => 4,
             'is_active' => true,
@@ -269,13 +266,17 @@ class StatisticsTest extends TestCase
         $this->createOrderAtHour(19); // Dinner
         $this->createOrderAtHour(19);
 
+        // Use hourly period to get hourly breakdown
         $response = $this->actingAs($this->admin)
-            ->getJson("/admin/{$this->tenant->slug}/statistics/chart-data");
+            ->getJson("/admin/{$this->tenant->slug}/statistics/chart-data?period=hourly");
 
         $response->assertStatus(200);
 
+        // Hourly endpoint returns [{hour, orders}] array with 24 items
         $data = $response->json();
-        $this->assertArrayHasKey('hourly_peaks', $data);
+        $this->assertIsArray($data);
+        $this->assertCount(24, $data);
+        $this->assertArrayHasKey('hour', $data[0]);
     }
 
     /** @test */

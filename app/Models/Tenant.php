@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Tenant extends Model
 {
@@ -48,6 +49,22 @@ class Tenant extends Model
     public function theme()
     {
         return $this->belongsTo(Theme::class);
+    }
+
+    /**
+     * Résout un tenant par slug avec cache (TTL 10 min).
+     * Remplace Tenant::where('slug', $slug)->firstOrFail() dans les controllers.
+     */
+    public static function findBySlug(string $slug): self
+    {
+        return Cache::remember("tenant_slug_{$slug}", 600, function () use ($slug): self {
+            return static::where('slug', $slug)->firstOrFail();
+        });
+    }
+
+    public static function forgetSlugCache(string $slug): void
+    {
+        Cache::forget("tenant_slug_{$slug}");
     }
 
     // Helper methods for branding

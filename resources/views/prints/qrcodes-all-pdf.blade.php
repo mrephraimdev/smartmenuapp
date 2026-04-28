@@ -21,7 +21,7 @@
             page-break-after: avoid;
         }
 
-        /* Card container */
+        /* Card */
         .card {
             border: 2px solid #e2e8f0;
             border-radius: 16px;
@@ -30,133 +30,192 @@
             margin: 0 auto;
         }
 
-        /* Top band */
-        .card-top {
+        /* Header */
+        .card-header {
             background: #1e293b;
-            padding: 24px 20px 20px;
-            text-align: center;
+            padding: 22px 20px 26px;
         }
-        .logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            object-fit: contain;
-            margin: 0 auto 10px;
+        .header-table {
+            width: 100%;
+        }
+        .header-table td {
+            vertical-align: middle;
+        }
+        .logo-cell {
+            width: 64px;
+            padding-right: 12px;
+        }
+        .logo-img {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            object-fit: cover;
             display: block;
-            background: #fff;
-            padding: 3px;
         }
         .logo-placeholder {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            background: #6366f1;
-            color: #fff;
-            font-size: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: #f59e0b;
+            color: #1e293b;
+            font-size: 22px;
             font-weight: 900;
-            line-height: 60px;
+            line-height: 56px;
             text-align: center;
-            margin: 0 auto 10px;
+            display: block;
+        }
+        .info-cell {
+            text-align: left;
         }
         .tenant-name {
             color: #ffffff;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
-            letter-spacing: 0.5px;
         }
         .tenant-address {
             color: #94a3b8;
-            font-size: 11px;
-            margin-top: 4px;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+        .status-cell {
+            width: 14px;
+            text-align: right;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #22c55e;
+            display: inline-block;
         }
 
-        /* QR Section */
+        /* Wave separator */
+        .wave-top {
+            background: #1e293b;
+            height: 20px;
+        }
+        .wave-bottom {
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            height: 20px;
+            margin-top: -20px;
+        }
+
+        /* QR section */
         .qr-section {
-            padding: 28px 20px 16px;
+            padding: 20px 20px 12px;
+            text-align: center;
         }
-        .qr-frame {
+
+        /* QR frame */
+        .qr-frame-outer {
             display: inline-block;
-            padding: 12px;
+            position: relative;
+            padding: 14px;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 16px;
+            background: #fff;
         }
-        .qr-frame img {
-            width: 200px;
-            height: 200px;
+        .qr-frame-outer img {
+            width: 190px;
+            height: 190px;
             display: block;
         }
+        .corner {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+        }
+        .corner-tl { top: -2px; left: -2px; border-top: 3px solid #6366f1; border-left: 3px solid #6366f1; border-radius: 8px 0 0 0; }
+        .corner-tr { top: -2px; right: -2px; border-top: 3px solid #f59e0b; border-right: 3px solid #f59e0b; border-radius: 0 8px 0 0; }
+        .corner-bl { bottom: -2px; left: -2px; border-bottom: 3px solid #f59e0b; border-left: 3px solid #f59e0b; border-radius: 0 0 0 8px; }
+        .corner-br { bottom: -2px; right: -2px; border-bottom: 3px solid #8b5cf6; border-right: 3px solid #8b5cf6; border-radius: 0 0 8px 0; }
 
         /* Table badge */
         .table-badge {
             display: inline-block;
             background: #6366f1;
             color: #ffffff;
-            padding: 8px 24px;
+            padding: 7px 20px;
             border-radius: 50px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            margin-top: 16px;
-        }
-
-        /* CTA */
-        .cta-section {
-            padding: 8px 20px 24px;
-        }
-        .cta-title {
-            font-size: 18px;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 4px;
-        }
-        .cta-sub {
-            font-size: 12px;
-            color: #64748b;
-            margin-bottom: 16px;
+            margin-top: 14px;
         }
 
         /* Steps */
+        .steps-section {
+            padding: 16px 20px 12px;
+        }
         .steps-table {
-            margin: 0 auto 16px;
+            width: 100%;
+            margin: 0 auto;
         }
         .steps-table td {
             text-align: center;
-            padding: 0 16px;
+            padding: 0 10px;
+            width: 33%;
         }
         .step-num {
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
-            background: #f1f5f9;
-            color: #6366f1;
+            background: #6366f1;
+            color: #fff;
             font-weight: 800;
-            font-size: 13px;
-            line-height: 28px;
+            font-size: 11px;
+            line-height: 22px;
             text-align: center;
-            margin: 0 auto 4px;
+            margin: 0 auto 5px;
         }
-        .step-text {
+        .step-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 17px;
+            line-height: 38px;
+            text-align: center;
+            margin: 0 auto 5px;
+        }
+        .step-label {
             font-size: 10px;
             color: #64748b;
             font-weight: 600;
         }
 
-        /* URL */
-        .url-bar {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 9px;
-            color: #64748b;
-            word-break: break-all;
+        /* HorusPOS footer */
+        .horus-footer {
+            border-top: 1px solid #f1f5f9;
+            padding: 10px;
             text-align: center;
+        }
+        .horus-footer-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border-radius: 6px;
+            background: #6366f1;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+        .horus-footer-text {
+            font-size: 10px;
+            color: #94a3b8;
+            vertical-align: middle;
+        }
+        .horus-footer-name {
+            color: #6366f1;
+            font-weight: 800;
         }
 
         /* Footer */
         .footer {
-            margin-top: 20px;
+            margin-top: 16px;
             font-size: 9px;
             color: #94a3b8;
+            text-align: center;
         }
     </style>
 </head>
@@ -167,56 +226,80 @@
     @endphp
     <div class="page">
         <div class="card">
-            {{-- Top Band --}}
-            <div class="card-top">
-                @if($tenant->logo_url)
-                    <img src="{{ public_path(str_replace('/storage/', 'storage/', $tenant->logo_url)) }}" alt="{{ $tenant->name }}" class="logo">
-                @else
-                    <div class="logo-placeholder">{{ strtoupper(substr($tenant->name, 0, 2)) }}</div>
-                @endif
-                <div class="tenant-name">{{ $tenant->name }}</div>
-                @if($tenant->address)
-                    <div class="tenant-address">{{ $tenant->address }}</div>
-                @endif
+
+            {{-- Header --}}
+            <div class="card-header">
+                <table class="header-table">
+                    <tr>
+                        <td class="logo-cell">
+                            @if($tenant->logo_url)
+                                <img src="{{ public_path(str_replace('/storage/', 'storage/', $tenant->logo_url)) }}"
+                                     alt="{{ $tenant->name }}" class="logo-img">
+                            @else
+                                <div class="logo-placeholder">{{ strtoupper(substr($tenant->name, 0, 2)) }}</div>
+                            @endif
+                        </td>
+                        <td class="info-cell">
+                            <div class="tenant-name">{{ $tenant->name }}</div>
+                            @if($tenant->address)
+                                <div class="tenant-address">{{ $tenant->address }}</div>
+                            @endif
+                        </td>
+                        <td class="status-cell">
+                            <span class="status-dot"></span>
+                        </td>
+                    </tr>
+                </table>
             </div>
+
+            {{-- Wave --}}
+            <div class="wave-top"><div class="wave-bottom"></div></div>
 
             {{-- QR Code --}}
             <div class="qr-section">
-                <div class="qr-frame">
+                <div class="qr-frame-outer">
+                    <div class="corner corner-tl"></div>
+                    <div class="corner corner-tr"></div>
+                    <div class="corner corner-bl"></div>
+                    <div class="corner corner-br"></div>
                     <img src="{{ $qrCodes[$table->code] }}" alt="QR Code">
                 </div>
                 <div>
-                    <div class="table-badge">Table {{ $table->label ?? $table->code }}</div>
+                    <span class="table-badge">Table {{ $table->label ?? $table->code }}</span>
                 </div>
             </div>
 
-            {{-- CTA --}}
-            <div class="cta-section">
-                <div class="cta-title">Scannez pour commander</div>
-                <div class="cta-sub">Accedez au menu digital en un instant</div>
-
+            {{-- Steps --}}
+            <div class="steps-section">
                 <table class="steps-table">
                     <tr>
                         <td>
                             <div class="step-num">1</div>
-                            <div class="step-text">Scannez</div>
+                            <div class="step-icon">📷</div>
+                            <div class="step-label">Scannez</div>
                         </td>
                         <td>
                             <div class="step-num">2</div>
-                            <div class="step-text">Choisissez</div>
+                            <div class="step-icon">🍽</div>
+                            <div class="step-label">Choisissez</div>
                         </td>
                         <td>
                             <div class="step-num">3</div>
-                            <div class="step-text">Commandez</div>
+                            <div class="step-icon">✅</div>
+                            <div class="step-label">Commandez</div>
                         </td>
                     </tr>
                 </table>
+            </div>
 
-                <div class="url-bar">{{ $menuUrl }}</div>
+            {{-- HorusPOS footer --}}
+            <div class="horus-footer">
+                <span class="horus-footer-icon"></span>
+                <span class="horus-footer-text">Propulsé par <span class="horus-footer-name">HorusPOS</span></span>
             </div>
         </div>
 
-        <div class="footer">{{ $tenant->name }} - QR Code Table {{ $table->label ?? $table->code }}</div>
+        <div class="footer">{{ $tenant->name }} — QR Code Table {{ $table->label ?? $table->code }}</div>
     </div>
     @endforeach
 </body>

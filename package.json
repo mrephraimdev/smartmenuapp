@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "node --input-type=commonjs -e \"try{require('fs').unlinkSync('public/hot')}catch(e){}\" && vite",
+        "prebuild": "node --input-type=commonjs -e \"try{require('fs').unlinkSync('public/hot')}catch(e){}\""
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

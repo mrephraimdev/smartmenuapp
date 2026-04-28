@@ -43,6 +43,34 @@ class AppServiceProvider extends ServiceProvider
 
         // Register Observers for Audit Logging
         $this->registerObservers();
+
+        // Sentry : filtrage des champs sensibles avant envoi
+        $this->configureSentry();
+    }
+
+    protected function configureSentry(): void
+    {
+        if (!app()->bound('sentry')) {
+            return;
+        }
+
+        // Masquer les champs sensibles (PII / données financières) avant envoi à Sentry
+        $sensitiveKeys = ['password', 'password_confirmation', 'token', 'secret', 'card_number', 'cvv', 'amount_received'];
+
+        \Sentry\State\Scope::addGlobalEventProcessor(function (\Sentry\Event $event, \Sentry\EventHint $hint) use ($sensitiveKeys): \Sentry\Event {
+            $request = $event->getRequest();
+            if ($request !== null) {
+                $data = $request->getData();
+                if (!empty($data)) {
+                    foreach ($sensitiveKeys as $key) {
+                        if (array_key_exists($key, $data)) {
+                            $data[$key] = '[Filtered]';
+                        }
+                    }
+                }
+            }
+            return $event;
+        });
     }
 
     /**

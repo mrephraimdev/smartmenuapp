@@ -1,11 +1,11 @@
 # 📋 DOCUMENT STRATÉGIQUE ET MARKETING
-## SmartMenu SaaS - Plateforme de Commande Digitale pour Restaurants
+## HorusPOS SaaS - Plateforme de Commande Digitale pour Restaurants
 
 ---
 
 ## 1) RÉSUMÉ CLAIR ET PROFESSIONNEL DE L'APPLICATION
 
-**SmartMenu** est une plateforme SaaS multi-tenant permettant aux restaurants, bars, cafés, traiteurs et organisateurs d'événements de digitaliser leur service de commande. Chaque table dispose d'un QR code unique que les clients scannent pour accéder à un menu digital interactif, passer commande et suivre son statut en temps réel.
+**HorusPOS** est une plateforme SaaS multi-tenant permettant aux restaurants, bars, cafés, traiteurs et organisateurs d'événements de digitaliser leur service de commande. Chaque table dispose d'un QR code unique que les clients scannent pour accéder à un menu digital interactif, passer commande et suivre son statut en temps réel.
 
 L'application fonctionne selon le modèle **B2B SaaS** : la plateforme est gérée par un Super Administrateur qui crée des espaces séparés (tenants) pour chaque restaurant client. Chaque restaurant dispose de son propre environnement isolé avec :
 - Gestion complète du menu (catégories, plats, variantes, options)
@@ -44,7 +44,7 @@ L'isolation des données entre restaurants est **garantie techniquement** par un
 
 ## 3) LES PROBLÈMES QU'ELLE RÉSOUT
 
-| Problème Client | Solution SmartMenu |
+| Problème Client | Solution HorusPOS |
 |-----------------|-------------------|
 | Attendre le serveur pour commander | Commande autonome via smartphone |
 | Ne pas connaître les allergènes | Information détaillée par plat |
@@ -52,7 +52,7 @@ L'isolation des données entre restaurants est **garantie techniquement** par un
 | Ne pas pouvoir personnaliser facilement | Variantes et options disponibles |
 | Impossible de revoir le menu après commande | Menu accessible à tout moment |
 
-| Problème Restaurateur | Solution SmartMenu |
+| Problème Restaurateur | Solution HorusPOS |
 |----------------------|-------------------|
 | Erreurs de commande manuelle | Commandes automatisées |
 | Personnel débordé aux heures de pointe | Décasage des commandes |
@@ -149,10 +149,10 @@ L'isolation des données entre restaurants est **garantie techniquement** par un
 
 ## 8) PROPOSITION DE VALEUR FORTE
 
-> **"Transformez chaque table en opportunité de vente avec SmartMenu - La commande digitale qui augmente votre chiffre d'affaires de 20% en simplifiant le service."**
+> **"Transformez chaque table en opportunité de vente avec HorusPOS - La commande digitale qui augmente votre chiffre d'affaires de 20% en simplifiant le service."**
 
 ### Elevator Pitch :
-SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes** grâce à des QR codes générés automatiquement. Les clients commandent depuis leur smartphone, suivent leur commande en temps réel, et le restaurant réduit ses erreurs tout en augmentant son panier moyen.
+HorusPOS permet aux restaurateurs de **digitaliser leur service en 15 minutes** grâce à des QR codes générés automatiquement. Les clients commandent depuis leur smartphone, suivent leur commande en temps réel, et le restaurant réduit ses erreurs tout en augmentant son panier moyen.
 
 ### Messages clés :
 - **Pour le gérant** : "Gagnez du temps, vendez plus, décisions éclairées"
@@ -201,8 +201,8 @@ SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes**
 
 **Objection handling :**
 - "Trop cher" → "Le coût représente moins de 2 commandes par jour. Un seul client supplémentaire par jour couvre l'abonnement"
-- "Mes clients sont âgés" → "70% des clients de nos restaurants utilisent déjà SmartMenu - Interface simple"
-- "J'ai déjà un système" → "SmartMenu s'intègre à votre existant et fonctionne sur smartphone"
+- "Mes clients sont âgés" → "70% des clients de nos restaurants utilisent déjà HorusPOS - Interface simple"
+- "J'ai déjà un système" → "HorusPOS s'intègre à votre existant et fonctionne sur smartphone"
 
 ---
 
@@ -248,7 +248,7 @@ SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes**
 │                                                                 │
 │  [Logos restaurants - témoignages]                              │
 │                                                                 │
-│  "SmartMenu a transformé notre service. Nous servons 30%        │
+│  "HorusPOS a transformé notre service. Nous servons 30%        │
 │  de clients en plus avec le même effectif."                    │
 │  - Jean Dupont, Le Petit Bistro                                 │
 │                                                                 │
@@ -273,7 +273,7 @@ SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes**
 │  R: Le système fonctionne en ligne mais peut gérer le offline  │
 │                                                                 │
 │  Q: Puis-je garder mes QR codes actuels ?                        │
-│  R: Oui, SmartMenu s'adapte à votre design                     │
+│  R: Oui, HorusPOS s'adapte à votre design                     │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -282,7 +282,7 @@ SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes**
 
 ## 11) PITCH COURT (30 SECONDES)
 
-> "Bonjour, je suis SmartMenu. Nous aidons les restaurants à transformer chaque table en opportunité de vente grâce à des QR codes de commande. Le client scanne, commande depuis son smartphone, et suit sa commande en temps réel. Résultat : 20% de panier moyen en plus, 90% d'erreurs en moins, et une image moderne. Nous proposons un essai gratuit de 14 jours sans carte bancaire. Cela vous intéresse ?"
+> "Bonjour, je suis HorusPOS. Nous aidons les restaurants à transformer chaque table en opportunité de vente grâce à des QR codes de commande. Le client scanne, commande depuis son smartphone, et suit sa commande en temps réel. Résultat : 20% de panier moyen en plus, 90% d'erreurs en moins, et une image moderne. Nous proposons un essai gratuit de 14 jours sans carte bancaire. Cela vous intéresse ?"
 
 ---
 
@@ -293,7 +293,7 @@ SmartMenu permet aux restaurateurs de **digitaliser leur service en 15 minutes**
 ### Opening (30 secondes) :
 "Bonjour, avez-vous déjà attendu 10 minutes qu'un serveur vienne prendre votre commande ? Ou remarqué qu'un plat arrivait différent de ce que vous aviez commandé ? Ces problèmes coûtent très cher aux restaurants - erreurs, temps perdu, clients mécontents.
 
-Aujourd'hui, je vous présente SmartMenu, la plateforme qui transforme cette contrainte en opportunité."
+Aujourd'hui, je vous présente HorusPOS, la plateforme qui transforme cette contrainte en opportunité."
 
 ### Problème (30 secondes) :
 "Les restaurants font face à 3 défis majeurs :
@@ -304,7 +304,7 @@ Aujourd'hui, je vous présente SmartMenu, la plateforme qui transforme cette con
 Résultat : un chiffre d'affaires laissé sur la table et une image qui en prend un coup."
 
 ### Solution (60 secondes) :
-"SmartMenu résout tout ça avec 3 éléments simples :
+"HorusPOS résout tout ça avec 3 éléments simples :
 1. **Un QR code par table** - Le client scanne et accède instantanément à votre menu digital
 2. **Une commande structurée** - Variantes, options, allergènes - tout est clair dès le départ
 3. **Un KDS en cuisine** - Les commandes arrivent en temps réel, plus besoin de papier
@@ -323,14 +323,14 @@ Et cerise sur le gâteau : un tableau de bord avec vos stats, vos tops plats, vo
 
 ### GÉNÉRAL
 
-**Q: Qu'est-ce que SmartMenu ?**
-R: SmartMenu est une plateforme SaaS qui permet aux restaurants de digitaliser leur service de commande via des QR codes. Les clients scannent, commandent et suivent leur commande depuis leur smartphone.
+**Q: Qu'est-ce que HorusPOS ?**
+R: HorusPOS est une plateforme SaaS qui permet aux restaurants de digitaliser leur service de commande via des QR codes. Les clients scannent, commandent et suivent leur commande depuis leur smartphone.
 
 **Q: Combien ça coûte ?**
 R: Nous proposons 3 offres : Découverte gratuite (14 jours), Professionnel à 29 900 FCA/mois, et Enterprise sur devis.
 
 **Q: Ai-je besoin de compétences techniques ?**
-R: Non. SmartMenu est conçu pour être intuitif. La mise en place prend 15 minutes.
+R: Non. HorusPOS est conçu pour être intuitif. La mise en place prend 15 minutes.
 
 **Q: Mes clients ont-ils besoin d'installer une application ?**
 R: Non. Tout fonctionne depuis le navigateur web. Scannez le QR code et c'est parti.
@@ -407,7 +407,7 @@ R: Vous uniquement. Le Super Admin ne peut pas voir vos données.
 
 ## RÉSUMÉ EXÉCUTIF
 
-SmartMenu est une **solution SaaS complète de commande digitale** qui répond aux vrais problèmes des restaurants modernes. Avec son architecture multi-tenant sécurisée, son KDS intégré et ses 6 thèmes prédéfinis, elle se positionne comme une alternative crédible aux solutions étrangères plus complexes.
+HorusPOS est une **solution SaaS complète de commande digitale** qui répond aux vrais problèmes des restaurants modernes. Avec son architecture multi-tenant sécurisée, son KDS intégré et ses 6 thèmes prédéfinis, elle se positionne comme une alternative crédible aux solutions étrangères plus complexes.
 
 **Points forts à mettre en avant :**
 - Simplicité de mise en place (15 minutes)

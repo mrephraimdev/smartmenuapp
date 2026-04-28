@@ -20,7 +20,7 @@ class ReservationController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $reservations = $this->reservationService->getUpcomingReservations($tenant->id, 30);
         $todayReservations = $this->reservationService->getTodayReservations($tenant->id);
 
@@ -32,7 +32,7 @@ class ReservationController extends Controller
      */
     public function create(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->where('is_active', true)->get();
 
         return view('admin.reservations.create', compact('tenant', 'tables'));
@@ -43,7 +43,7 @@ class ReservationController extends Controller
      */
     public function store(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $validated = $request->validate([
             'table_id' => 'required|exists:tables,id',
@@ -81,7 +81,7 @@ class ReservationController extends Controller
      */
     public function show(string $tenantSlug, Reservation $reservation)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $reservation->load('table');
 
         return view('admin.reservations.show', compact('tenant', 'reservation'));
@@ -147,7 +147,7 @@ class ReservationController extends Controller
      */
     public function getAvailableSlots(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $validated = $request->validate([
             'date' => 'required|date|after_or_equal:today',
@@ -195,9 +195,13 @@ class ReservationController extends Controller
     /**
      * Get reservations for calendar view
      */
-    public function calendar(Request $request, string $tenantSlug): JsonResponse
+    public function calendar(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
+
+        if (!$request->wantsJson() && !$request->ajax()) {
+            return view('admin.reservations.calendar', compact('tenant'));
+        }
 
         $startDate = $request->get('start', now()->startOfMonth()->toDateString());
         $endDate = $request->get('end', now()->endOfMonth()->toDateString());
@@ -269,7 +273,7 @@ class ReservationController extends Controller
      */
     public function publicForm(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->where('is_active', true)->get();
 
         return view('reservation.form', compact('tenant', 'tables'));
@@ -280,7 +284,7 @@ class ReservationController extends Controller
      */
     public function publicStore(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
@@ -335,7 +339,7 @@ class ReservationController extends Controller
      */
     public function confirmation(string $tenantSlug, string $code)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $reservation = $this->reservationService->findByConfirmationCode($code);
 
         if (!$reservation || $reservation->tenant_id !== $tenant->id) {
@@ -350,7 +354,7 @@ class ReservationController extends Controller
      */
     public function edit(string $tenantSlug, Reservation $reservation)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->where('is_active', true)->get();
         $reservation->load('table');
 

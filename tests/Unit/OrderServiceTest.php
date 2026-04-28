@@ -205,7 +205,7 @@ class OrderServiceTest extends TestCase
 
         $otherTable = Table::create([
             'tenant_id' => $otherTenant->id,
-            'code' => 'T01',
+            'code' => 'T' . substr(uniqid(), -4),
             'label' => 'Table 1',
             'capacity' => 4,
             'is_active' => true,

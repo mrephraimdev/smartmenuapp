@@ -43,81 +43,6 @@
 </div>
 
 {{-- ═══════════════════════════════════════════════════════
-     COMMANDES IMPAYÉES — ENCAISSEMENT RAPIDE
-═══════════════════════════════════════════════════════ --}}
-@if($unpaidOrders->count() > 0)
-<div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
-    <div class="px-5 py-3 bg-red-50 border-b border-red-100 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
-                </svg>
-            </div>
-            <div>
-                <p class="font-bold text-red-800">{{ $unpaidOrders->count() }} commande(s) à encaisser</p>
-                <p class="text-sm text-red-600">Total impayé : <strong>{{ number_format($totalUnpaid, 0, ',', ' ') }} FCFA</strong></p>
-            </div>
-        </div>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-100">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Commande</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Table</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Articles</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Reste à payer</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Statut</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Action</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-100">
-                @foreach($unpaidOrders as $unpaidOrder)
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <p class="text-sm font-bold text-gray-900">{{ $unpaidOrder->order_number }}</p>
-                        <p class="text-xs text-gray-400">{{ $unpaidOrder->created_at->format('H:i') }}</p>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                        {{ $unpaidOrder->table->label ?? 'Comptoir' }}
-                    </td>
-                    <td class="px-4 py-3 text-sm text-gray-600">
-                        {{ $unpaidOrder->items->sum('quantity') }} article(s)
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
-                        {{ number_format($unpaidOrder->total, 0, ',', ' ') }} F
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-bold text-red-600">
-                        {{ number_format($unpaidOrder->getRemainingAmount(), 0, ',', ' ') }} F
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        @if($unpaidOrder->payment_status === 'PARTIAL')
-                            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">Partiel</span>
-                        @else
-                            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-800">Impayé</span>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap">
-                        <button
-                            @click="openPayModal({{ $unpaidOrder->id }}, '{{ $unpaidOrder->order_number }}', {{ $unpaidOrder->getRemainingAmount() }})"
-                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
-                            </svg>
-                            Encaisser
-                        </button>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</div>
-@endif
-
-{{-- ═══════════════════════════════════════════════════════
      FILTRES
 ═══════════════════════════════════════════════════════ --}}
 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
@@ -180,7 +105,55 @@
         <h2 class="text-sm font-bold text-gray-900">Historique des paiements</h2>
         <span class="ml-auto text-xs text-gray-400">{{ $payments->total() }} enregistrement(s)</span>
     </div>
-    <div class="overflow-x-auto">
+    {{-- ── Vue CARTES (mobile) ──────────────────────────────── --}}
+    <div class="sm:hidden divide-y divide-gray-100">
+        @forelse($payments as $payment)
+        <div class="p-4">
+            <div class="flex items-start justify-between mb-2">
+                <div>
+                    <a href="{{ route('admin.orders.show', [$tenantSlug, $payment->order_id]) }}"
+                       class="font-bold text-indigo-600 text-sm">
+                        {{ $payment->order->order_number ?? '#'.$payment->order_id }}
+                    </a>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        {{ $payment->order->table->label ?? 'Comptoir' }}
+                        · {{ $payment->created_at->format('d/m H:i') }}
+                    </p>
+                </div>
+                <div class="text-right flex-shrink-0 ml-3">
+                    <p class="font-bold text-gray-900">{{ number_format($payment->amount, 0, ',', ' ') }} F</p>
+                    @if($payment->change_given > 0)
+                        <p class="text-xs text-amber-600">Rendu : {{ number_format($payment->change_given, 0, ',', ' ') }} F</p>
+                    @endif
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 text-xs font-bold rounded-full {{ $payment->method_color ?? 'bg-gray-100 text-gray-700' }}">
+                        {{ $payment->method_label ?? $payment->method }}
+                    </span>
+                    @if($payment->status === 'SUCCESS')
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-green-100 text-green-800">Succès</span>
+                    @elseif($payment->status === 'REFUNDED')
+                        <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-orange-100 text-orange-800">Remboursé</span>
+                    @endif
+                </div>
+                <a href="{{ route('admin.payments.receipt', [$tenantSlug, $payment->id]) }}"
+                   target="_blank"
+                   class="p-2 bg-indigo-50 text-indigo-600 rounded-lg" title="Réimprimer">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+        @empty
+        <div class="py-12 text-center text-gray-400 text-sm">Aucun paiement enregistré</div>
+        @endforelse
+    </div>
+
+    {{-- ── Vue TABLEAU (sm et plus) ─────────────────────────── --}}
+    <div class="hidden sm:block overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-100">
             <thead class="bg-gray-50">
                 <tr>
@@ -269,6 +242,111 @@
     </div>
     @endif
 </div>
+
+{{-- ═══════════════════════════════════════════════════════
+     COMMANDES IMPAYÉES — ENCAISSEMENT RAPIDE
+═══════════════════════════════════════════════════════ --}}
+@if($unpaidOrders->count() > 0)
+<div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
+    <div class="px-5 py-3 bg-red-50 border-b border-red-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+                </svg>
+            </div>
+            <div>
+                <p class="font-bold text-red-800">{{ $unpaidOrders->count() }} commande(s) à encaisser</p>
+                <p class="text-sm text-red-600">Total impayé : <strong>{{ number_format($totalUnpaid, 0, ',', ' ') }} FCFA</strong></p>
+            </div>
+        </div>
+    </div>
+    {{-- ── Vue CARTES (mobile) ──────────────────────────────── --}}
+    <div class="sm:hidden divide-y divide-gray-100">
+        @foreach($unpaidOrders as $unpaidOrder)
+        <div class="p-4 flex items-center justify-between gap-3">
+            <div>
+                <p class="font-bold text-gray-900 text-sm">{{ $unpaidOrder->order_number }}</p>
+                <p class="text-xs text-gray-500">
+                    {{ $unpaidOrder->table->label ?? 'Comptoir' }}
+                    · {{ $unpaidOrder->items->sum('quantity') }} art.
+                    · {{ $unpaidOrder->created_at->format('H:i') }}
+                </p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="text-xs font-bold text-red-600">À payer : {{ number_format($unpaidOrder->getRemainingAmount(), 0, ',', ' ') }} F</span>
+                    @if($unpaidOrder->payment_status === 'PARTIAL')
+                        <span class="px-1.5 py-0.5 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">Partiel</span>
+                    @endif
+                </div>
+            </div>
+            <button @click="openPayModal({{ $unpaidOrder->id }}, '{{ $unpaidOrder->order_number }}', {{ $unpaidOrder->getRemainingAmount() }})"
+                    class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+                </svg>
+                Encaisser
+            </button>
+        </div>
+        @endforeach
+    </div>
+
+    {{-- ── Vue TABLEAU (sm et plus) ─────────────────────────── --}}
+    <div class="hidden sm:block overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-100">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Commande</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Table</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Articles</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Total</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Reste à payer</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Statut</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Action</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+                @foreach($unpaidOrders as $unpaidOrder)
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <p class="text-sm font-bold text-gray-900">{{ $unpaidOrder->order_number }}</p>
+                        <p class="text-xs text-gray-400">{{ $unpaidOrder->created_at->format('H:i') }}</p>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                        {{ $unpaidOrder->table->label ?? 'Comptoir' }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-600">
+                        {{ $unpaidOrder->items->sum('quantity') }} article(s)
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-gray-900">
+                        {{ number_format($unpaidOrder->total, 0, ',', ' ') }} F
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-bold text-red-600">
+                        {{ number_format($unpaidOrder->getRemainingAmount(), 0, ',', ' ') }} F
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        @if($unpaidOrder->payment_status === 'PARTIAL')
+                            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">Partiel</span>
+                        @else
+                            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-800">Impayé</span>
+                        @endif
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <button
+                            @click="openPayModal({{ $unpaidOrder->id }}, '{{ $unpaidOrder->order_number }}', {{ $unpaidOrder->getRemainingAmount() }})"
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+                            </svg>
+                            Encaisser
+                        </button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
 
 {{-- ═══════════════════════════════════════════════════════
      MODAL ENCAISSEMENT

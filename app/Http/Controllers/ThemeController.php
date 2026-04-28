@@ -19,7 +19,7 @@ class ThemeController extends Controller
 
     public function index($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $themes = Theme::where('is_active', true)->get();
         return view('admin.themes.index', compact('themes', 'tenant'));
     }
@@ -29,7 +29,7 @@ class ThemeController extends Controller
      */
     public function select($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $themes = Theme::where('is_active', true)->orderBy('category')->orderBy('name')->get();
         $currentTheme = $tenant->theme;
 
@@ -41,7 +41,7 @@ class ThemeController extends Controller
      */
     public function apply($tenantSlug, Theme $theme)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         // Update tenant's theme
         $tenant->update(['theme_id' => $theme->id]);
@@ -57,7 +57,7 @@ class ThemeController extends Controller
 
     public function show($tenantSlug, Theme $theme)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         return view('admin.themes.show', compact('theme', 'tenant'));
     }
 
@@ -80,7 +80,7 @@ class ThemeController extends Controller
      */
     public function preview($tenantSlug, Theme $theme)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         return view('admin.themes.preview', compact('theme', 'tenant'));
     }
 

@@ -1,5 +1,5 @@
 -- ===========================================
--- SmartMenu SaaS - PostgreSQL Initialization
+-- HorusPOS SaaS - PostgreSQL Initialization
 -- Initial database setup script
 -- ===========================================
 
@@ -19,5 +19,5 @@ GRANT ALL PRIVILEGES ON DATABASE smartmenu TO smartmenu;
 -- Log successful initialization
 DO $$
 BEGIN
-    RAISE NOTICE 'SmartMenu database initialized successfully';
+    RAISE NOTICE 'HorusPOS database initialized successfully';
 END $$;

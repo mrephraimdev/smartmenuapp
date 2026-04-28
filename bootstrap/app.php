@@ -16,6 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // Ajouter les headers de sécurité à toutes les réponses web
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\SentryContext::class,
+        ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\SentryContext::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
@@ -42,5 +47,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('logs:clear')->weekly();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->reportable(function (\Throwable $e): void {
+            if (app()->bound('sentry')) {
+                \Sentry\configureScope(function (\Sentry\State\Scope $scope) use ($e): void {
+                    // Ajouter le contexte exception
+                    $scope->setTag('exception.class', get_class($e));
+
+                    // Ajouter le tenant depuis la requête courante si disponible
+                    $request = request();
+                    $tenantSlug = $request->route('tenantSlug');
+                    if ($tenantSlug) {
+                        $scope->setTag('tenant.slug', $tenantSlug);
+                    }
+                });
+            }
+        });
     })->create();

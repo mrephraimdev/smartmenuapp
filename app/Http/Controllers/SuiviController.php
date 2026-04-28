@@ -22,7 +22,7 @@ class SuiviController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         return view('admin.suivi.index', compact('tenant'));
     }
 
@@ -32,7 +32,7 @@ class SuiviController extends Controller
      */
     public function data(string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $activeStatuses = OrderStatus::activeValues();
 
@@ -82,7 +82,7 @@ class SuiviController extends Controller
      */
     public function progress(Request $request, string $tenantSlug, Order $order): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($order->tenant_id !== $tenant->id) {
             return response()->json(['success' => false, 'message' => 'Non autorisé.'], 403);
@@ -104,7 +104,7 @@ class SuiviController extends Controller
      */
     public function cancel(Request $request, string $tenantSlug, Order $order): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($order->tenant_id !== $tenant->id) {
             return response()->json(['success' => false, 'message' => 'Non autorisé.'], 403);

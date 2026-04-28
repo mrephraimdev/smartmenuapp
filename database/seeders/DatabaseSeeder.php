@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'superadmin@smartmenu.com'
         ], [
             'name' => 'Super Admin',
-            'password' => Hash::make('SmartMenu2026!'),
+            'password' => Hash::make('HorusPOS2026!'),
             'tenant_id' => null,
             'role' => 'SUPER_ADMIN',
         ]);

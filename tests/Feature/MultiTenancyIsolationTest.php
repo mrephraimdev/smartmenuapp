@@ -76,24 +76,24 @@ class MultiTenancyIsolationTest extends TestCase
             'email' => 'admin_a@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenantA->id,
+            'role' => 'ADMIN',
         ]);
-        $this->adminA->assignRole('ADMIN');
 
         $this->adminB = User::create([
             'name' => 'Admin B',
             'email' => 'admin_b@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenantB->id,
+            'role' => 'ADMIN',
         ]);
-        $this->adminB->assignRole('ADMIN');
 
         $this->superAdmin = User::create([
             'name' => 'Super Admin',
             'email' => 'superadmin@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => null,
+            'role' => 'SUPER_ADMIN',
         ]);
-        $this->superAdmin->assignRole('SUPER_ADMIN');
     }
 
     /**

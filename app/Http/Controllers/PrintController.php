@@ -18,7 +18,7 @@ class PrintController extends Controller
      */
     public function kitchenTicket(string $tenantSlug, Order $order)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($order->tenant_id !== $tenant->id) {
             abort(403, 'Accès non autorisé');
@@ -34,7 +34,7 @@ class PrintController extends Controller
      */
     public function receipt(string $tenantSlug, Order $order)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($order->tenant_id !== $tenant->id) {
             abort(403, 'Accès non autorisé');
@@ -50,7 +50,7 @@ class PrintController extends Controller
      */
     public function dailyReport(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $date = $request->get('date', now()->toDateString());
 
         $html = $this->printService->generateDailyReport($tenant, $date);

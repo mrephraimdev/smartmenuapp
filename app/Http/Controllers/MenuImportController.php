@@ -35,7 +35,7 @@ class MenuImportController extends Controller
      */
     public function index(string $tenantSlug): View
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $menus = Menu::where('tenant_id', $tenant->id)
@@ -55,7 +55,7 @@ class MenuImportController extends Controller
      */
     public function import(Request $request, string $tenantSlug): RedirectResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $request->validate([

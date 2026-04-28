@@ -1,6 +1,6 @@
 # 💰 MANUEL D'UTILISATION - MODULE POS (POINT OF SALE)
 
-> Guide complet du système de caisse (Point of Sale) SmartMenu SaaS
+> Guide complet du système de caisse (Point of Sale) HorusPOS SaaS
 > Version 2.5 | Dernière mise à jour : 2026-01-28
 
 ---
@@ -107,7 +107,7 @@ Le système track 3 types de paiement :
 
 #### Étape 2 : Ouvrir la Session dans le Système
 
-1. Connectez-vous à SmartMenu
+1. Connectez-vous à HorusPOS
 2. Allez dans **"POS"** (menu admin)
 3. Cliquez sur **"Ouvrir une Session"**
 
@@ -575,7 +575,7 @@ R : Non, les rapports Z sont **immuables** pour garantir l'intégrité comptable
 - [ ] Vérifier billets (authenticité)
 - [ ] Tester TPE carte bancaire
 - [ ] Vérifier smartphone (mobile money)
-- [ ] Ouvrir session dans SmartMenu
+- [ ] Ouvrir session dans HorusPOS
 - [ ] Vérifier N° session généré
 - [ ] Ranger argent dans tiroir
 - [ ] Fermer tiroir à clé
@@ -592,7 +592,7 @@ R : Non, les rapports Z sont **immuables** pour garantir l'intégrité comptable
 - [ ] Terminer dernières commandes
 - [ ] Retirer argent du tiroir
 - [ ] Compter 2x (feuille de comptage)
-- [ ] Fermer session dans SmartMenu
+- [ ] Fermer session dans HorusPOS
 - [ ] Consulter rapport Z
 - [ ] Vérifier écarts
 - [ ] Exporter PDF rapport Z
@@ -601,6 +601,6 @@ R : Non, les rapports Z sont **immuables** pour garantir l'intégrité comptable
 
 ---
 
-**💰 SmartMenu SaaS - Module POS v2.5**
+**💰 HorusPOS SaaS - Module POS v2.5**
 *Manuel généré le 2026-01-28*
 *Ce manuel est confidentiel et destiné à un usage interne uniquement.*

@@ -41,8 +41,8 @@ class RateLimitingTest extends TestCase
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant->id,
+            'role' => 'ADMIN',
         ]);
-        $this->user->assignRole('ADMIN');
     }
 
     /**

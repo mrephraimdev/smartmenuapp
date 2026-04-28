@@ -22,7 +22,7 @@ class AuditLogController extends Controller
      */
     public function index(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $query = AuditLog::forTenant($tenant->id)
             ->with('user')
@@ -98,7 +98,7 @@ class AuditLogController extends Controller
      */
     public function show($tenantSlug, AuditLog $auditLog)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         // Ensure audit log belongs to tenant
         if ($auditLog->tenant_id !== $tenant->id) {
@@ -115,7 +115,7 @@ class AuditLogController extends Controller
      */
     public function export(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $query = AuditLog::forTenant($tenant->id)
             ->with('user')

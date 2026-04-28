@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Administration') — {{ $tenant->name ?? 'SmartMenu' }}</title>
+    <title>@yield('title', 'Administration') — {{ $tenant->name ?? 'HorusPOS' }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
@@ -68,7 +68,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
                     </svg>
                 </div>
-                <span class="font-bold text-white text-base tracking-tight">SmartMenu</span>
+                <span class="font-bold text-white text-base tracking-tight">HorusPOS</span>
             </a>
             <button @click="sidebarOpen = false"
                     class="lg:hidden text-slate-400 hover:text-white transition-colors p-1">
@@ -161,7 +161,8 @@
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Commandes</p>
             </div>
 
-            {{-- Prise de commande au comptoir --}}
+            {{-- Prise de commande au comptoir (ADMIN/CAISSIER) --}}
+            @if($isAdmin || $isCaissier)
             <a href="{{ route('admin.comptoir.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.comptoir*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -169,6 +170,25 @@
                 </svg>
                 Prise de commande
             </a>
+            @endif
+
+            {{-- Prise de commande serveur (SERVEUR uniquement) --}}
+            @if($isServeur)
+            <a href="{{ route('serveur.commande.index', $slug) }}"
+               class="{{ $navLink(request()->routeIs('serveur.commande.index')) }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z"/>
+                </svg>
+                Prendre une commande
+            </a>
+            <a href="{{ route('serveur.historique.index', $slug) }}"
+               class="{{ $navLink(request()->routeIs('serveur.historique*')) }}">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2M9 12h3m0 0h3M9 15h3"/>
+                </svg>
+                Mes commandes
+            </a>
+            @endif
 
             {{-- Suivi des commandes --}}
             <a href="{{ route('admin.suivi.index', $slug) }}"
@@ -368,7 +388,7 @@
     <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
 
         {{-- Top bar --}}
-        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-6 sticky top-0 z-30 flex-shrink-0 shadow-sm">
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 flex-shrink-0 shadow-sm">
             <div class="flex items-center gap-4">
                 {{-- Hamburger --}}
                 <button @click="sidebarOpen = true"
@@ -388,7 +408,7 @@
             </div>
 
             {{-- Right zone --}}
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-1.5 sm:gap-3">
                 @isset($tenant)
                 {{-- ── Alerte sonore nouvelles commandes ── --}}
                 <div x-data="orderNotif('{{ $tenant->slug }}', {{ auth()->id() }})" x-init="init()" class="flex items-center gap-1.5">
@@ -431,6 +451,60 @@
                     </button>
                 </div>
 
+                {{-- ── Appels clients (cloche du menu) ── --}}
+                <div x-data="waiterCallNotif({{ $tenant->id }})" x-init="init()" class="relative">
+                    <button @click="showPanel = !showPanel"
+                            class="relative flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all"
+                            :class="pendingCount > 0 ? 'text-amber-600 bg-amber-50 border-amber-300' : 'text-gray-400 bg-gray-50 border-gray-200'"
+                            title="Appels clients en attente">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
+                        </svg>
+                        <span class="hidden sm:inline" x-text="pendingCount > 0 ? pendingCount + ' appel(s)' : 'Appels'"></span>
+                        <span x-show="pendingCount > 0"
+                              x-text="pendingCount > 9 ? '9+' : pendingCount"
+                              class="absolute -top-1.5 -right-1.5 bg-amber-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 animate-pulse"></span>
+                    </button>
+
+                    <div x-show="showPanel" x-cloak @click.outside="showPanel = false"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-2"
+                         x-transition:enter-end="opacity-100 translate-y-0"
+                         class="absolute right-0 top-full mt-2 w-72 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                            <p class="text-sm font-semibold text-gray-800">Appels clients</p>
+                            <span x-show="pendingCount > 0" x-text="pendingCount + ' en attente'"
+                                  class="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full"></span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                            <template x-if="calls.length === 0">
+                                <div class="py-8 text-center">
+                                    <p class="text-sm text-gray-400">Aucun appel en cours</p>
+                                </div>
+                            </template>
+                            <template x-for="call in calls" :key="call.id">
+                                <div class="px-4 py-3 flex items-start gap-3"
+                                     :class="call.status === 'PENDING' ? 'bg-amber-50/60' : ''">
+                                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-sm"
+                                         :class="call.call_type === 'URGENCE' ? 'bg-red-100' : call.call_type === 'QUESTION' ? 'bg-amber-100' : 'bg-blue-100'">
+                                        <span x-text="call.call_type === 'URGENCE' ? '🚨' : call.call_type === 'QUESTION' ? '❓' : '🔔'"></span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-semibold text-gray-800">Table <span x-text="call.table_name || call.table_code"></span></p>
+                                        <p class="text-xs text-gray-500" x-text="call.call_type_label"></p>
+                                        <p class="text-[10px] text-gray-400 mt-0.5" x-text="call.time_ago"></p>
+                                    </div>
+                                    <button x-show="call.status === 'PENDING'"
+                                            @click="resolveCall(call.id)"
+                                            class="flex-shrink-0 text-xs font-semibold text-green-600 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-lg transition-colors">
+                                        ✓
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ url('/menu/' . $tenant->id . '/A1') }}" target="_blank"
                    class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-amber-600 bg-gray-50 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-amber-200 transition-all">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -445,7 +519,7 @@
         </header>
 
         {{-- Page content --}}
-        <main class="flex-1 p-5 lg:p-6 page-content overflow-auto">
+        <main class="flex-1 p-3 sm:p-5 lg:p-6 page-content overflow-auto">
             @yield('content')
         </main>
     </div>
@@ -566,7 +640,7 @@ function orderNotif(tenantSlug, userId) {
             this._fetchOrders(true);
 
             // Polling toutes les 5 secondes (au lieu de 20)
-            this.pollInterval = setInterval(() => this._fetchOrders(false), 5000);
+            this.pollInterval = setInterval(() => this._fetchOrders(false), 20000);
         },
 
         toggle() {
@@ -605,6 +679,50 @@ function orderNotif(tenantSlug, userId) {
                 }
             } catch (e) { /* réseau — ignoré */ }
         },
+    };
+}
+
+// ── Notifications appels clients (cloche) ───────────────────────────────────
+function waiterCallNotif(tenantId) {
+    return {
+        tenantId,
+        calls: [],
+        pendingCount: 0,
+        showPanel: false,
+        interval: null,
+
+        init() {
+            this.loadCalls();
+            this.interval = setInterval(() => this.loadCalls(), 6000);
+        },
+
+        async loadCalls() {
+            try {
+                const res = await fetch(`/api/waiter-calls?tenant_id=${this.tenantId}`, {
+                    credentials: 'include',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.calls = data.calls;
+                    this.pendingCount = data.pending_count;
+                }
+            } catch (e) {}
+        },
+
+        async resolveCall(callId) {
+            try {
+                await fetch(`/api/waiter-calls/${callId}/resolve`, {
+                    method: 'PATCH',
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                    }
+                });
+                await this.loadCalls();
+            } catch (e) {}
+        }
     };
 }
 </script>

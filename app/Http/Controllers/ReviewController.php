@@ -19,7 +19,7 @@ class ReviewController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $reviews = Review::where('tenant_id', $tenant->id)
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -180,7 +180,7 @@ class ReviewController extends Controller
      */
     public function statistics(string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $statistics = $this->reviewService->getStatistics($tenant->id);
         $trend = $this->reviewService->getAverageRatingsOverTime($tenant->id);
 
@@ -196,7 +196,7 @@ class ReviewController extends Controller
      */
     public function show(string $tenantSlug, Review $review)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $review->load(['order', 'table']);
 
         return view('admin.reviews.show', compact('tenant', 'review'));
@@ -233,7 +233,7 @@ class ReviewController extends Controller
      */
     public function publicForm(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         return view('review.form', compact('tenant'));
     }
@@ -244,7 +244,7 @@ class ReviewController extends Controller
      */
     public function publicStore(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         // Validation flexible : accepte rating global OU ratings détaillés
         $validated = $request->validate([
@@ -306,7 +306,7 @@ class ReviewController extends Controller
      */
     public function publicList(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $reviews = $this->reviewService->getPublishedReviews($tenant->id);
         $summary = $this->reviewService->getRatingSummary($tenant->id);
 

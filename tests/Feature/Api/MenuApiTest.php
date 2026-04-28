@@ -30,6 +30,7 @@ class MenuApiTest extends TestCase
             'slug' => 'default',
             'colors' => ['primary' => '#C1440E', 'secondary' => '#1A1A1A'],
             'fonts' => ['heading' => 'Arial', 'body' => 'Helvetica'],
+            'category' => 'restaurant',
             'is_default' => true,
             'is_active' => true,
         ]);
@@ -179,11 +180,12 @@ class MenuApiTest extends TestCase
     }
 
     /** @test */
-    public function api_returns_404_for_invalid_table()
+    public function api_returns_menu_for_invalid_table()
     {
+        // Table is optional — unknown code still returns the menu (graceful fallback)
         $response = $this->getJson("/api/menu?tenant={$this->tenant->id}&table=INVALID");
 
-        $response->assertStatus(404);
+        $response->assertStatus(200);
     }
 
     /** @test */

@@ -54,19 +54,22 @@ class ReservationService
         $startTime = Carbon::parse("$date $time");
         $endTime = $startTime->copy()->addMinutes($durationMinutes);
 
-        $conflicts = Reservation::where('table_id', $tableId)
+        $reservations = Reservation::where('table_id', $tableId)
             ->whereDate('reservation_date', $date)
             ->whereIn('status', ['PENDING', 'CONFIRMED', 'SEATED'])
-            ->where(function ($query) use ($startTime, $endTime, $durationMinutes) {
-                // Check for overlapping reservations
-                $query->where(function ($q) use ($startTime, $endTime, $durationMinutes) {
-                    $q->whereRaw("TIME(reservation_time) < ?", [$endTime->format('H:i:s')])
-                      ->whereRaw("ADDTIME(TIME(reservation_time), SEC_TO_TIME(duration_minutes * 60)) > ?", [$startTime->format('H:i:s')]);
-                });
-            })
-            ->count();
+            ->get(['reservation_time', 'duration_minutes']);
 
-        return $conflicts === 0;
+        foreach ($reservations as $reservation) {
+            $resStart = Carbon::parse("$date {$reservation->reservation_time}");
+            $duration = $reservation->duration_minutes ?? 120;
+            $resEnd = $resStart->copy()->addMinutes($duration);
+
+            if ($startTime < $resEnd && $endTime > $resStart) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

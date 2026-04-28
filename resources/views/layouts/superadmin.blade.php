@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Super Admin') — SmartMenu</title>
+    <title>@yield('title', 'Super Admin') — HorusPOS</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
@@ -51,7 +51,7 @@
                     </svg>
                 </div>
                 <div>
-                    <span class="font-bold text-white text-sm">SmartMenu</span>
+                    <span class="font-bold text-white text-sm">HorusPOS</span>
                     <p class="text-[10px] text-violet-400 font-semibold uppercase tracking-widest">Super Admin</p>
                 </div>
             </div>

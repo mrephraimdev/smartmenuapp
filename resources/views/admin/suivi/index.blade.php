@@ -13,6 +13,9 @@
 <style>
     .order-card { transition: all 0.2s ease; }
     .order-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    @media (min-width: 1024px) {
+        .kanban-col { display: flex !important; }
+    }
 </style>
 @endpush
 
@@ -23,47 +26,77 @@
     class="flex flex-col h-[calc(100vh-7.5rem)] gap-3"
 >
     {{-- Barre de contrôle --}}
-    <div class="flex items-center justify-between flex-shrink-0">
-        <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-wrap">
             <div class="flex items-center gap-2">
                 <span class="relative flex h-2.5 w-2.5">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span class="text-sm text-gray-500 font-medium">Actualisation auto (20s)</span>
+                <span class="text-xs text-gray-500 font-medium hidden sm:inline">Actualisation auto (20s)</span>
             </div>
-            <span class="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-lg" x-text="'Mis à jour ' + lastUpdate"></span>
-            <span class="text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg">
+            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg" x-text="'Mis à jour ' + lastUpdate"></span>
+            <span class="hidden sm:inline text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-lg">
                 📅 {{ now()->translatedFormat('d M Y') }}
             </span>
         </div>
-        <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-500">
+        <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 hidden sm:inline">
                 <span class="font-bold text-gray-900" x-text="totalOrders"></span>
-                <span x-text="totalOrders !== 1 ? ' commandes actives' : ' commande active'"></span>
+                <span x-text="totalOrders !== 1 ? ' actives' : ' active'"></span>
             </span>
             <button @click="load()"
                     class="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors">
                 <svg class="w-4 h-4" :class="refreshing ? 'animate-spin' : ''" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
                 </svg>
-                Actualiser
+                <span class="hidden sm:inline">Actualiser</span>
             </button>
             <a href="{{ route('admin.comptoir.index', $tenant->slug) }}"
-               class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 rounded-xl transition-colors">
+               class="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold bg-amber-500 text-white hover:bg-amber-600 rounded-xl transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
                 </svg>
-                Nouvelle commande
+                <span class="hidden sm:inline">Nouvelle commande</span>
             </a>
         </div>
+    </div>
+
+    {{-- Tab bar mobile (kanban) --}}
+    <div class="lg:hidden flex flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <button @click="activeStatus = 'RECU'"
+                :class="activeStatus === 'RECU' ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                class="flex-1 py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+            Reçues
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-extrabold"
+                  :class="activeStatus === 'RECU' ? 'bg-white text-blue-600' : 'bg-blue-100 text-blue-600'"
+                  x-text="orders.RECU.length"></span>
+        </button>
+        <button @click="activeStatus = 'PREP'"
+                :class="activeStatus === 'PREP' ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                class="flex-1 py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+            En prép.
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-extrabold"
+                  :class="activeStatus === 'PREP' ? 'bg-white text-amber-600' : 'bg-amber-100 text-amber-600'"
+                  x-text="orders.PREP.length"></span>
+        </button>
+        <button @click="activeStatus = 'PRET'"
+                :class="activeStatus === 'PRET' ? 'bg-emerald-500 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                class="flex-1 py-3 text-xs font-bold transition-colors flex items-center justify-center gap-1.5">
+            Prêtes
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-extrabold"
+                  :class="activeStatus === 'PRET' ? 'bg-white text-emerald-600' : 'bg-emerald-100 text-emerald-600'"
+                  x-text="orders.PRET.length"></span>
+        </button>
     </div>
 
     {{-- Board Kanban --}}
     <div class="flex gap-3 flex-1 overflow-hidden">
 
         {{-- ─── RECU ─── --}}
-        <div class="flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden" style="border-top: 3px solid #3b82f6">
+        <div class="kanban-col flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden"
+             style="border-top: 3px solid #3b82f6"
+             x-show="activeStatus === 'RECU'">
             <div class="px-3 py-2.5 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                 <span class="text-sm font-bold text-gray-900">Reçues</span>
@@ -121,7 +154,9 @@
         </div>
 
         {{-- ─── PREP ─── --}}
-        <div class="flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden" style="border-top: 3px solid #f59e0b">
+        <div class="kanban-col flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden"
+             style="border-top: 3px solid #f59e0b"
+             x-show="activeStatus === 'PREP'">
             <div class="px-3 py-2.5 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                 <span class="text-sm font-bold text-gray-900">En préparation</span>
@@ -174,7 +209,9 @@
         </div>
 
         {{-- ─── PRET ─── --}}
-        <div class="flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden" style="border-top: 3px solid #10b981">
+        <div class="kanban-col flex-1 flex flex-col rounded-2xl shadow-sm border border-gray-100 bg-white overflow-hidden"
+             style="border-top: 3px solid #10b981"
+             x-show="activeStatus === 'PRET'">
             <div class="px-3 py-2.5 border-b border-gray-100 flex items-center gap-2 flex-shrink-0">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                 <span class="text-sm font-bold text-gray-900">Prêtes à servir</span>
@@ -235,6 +272,7 @@
 function suiviBoard() {
     return {
         orders: { RECU: [], PREP: [], PRET: [] },
+        activeStatus: 'RECU',
         totalOrders: 0,
         lastUpdate: '—',
         refreshing: false,

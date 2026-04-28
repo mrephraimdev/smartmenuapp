@@ -21,6 +21,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ComptourController;
 use App\Http\Controllers\SuiviController;
 use App\Http\Controllers\MenuImportController;
+use App\Http\Controllers\ServeurController;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,6 +112,21 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         // Statistics (Admin only)
         Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
         Route::get('/statistics/chart-data', [StatisticsController::class, 'chartData'])->name('admin.statistics.chartData');
+
+        // RGPD
+        Route::get('/rgpd/export', [\App\Http\Controllers\PrivacyController::class, 'export'])->name('admin.rgpd.export');
+
+        // POS (Point de Vente)
+        Route::get('/pos', [\App\Http\Controllers\PosController::class, 'index'])->name('admin.pos.index');
+        Route::get('/pos/sessions', [\App\Http\Controllers\PosController::class, 'sessions'])->name('admin.pos.sessions');
+        Route::post('/pos/sessions/open', [\App\Http\Controllers\PosController::class, 'open'])->name('admin.pos.sessions.open');
+        Route::post('/pos/sessions/{session}/close', [\App\Http\Controllers\PosController::class, 'close'])->name('admin.pos.sessions.close');
+        Route::get('/pos/sessions/{session}', [\App\Http\Controllers\PosController::class, 'show'])->name('admin.pos.sessions.show');
+        Route::get('/pos/sessions/{session}/z-report', [\App\Http\Controllers\PosController::class, 'zReport'])->name('admin.pos.z-report');
+        Route::get('/pos/sessions/{session}/x-report', [\App\Http\Controllers\PosController::class, 'xReport'])->name('admin.pos.x-report');
+        Route::get('/pos/sessions/{session}/z-report/export', [\App\Http\Controllers\PosController::class, 'exportZReport'])->name('admin.pos.z-report.export');
+        Route::get('/pos/sessions/{session}/x-report/export', [\App\Http\Controllers\PosController::class, 'exportXReport'])->name('admin.pos.x-report.export');
+        Route::get('/pos/statistics', [\App\Http\Controllers\PosController::class, 'statistics'])->name('admin.pos.statistics');
 
         // Reports
         Route::get('/reports', [ExportController::class, 'index'])->name('admin.reports');
@@ -247,6 +263,16 @@ Route::middleware(['auth', 'role:ADMIN,CHEF,SERVEUR'])->group(function () {
 });
 
 // =============================================================================
+// PRISE DE COMMANDE SERVEUR (ADMIN, SERVEUR uniquement)
+// =============================================================================
+Route::middleware(['auth', 'role:ADMIN,SERVEUR'])->group(function () {
+    Route::get('/kds/{tenantSlug}/commande', [ServeurController::class, 'index'])->name('serveur.commande.index');
+    Route::post('/kds/{tenantSlug}/commande', [ServeurController::class, 'store'])->name('serveur.commande.store');
+    Route::get('/kds/{tenantSlug}/historique', [ServeurController::class, 'historique'])->name('serveur.historique.index');
+    Route::post('/kds/{tenantSlug}/encaisser/{order}', [ServeurController::class, 'encaisser'])->name('serveur.encaisser');
+});
+
+// =============================================================================
 // ROUTES PUBLIQUES - Clients
 // =============================================================================
 
@@ -270,6 +296,9 @@ Route::post('/reservation/{tenantSlug}', [ReservationController::class, 'publicS
     ->name('reservation.store');
 Route::get('/reservation/{tenantSlug}/confirmation/{code}', [ReservationController::class, 'confirmation'])->name('reservation.confirmation');
 Route::get('/api/reservation/{tenantSlug}/availability', [ReservationController::class, 'checkAvailability'])->name('reservation.availability');
+
+// Politique de confidentialité (publique)
+Route::get('/privacy', [\App\Http\Controllers\PrivacyController::class, 'index'])->name('privacy');
 
 // Avis publics (rate limited)
 Route::get('/review/{tenantSlug}', [ReviewController::class, 'publicForm'])->name('review.form');

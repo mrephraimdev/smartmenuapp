@@ -34,6 +34,7 @@ class TenantTest extends TestCase
             'slug' => 'default',
             'colors' => ['primary' => '#000000'],
             'fonts' => ['heading' => 'Arial'],
+            'category' => 'restaurant',
             'is_default' => true,
             'is_active' => true,
         ]);
@@ -43,8 +44,8 @@ class TenantTest extends TestCase
             'name' => 'Super Admin',
             'email' => 'super@admin.com',
             'password' => bcrypt('password'),
+            'role' => 'SUPER_ADMIN',
         ]);
-        $this->superAdmin->roles()->attach(Role::where('name', 'SUPER_ADMIN')->first());
     }
 
     /** @test */
@@ -53,7 +54,7 @@ class TenantTest extends TestCase
         Tenant::create([
             'name' => 'Restaurant 1',
             'slug' => 'restaurant-1',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -62,7 +63,7 @@ class TenantTest extends TestCase
         Tenant::create([
             'name' => 'Restaurant 2',
             'slug' => 'restaurant-2',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -83,7 +84,7 @@ class TenantTest extends TestCase
             ->post('/superadmin/tenants', [
                 'name' => 'New Restaurant',
                 'slug' => 'new-restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);
@@ -102,7 +103,7 @@ class TenantTest extends TestCase
         $response = $this->actingAs($this->superAdmin)
             ->post('/superadmin/tenants', [
                 'name' => 'Mon Beau Restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);
@@ -121,7 +122,7 @@ class TenantTest extends TestCase
         Tenant::create([
             'name' => 'Test Restaurant',
             'slug' => 'test-restaurant',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -130,7 +131,7 @@ class TenantTest extends TestCase
         $response = $this->actingAs($this->superAdmin)
             ->post('/superadmin/tenants', [
                 'name' => 'Test Restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);
@@ -153,7 +154,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'Original Name',
             'slug' => 'original-slug',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -163,7 +164,7 @@ class TenantTest extends TestCase
             ->put("/superadmin/tenants/{$tenant->id}", [
                 'name' => 'Updated Name',
                 'slug' => 'original-slug',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'EUR',
                 'locale' => 'en',
             ]);
@@ -182,7 +183,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'Test Restaurant',
             'slug' => 'test-restaurant',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -193,6 +194,7 @@ class TenantTest extends TestCase
             'slug' => 'wedding',
             'colors' => ['primary' => '#FFD700'],
             'fonts' => ['heading' => 'Playfair Display'],
+            'category' => 'restaurant',
             'is_active' => true,
         ]);
 
@@ -218,7 +220,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'Test Restaurant',
             'slug' => 'test-restaurant',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -248,7 +250,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'To Delete',
             'slug' => 'to-delete',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -270,7 +272,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'Test Restaurant',
             'slug' => 'test-restaurant',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -311,7 +313,7 @@ class TenantTest extends TestCase
     {
         $response = $this->actingAs($this->superAdmin)
             ->post('/superadmin/tenants', [
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);
@@ -325,7 +327,7 @@ class TenantTest extends TestCase
         $tenant = Tenant::create([
             'name' => 'Test Restaurant',
             'slug' => 'test-restaurant',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -345,7 +347,7 @@ class TenantTest extends TestCase
             ->post('/superadmin/tenants', [
                 'name' => 'New Restaurant',
                 'slug' => 'new-restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);

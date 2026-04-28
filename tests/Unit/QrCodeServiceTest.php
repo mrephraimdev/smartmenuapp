@@ -78,7 +78,7 @@ class QrCodeServiceTest extends TestCase
     {
         $base64 = $this->qrCodeService->getQrCodeBase64($this->table);
 
-        $this->assertStringStartsWith('data:image/png;base64,', $base64);
+        $this->assertStringStartsWith('data:image/svg+xml;base64,', $base64);
     }
 
     /** @test */
@@ -87,7 +87,7 @@ class QrCodeServiceTest extends TestCase
         $url = $this->qrCodeService->saveQrCode($this->table);
 
         $expectedPath = sprintf(
-            'qrcodes/tenant-%d/table-%s.png',
+            'qrcodes/tenant-%d/table-%s.svg',
             $this->tenant->id,
             $this->table->code
         );
@@ -152,11 +152,11 @@ class QrCodeServiceTest extends TestCase
         }
 
         Storage::disk('public')->assertExists(sprintf(
-            'qrcodes/tenant-%d/table-T01.png',
+            'qrcodes/tenant-%d/table-T01.svg',
             $this->tenant->id
         ));
         Storage::disk('public')->assertExists(sprintf(
-            'qrcodes/tenant-%d/table-T02.png',
+            'qrcodes/tenant-%d/table-T02.svg',
             $this->tenant->id
         ));
     }
@@ -168,7 +168,7 @@ class QrCodeServiceTest extends TestCase
         $this->qrCodeService->saveQrCode($this->table);
 
         $expectedPath = sprintf(
-            'qrcodes/tenant-%d/table-%s.png',
+            'qrcodes/tenant-%d/table-%s.svg',
             $this->tenant->id,
             $this->table->code
         );
@@ -207,11 +207,11 @@ class QrCodeServiceTest extends TestCase
         $this->assertEquals(2, $count);
 
         Storage::disk('public')->assertExists(sprintf(
-            'qrcodes/tenant-%d/table-T01.png',
+            'qrcodes/tenant-%d/table-T01.svg',
             $this->tenant->id
         ));
         Storage::disk('public')->assertExists(sprintf(
-            'qrcodes/tenant-%d/table-T02.png',
+            'qrcodes/tenant-%d/table-T02.svg',
             $this->tenant->id
         ));
     }
@@ -239,7 +239,7 @@ class QrCodeServiceTest extends TestCase
             $this->assertArrayHasKey('table_code', $tableData);
             $this->assertArrayHasKey('qr_base64', $tableData);
             $this->assertArrayHasKey('menu_url', $tableData);
-            $this->assertStringStartsWith('data:image/png;base64,', $tableData['qr_base64']);
+            $this->assertStringStartsWith('data:image/svg+xml;base64,', $tableData['qr_base64']);
         }
     }
 

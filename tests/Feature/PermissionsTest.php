@@ -36,7 +36,7 @@ class PermissionsTest extends TestCase
         $this->tenant1 = Tenant::create([
             'name' => 'Restaurant 1',
             'slug' => 'restaurant-1',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -45,7 +45,7 @@ class PermissionsTest extends TestCase
         $this->tenant2 = Tenant::create([
             'name' => 'Restaurant 2',
             'slug' => 'restaurant-2',
-            'type' => 'RESTAURANT',
+            'type' => 'restaurant',
             'currency' => 'XOF',
             'locale' => 'fr',
             'is_active' => true,
@@ -56,32 +56,32 @@ class PermissionsTest extends TestCase
             'name' => 'Super Admin',
             'email' => 'super@admin.com',
             'password' => bcrypt('password'),
+            'role' => 'SUPER_ADMIN',
         ]);
-        $this->superAdmin->roles()->attach(Role::where('name', 'SUPER_ADMIN')->first());
 
         $this->admin = User::create([
             'name' => 'Admin',
             'email' => 'admin@restaurant1.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant1->id,
+            'role' => 'ADMIN',
         ]);
-        $this->admin->roles()->attach(Role::where('name', 'ADMIN')->first());
 
         $this->chef = User::create([
             'name' => 'Chef',
             'email' => 'chef@restaurant1.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant1->id,
+            'role' => 'CHEF',
         ]);
-        $this->chef->roles()->attach(Role::where('name', 'CHEF')->first());
 
         $this->serveur = User::create([
             'name' => 'Serveur',
             'email' => 'serveur@restaurant1.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant1->id,
+            'role' => 'SERVEUR',
         ]);
-        $this->serveur->roles()->attach(Role::where('name', 'SERVEUR')->first());
 
         // Create menu for tenant 1
         Menu::create([
@@ -155,7 +155,7 @@ class PermissionsTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->chef)
-            ->get("/kds/{$this->tenant1->id}");
+            ->get("/kds/{$this->tenant1->slug}");
 
         $response->assertStatus(200);
     }
@@ -208,7 +208,7 @@ class PermissionsTest extends TestCase
             ->post('/superadmin/tenants', [
                 'name' => 'New Restaurant',
                 'slug' => 'new-restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
                 'currency' => 'XOF',
                 'locale' => 'fr',
             ]);
@@ -227,7 +227,7 @@ class PermissionsTest extends TestCase
             ->post('/superadmin/tenants', [
                 'name' => 'New Restaurant',
                 'slug' => 'new-restaurant',
-                'type' => 'RESTAURANT',
+                'type' => 'restaurant',
             ]);
 
         $response->assertStatus(403);
@@ -256,7 +256,7 @@ class PermissionsTest extends TestCase
 
         $table2 = Table::create([
             'tenant_id' => $this->tenant2->id,
-            'code' => 'T01',
+            'code' => 'T02',
             'label' => 'Table 1 - Restaurant 2',
             'capacity' => 4,
             'is_active' => true,

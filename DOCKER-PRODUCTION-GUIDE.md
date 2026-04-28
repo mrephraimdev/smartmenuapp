@@ -1,7 +1,7 @@
-# GUIDE COMPLET : Deployer SmartMenu avec Docker sur un VPS
+# GUIDE COMPLET : Deployer HorusPOS avec Docker sur un VPS
 ## Du zero absolu a la production
 
-> **Application** : SmartMenu (Laravel 12 + MySQL + Nginx + Node.js/Vite + Redis)
+> **Application** : HorusPOS (Laravel 12 + MySQL + Nginx + Node.js/Vite + Redis)
 > **Niveau** : Debutant Docker
 > **Objectif** : Comprendre, puis appliquer
 
@@ -230,7 +230,7 @@ Des volumes mal configures peuvent perdre vos donnees.
 - Vous voulez la **simplicite maximale** pour debuter
 - Vous etes a l'aise avec l'installation manuelle (voir PRODUCTION-GUIDE.md)
 
-### Pour SmartMenu : ma recommandation
+### Pour HorusPOS : ma recommandation
 
 > **Avec un VPS 2 Go+ RAM** : Utilisez Docker. C'est un investissement
 > d'apprentissage qui vous servira toute votre carriere.
@@ -647,7 +647,7 @@ server {
 
 ```yaml
 # =============================================================================
-# docker-compose.yml - SmartMenu Production
+# docker-compose.yml - HorusPOS Production
 # =============================================================================
 # Pour lancer : docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
@@ -867,7 +867,7 @@ MAIS depuis Internet :
 ```
 
 ```env
-APP_NAME=SmartMenu
+APP_NAME=HorusPOS
 APP_ENV=production
 APP_KEY=base64:VOTRE_CLE_ICI
 APP_DEBUG=false
@@ -905,7 +905,7 @@ MAIL_USERNAME=votre-email@gmail.com
 MAIL_PASSWORD=votre-app-password
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=noreply@votre-domaine.com
-MAIL_FROM_NAME="SmartMenu"
+MAIL_FROM_NAME="HorusPOS"
 ```
 
 > **Point crucial** : Dans Docker, `DB_HOST=mysql` et `REDIS_HOST=redis`

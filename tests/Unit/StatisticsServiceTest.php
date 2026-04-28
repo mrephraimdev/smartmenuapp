@@ -346,8 +346,10 @@ class StatisticsServiceTest extends TestCase
             'total' => $total,
         ]);
 
-        // Update created_at to specific hour
-        $order->update(['created_at' => now()->setHour($hour)->setMinute(0)]);
+        // Bypass Eloquent timestamp protection with raw DB update
+        \Illuminate\Support\Facades\DB::table('orders')
+            ->where('id', $order->id)
+            ->update(['created_at' => now()->setHour($hour)->setMinute(0)->toDateTimeString()]);
 
         return $order;
     }

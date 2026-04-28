@@ -77,9 +77,8 @@ class WaiterCallController extends Controller
 
         $calls = WaiterCall::with(['table:id,code,label'])
             ->forTenant($tenantId)
-            ->recent()
+            ->whereIn('status', ['PENDING', 'ACKNOWLEDGED'])
             ->orderByRaw("CASE WHEN call_type = 'URGENCE' THEN 0 ELSE 1 END")
-            ->orderByRaw("CASE WHEN status = 'PENDING' THEN 0 WHEN status = 'ACKNOWLEDGED' THEN 1 ELSE 2 END")
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($call) {

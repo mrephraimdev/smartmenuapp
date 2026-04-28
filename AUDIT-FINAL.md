@@ -1,8 +1,8 @@
-# AUDIT TECHNIQUE COMPLET - SmartMenu App
+# AUDIT TECHNIQUE COMPLET - HorusPOS App
 
 **Date:** 5 février 2026
 **Version:** 1.0
-**Application:** SmartMenu - Système de gestion de menus et commandes pour restaurants
+**Application:** HorusPOS - Système de gestion de menus et commandes pour restaurants
 
 ---
 
@@ -557,7 +557,7 @@ php artisan test --filter=OrderFlowTest
 
 ### 8.1 Résumé Exécutif
 
-L'application SmartMenu est une solution SaaS multi-tenant bien architecturée pour la gestion de menus et commandes de restaurants. L'architecture Laravel est solide, avec une bonne séparation des responsabilités et des patterns modernes (Services, Enums, Form Requests).
+L'application HorusPOS est une solution SaaS multi-tenant bien architecturée pour la gestion de menus et commandes de restaurants. L'architecture Laravel est solide, avec une bonne séparation des responsabilités et des patterns modernes (Services, Enums, Form Requests).
 
 ### 8.2 Points Forts
 

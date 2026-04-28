@@ -39,7 +39,7 @@ class ExportController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $menus = $tenant->menus;
@@ -56,7 +56,7 @@ class ExportController extends Controller
      */
     public function exportOrders(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = $request->get('start_date');
@@ -70,7 +70,7 @@ class ExportController extends Controller
      */
     public function exportOrderDetails(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = $request->get('start_date');
@@ -84,7 +84,7 @@ class ExportController extends Controller
      */
     public function exportMenu(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         return $this->exportService->exportDishesToCsv($tenant->id);
@@ -95,7 +95,7 @@ class ExportController extends Controller
      */
     public function exportReservations(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = $request->get('start_date');
@@ -109,7 +109,7 @@ class ExportController extends Controller
      */
     public function exportReviews(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         return $this->exportService->exportReviewsToCsv($tenant->id);
@@ -120,7 +120,7 @@ class ExportController extends Controller
      */
     public function salesReport(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = $request->get('start_date', now()->startOfMonth()->toDateString());
@@ -144,7 +144,7 @@ class ExportController extends Controller
      */
     public function exportOrdersPDF(Request $request, string $tenantSlug): Response
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = Carbon::parse($request->get('start_date', now()->startOfMonth()));
@@ -158,7 +158,7 @@ class ExportController extends Controller
      */
     public function exportOrdersExcel(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = Carbon::parse($request->get('start_date', now()->startOfMonth()));
@@ -172,7 +172,7 @@ class ExportController extends Controller
      */
     public function exportStatisticsPDF(Request $request, string $tenantSlug): Response
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $period = $request->get('period', 'month');
@@ -185,7 +185,7 @@ class ExportController extends Controller
      */
     public function exportStatisticsExcel(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $startDate = Carbon::parse($request->get('start_date', now()->startOfMonth()));
@@ -199,7 +199,7 @@ class ExportController extends Controller
      */
     public function exportMenuPDF(Request $request, string $tenantSlug): Response
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->validateTenantAccess($tenant);
 
         $menuId = $request->get('menu_id');

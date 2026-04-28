@@ -1,6 +1,6 @@
 # 🚀 DevOps & Monitoring Setup Guide
 
-Guide complet pour configurer l'infrastructure DevOps de SmartMenu SaaS (Phase 3).
+Guide complet pour configurer l'infrastructure DevOps de HorusPOS SaaS (Phase 3).
 
 ---
 

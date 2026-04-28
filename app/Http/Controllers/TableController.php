@@ -14,7 +14,7 @@ class TableController extends Controller
      */
     public function index($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $tables = Table::where('tenant_id', $tenant->id)
@@ -29,7 +29,7 @@ class TableController extends Controller
      */
     public function create($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         return view('admin.tables.create', compact('tenant'));
@@ -40,7 +40,7 @@ class TableController extends Controller
      */
     public function store(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $request->validate([
@@ -67,7 +67,7 @@ class TableController extends Controller
      */
     public function show($tenantSlug, $tableId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
@@ -82,7 +82,7 @@ class TableController extends Controller
      */
     public function edit($tenantSlug, $tableId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
@@ -97,7 +97,7 @@ class TableController extends Controller
      */
     public function update(Request $request, $tenantSlug, $tableId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
@@ -127,7 +127,7 @@ class TableController extends Controller
      */
     public function destroy($tenantSlug, $tableId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
@@ -151,7 +151,7 @@ class TableController extends Controller
      */
     public function toggle($tenantSlug, $tableId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
@@ -172,7 +172,7 @@ class TableController extends Controller
      */
     public function generate(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $this->authorizeTenantAccess($tenant);
 
         $request->validate([

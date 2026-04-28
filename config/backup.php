@@ -184,7 +184,7 @@ return [
              */
             'channel' => env('BACKUP_SLACK_CHANNEL', null),
 
-            'username' => env('BACKUP_SLACK_USERNAME', 'SmartMenu Backup'),
+            'username' => env('BACKUP_SLACK_USERNAME', 'HorusPOS Backup'),
 
             'icon' => ':robot_face:',
 

@@ -22,7 +22,7 @@ class PaymentController extends Controller
     public function index(Request $request, string $tenantSlug)
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403);
@@ -80,7 +80,7 @@ class PaymentController extends Controller
     public function processPayment(Request $request, string $tenantSlug, int $orderId): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['success' => false, 'error' => 'Accès non autorisé'], 403);
@@ -94,7 +94,7 @@ class PaymentController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Cette commande est déjà payée'
-            ], 400);
+            ], 422);
         }
 
         $validated = $request->validate([
@@ -105,6 +105,17 @@ class PaymentController extends Controller
         ]);
 
         $method = PaymentMethod::from($validated['method']);
+
+        // Validate cash payment amount sufficiency
+        if ($method === PaymentMethod::CASH) {
+            $amountReceived = $validated['amount_received'] ?? $order->getRemainingAmount();
+            if ((float) $amountReceived < (float) $order->getRemainingAmount()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Montant insuffisant pour régler cette commande',
+                ], 422);
+            }
+        }
 
         try {
             $payment = match($method) {
@@ -156,7 +167,7 @@ class PaymentController extends Controller
     public function getOrderForPayment(string $tenantSlug, int $orderId): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
@@ -186,7 +197,7 @@ class PaymentController extends Controller
     public function receipt(string $tenantSlug, int $paymentId)
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403);
@@ -212,7 +223,7 @@ class PaymentController extends Controller
     public function stats(Request $request, string $tenantSlug): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
@@ -234,7 +245,7 @@ class PaymentController extends Controller
     public function unpaidOrders(string $tenantSlug): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);

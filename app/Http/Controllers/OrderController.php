@@ -19,9 +19,16 @@ class OrderController extends Controller
      * Get order status for client tracking (public API - no auth required)
      * Used by menu-client.blade.php for real-time order tracking
      */
-    public function getOrderForClient(int $id): JsonResponse
+    public function getOrderForClient(Request $request, int $id): JsonResponse
     {
+        // SECURITE: Scoper la commande au tenant pour éviter les fuites inter-tenants
+        $tenantId = $request->query('tenant_id');
+        if (!$tenantId) {
+            return response()->json(['success' => false, 'message' => 'Paramètre tenant_id requis'], 400);
+        }
+
         $order = Order::with(['items.dish', 'table'])
+            ->where('tenant_id', $tenantId)
             ->find($id);
 
         if (!$order) {
@@ -134,7 +141,7 @@ class OrderController extends Controller
             return redirect()->route('login');
         }
 
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             if ($request->wantsJson()) {
@@ -145,11 +152,13 @@ class OrderController extends Controller
 
         // Date filter - par défaut aujourd'hui si non spécifié
         $filterDate = $request->filled('date') ? $request->date : now()->format('Y-m-d');
+        $dayStart = \Carbon\Carbon::parse($filterDate)->startOfDay();
+        $dayEnd   = \Carbon\Carbon::parse($filterDate)->endOfDay();
 
         // Build query with filters
         $query = Order::with(['table', 'items.dish', 'items.variant'])
             ->where('tenant_id', $tenant->id)
-            ->whereDate('created_at', $filterDate)
+            ->whereBetween('created_at', [$dayStart, $dayEnd])
             ->orderBy('created_at', 'desc');
 
         // Apply filters
@@ -173,22 +182,13 @@ class OrderController extends Controller
         $tables = \App\Models\Table::where('tenant_id', $tenant->id)->get();
 
         // Calculate statistics for the selected date
+        $baseQuery = Order::where('tenant_id', $tenant->id)
+            ->whereBetween('created_at', [$dayStart, $dayEnd]);
         $statistics = [
-            'total' => Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $filterDate)
-                ->count(),
-            'pending' => Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $filterDate)
-                ->whereIn('status', ['RECU', 'PREP', 'PRET'])
-                ->count(),
-            'completed' => Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $filterDate)
-                ->where('status', 'SERVI')
-                ->count(),
-            'revenue' => Order::where('tenant_id', $tenant->id)
-                ->whereDate('created_at', $filterDate)
-                ->where('payment_status', 'PAID')
-                ->sum('total'),
+            'total'     => (clone $baseQuery)->count(),
+            'pending'   => (clone $baseQuery)->whereIn('status', ['RECU', 'PREP', 'PRET'])->count(),
+            'completed' => (clone $baseQuery)->where('status', 'SERVI')->count(),
+            'revenue'   => (clone $baseQuery)->where('payment_status', 'PAID')->sum('total'),
         ];
 
         return view('admin.orders.index', [
@@ -208,7 +208,7 @@ class OrderController extends Controller
     public function getOrdersByTenant(string $tenantSlug): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user) {
             return response()->json(['error' => 'Non authentifié'], 401);
@@ -219,9 +219,11 @@ class OrderController extends Controller
         }
 
         // Récupérer toutes les commandes du jour (pas annulées) pour le KDS
-        $orders = Order::with(['table', 'items.dish', 'items.variant'])
+        $start = now()->startOfDay();
+        $end   = now()->endOfDay();
+        $orders = Order::with(['table', 'items.dish', 'items.variant', 'serveur'])
             ->where('tenant_id', $tenant->id)
-            ->whereDate('created_at', now())
+            ->whereBetween('created_at', [$start, $end])
             ->where('status', '!=', 'ANNULE')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -324,7 +326,7 @@ class OrderController extends Controller
     {
         $order = $this->orderService->getOrderWithDetails($id);
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$order) {
             if ($request->wantsJson()) {
@@ -357,7 +359,7 @@ class OrderController extends Controller
     public function kds(string $tenantSlug)
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403, 'Accès non autorisé à ce tenant');
@@ -370,12 +372,27 @@ class OrderController extends Controller
     }
 
     /**
+     * Get orders grouped by status for KDS (by tenant ID)
+     */
+    public function kdsDataById(int $tenantId): JsonResponse
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['error' => 'Non authentifié'], 401);
+        }
+        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenantId) {
+            return response()->json(['error' => 'Accès non autorisé'], 403);
+        }
+        return response()->json($this->orderService->getOrdersForKDS($tenantId));
+    }
+
+    /**
      * Get orders grouped by status for KDS
      */
     public function kdsData(string $tenantSlug): JsonResponse
     {
         $user = auth()->user();
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);

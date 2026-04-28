@@ -50,16 +50,17 @@ class MenuCrudTest extends TestCase
             'email' => 'admin@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant->id,
+            'role' => 'ADMIN',
         ]);
-        $this->admin->roles()->attach(Role::where('name', 'ADMIN')->first());
 
         // Create client user
         $this->client = User::create([
             'name' => 'Client',
             'email' => 'client@test.com',
             'password' => bcrypt('password'),
+            'role' => 'SERVEUR',
+            'tenant_id' => $this->tenant->id,
         ]);
-        $this->client->roles()->attach(Role::where('name', 'CLIENT')->first());
 
         // Create menu structure
         $this->menu = Menu::create([
@@ -112,7 +113,7 @@ class MenuCrudTest extends TestCase
                 'sort_order' => 0,
             ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
         $this->assertDatabaseHas('categories', [
             'name' => 'Entrées',
@@ -131,7 +132,7 @@ class MenuCrudTest extends TestCase
                 'active' => true,
             ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
         $this->assertDatabaseHas('dishes', [
             'name' => 'Poulet Braisé',
@@ -153,7 +154,7 @@ class MenuCrudTest extends TestCase
                 'active' => true,
             ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
         $dish = Dish::where('name', 'Pizza Margherita')->first();
 
@@ -181,7 +182,7 @@ class MenuCrudTest extends TestCase
                 'description' => 'New description',
             ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
         $dish->refresh();
         $this->assertEquals('Updated Name', $dish->name);
@@ -204,7 +205,7 @@ class MenuCrudTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->post("/admin/{$this->tenant->slug}/dishes/{$dish->id}/toggle");
 
-        $response->assertRedirect();
+        $response->assertStatus(200);
 
         $dish->refresh();
         $this->assertFalse($dish->active);
@@ -233,9 +234,9 @@ class MenuCrudTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->delete("/admin/{$this->tenant->slug}/dishes/{$dish->id}");
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
-        $this->assertDatabaseMissing('dishes', ['id' => $dishId]);
+        $this->assertSoftDeleted('dishes', ['id' => $dishId]);
     }
 
     /** @test */
@@ -255,25 +256,27 @@ class MenuCrudTest extends TestCase
     public function dish_requires_name()
     {
         $response = $this->actingAs($this->admin)
-            ->post("/admin/{$this->tenant->slug}/categories/{$this->category->id}/dishes", [
+            ->postJson("/admin/{$this->tenant->slug}/categories/{$this->category->id}/dishes", [
                 'price_base' => 5000,
                 'active' => true,
             ]);
 
-        $response->assertSessionHasErrors('name');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('name');
     }
 
     /** @test */
     public function dish_requires_positive_price()
     {
         $response = $this->actingAs($this->admin)
-            ->post("/admin/{$this->tenant->slug}/categories/{$this->category->id}/dishes", [
+            ->postJson("/admin/{$this->tenant->slug}/categories/{$this->category->id}/dishes", [
                 'name' => 'Test Dish',
                 'price_base' => -100,
                 'active' => true,
             ]);
 
-        $response->assertSessionHasErrors('price_base');
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors('price_base');
     }
 
     /** @test */
@@ -312,7 +315,7 @@ class MenuCrudTest extends TestCase
                 'active' => false,
             ]);
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
         $this->menu->refresh();
         $this->assertEquals('Updated Menu Title', $this->menu->title);
@@ -333,8 +336,8 @@ class MenuCrudTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->delete("/admin/{$this->tenant->slug}/menus/{$menuToDelete->id}");
 
-        $response->assertRedirect();
+        $response->assertStatus(200)->assertJson(['success' => true]);
 
-        $this->assertDatabaseMissing('menus', ['id' => $menuId]);
+        $this->assertSoftDeleted('menus', ['id' => $menuId]);
     }
 }

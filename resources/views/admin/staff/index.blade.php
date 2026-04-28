@@ -51,7 +51,43 @@
         </div>
 
         @if($staff->count() > 0)
-        <div class="overflow-x-auto">
+
+        {{-- ── Vue CARTES (mobile) ───────────────────────────── --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @foreach($staff as $member)
+            @php $roleEnum = \App\Enums\UserRole::tryFrom($member->role) @endphp
+            <div class="p-4 flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                    {{ strtoupper(substr($member->name, 0, 1)) }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 text-sm">{{ $member->name }}</p>
+                    <p class="text-xs text-gray-400 font-mono">{{ $member->username ?? '—' }}</p>
+                    <span class="inline-flex mt-1 px-2 py-0.5 text-xs font-semibold rounded-full {{ $roleEnum ? $roleEnum->badgeClass() : 'bg-gray-100 text-gray-800' }}">
+                        {{ $roleEnum ? $roleEnum->label() : $member->role }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <a href="{{ route('admin.staff.edit', [$tenant->slug, $member]) }}"
+                       class="p-2 text-amber-500 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors" title="Modifier">
+                        <x-heroicon-o-pencil class="w-5 h-5" />
+                    </a>
+                    <form method="POST" action="{{ route('admin.staff.destroy', [$tenant->slug, $member]) }}"
+                          class="inline-block"
+                          onsubmit="return confirm('Etes-vous sur de vouloir supprimer ce membre ?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Supprimer">
+                            <x-heroicon-o-trash class="w-5 h-5" />
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- ── Vue TABLEAU (sm et plus) ─────────────────────── --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50/80">
                     <tr>

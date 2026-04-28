@@ -1,6 +1,6 @@
-# GUIDE DE DEPLOIEMENT - SmartMenu
+# GUIDE DE DEPLOIEMENT - HorusPOS
 
-> Guide pas-a-pas pour mettre SmartMenu en production.
+> Guide pas-a-pas pour mettre HorusPOS en production.
 > Ecrit pour les debutants. Chaque etape est detaillee.
 
 ---
@@ -92,7 +92,7 @@ nano .env
 Modifie ces lignes (voir Section 5 pour le detail complet) :
 
 ```env
-APP_NAME=SmartMenu
+APP_NAME=HorusPOS
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://ton-domaine.com
@@ -138,7 +138,7 @@ docker compose ps
 curl http://localhost
 ```
 
-Ouvre ton navigateur sur `http://IP-DU-SERVEUR` - tu dois voir SmartMenu.
+Ouvre ton navigateur sur `http://IP-DU-SERVEUR` - tu dois voir HorusPOS.
 
 ---
 
@@ -295,7 +295,7 @@ Coller :
 
 ```ini
 [Unit]
-Description=SmartMenu Queue Worker
+Description=HorusPOS Queue Worker
 After=network.target
 
 [Service]
@@ -363,7 +363,7 @@ Voici TOUTES les lignes a modifier dans le `.env` pour la production :
 # ============================================
 # APPLICATION
 # ============================================
-APP_NAME=SmartMenu
+APP_NAME=HorusPOS
 APP_ENV=production          # IMPORTANT: "production", pas "local"
 APP_DEBUG=false              # IMPORTANT: "false" en production
 APP_URL=https://ton-domaine.com  # Ton vrai domaine avec https
@@ -404,7 +404,7 @@ MAIL_USERNAME=ton-email@gmail.com
 MAIL_PASSWORD=ton-mot-de-passe-application
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=contact@ton-domaine.com
-MAIL_FROM_NAME="SmartMenu"
+MAIL_FROM_NAME="HorusPOS"
 
 # ============================================
 # SECURITE
@@ -726,4 +726,4 @@ Coche chaque element avant de mettre en ligne :
 
 ---
 
-*Guide cree le 6 fevrier 2026 - SmartMenu v1.0*
+*Guide cree le 6 fevrier 2026 - HorusPOS v1.0*

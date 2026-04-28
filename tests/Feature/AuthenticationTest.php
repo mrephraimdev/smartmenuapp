@@ -49,12 +49,11 @@ class AuthenticationTest extends TestCase
             'email' => 'test@example.com',
             'password' => bcrypt('password'),
             'tenant_id' => $tenant->id,
+            'role' => 'ADMIN',
         ]);
 
-        $user->roles()->attach(Role::where('name', 'ADMIN')->first());
-
         $response = $this->post('/login', [
-            'email' => 'test@example.com',
+            'login' => 'test@example.com',
             'password' => 'password',
         ]);
 

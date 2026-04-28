@@ -38,9 +38,9 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard', ['tenantSlug' => $tenant->slug]);
         }
 
-        // CAISSIER → Interface Caisse (POS)
+        // CAISSIER → Interface Caisse
         if ($user->hasRole(UserRole::CAISSIER) && $tenant) {
-            return redirect()->route('caisse.pos.index', ['tenantSlug' => $tenant->slug]);
+            return redirect()->route('caisse.payments.index', ['tenantSlug' => $tenant->slug]);
         }
 
         // CHEF → Écran Cuisine (KDS)
@@ -48,9 +48,9 @@ class HomeController extends Controller
             return redirect()->route('kds', ['tenantSlug' => $tenant->slug]);
         }
 
-        // SERVEUR → Écran Cuisine (KDS)
+        // SERVEUR → Interface prise de commande
         if ($user->hasRole(UserRole::SERVEUR) && $tenant) {
-            return redirect()->route('kds', ['tenantSlug' => $tenant->slug]);
+            return redirect()->route('serveur.commande.index', ['tenantSlug' => $tenant->slug]);
         }
 
         // Par défaut → Page d'accueil générale

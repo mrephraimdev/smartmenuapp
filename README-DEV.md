@@ -1,6 +1,6 @@
-# SmartMenu - Guide Développeur
+# HorusPOS - Guide Développeur
 
-Guide technique complet pour les développeurs travaillant sur SmartMenu.
+Guide technique complet pour les développeurs travaillant sur HorusPOS.
 
 ## Table des matières
 

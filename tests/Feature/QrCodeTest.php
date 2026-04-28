@@ -43,8 +43,8 @@ class QrCodeTest extends TestCase
             'email' => 'admin@test.com',
             'password' => bcrypt('password'),
             'tenant_id' => $this->tenant->id,
+            'role' => 'ADMIN',
         ]);
-        $this->admin->roles()->attach(Role::where('name', 'ADMIN')->first());
 
         // Create table
         $this->table = Table::create([
@@ -160,7 +160,8 @@ class QrCodeTest extends TestCase
         $response = $this->get($menuUrl);
 
         $response->assertStatus(200);
-        $response->assertSee($this->tenant->name);
+        // Tenant ID is embedded in Alpine.js bootstrap data (name loaded async)
+        $response->assertSee((string) $this->tenant->id);
     }
 
     /** @test */

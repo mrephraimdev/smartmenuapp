@@ -19,7 +19,7 @@ class AdminMenuController extends Controller
      */
     public function updateNotificationSettings(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $allowed = ['SERVEUR', 'CAISSIER', 'ADMIN'];
         $targets = array_values(array_filter($request->input('targets', []), fn($t) => in_array($t, $allowed)));
@@ -47,7 +47,7 @@ class AdminMenuController extends Controller
      */
     public function dashboard(\Illuminate\Http\Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tenantId = $tenant->id;
 
         // Période sélectionnée (défaut : aujourd'hui)
@@ -130,7 +130,7 @@ class AdminMenuController extends Controller
      */
     public function menus($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $menus = Menu::where('tenant_id', $tenant->id)->get();
 
         return view('admin.menus', compact('tenant', 'menus'));
@@ -146,12 +146,12 @@ class AdminMenuController extends Controller
                 'title' => 'required|string|max:255',
             ]);
 
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
 
             Menu::create([
                 'tenant_id' => $tenant->id,
                 'title' => $request->title,
-                'active' => $request->has('active')
+                'active' => $request->boolean('active', true),
             ]);
 
             // Invalider les caches
@@ -191,9 +191,9 @@ class AdminMenuController extends Controller
                 'active' => 'boolean'
             ]);
 
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($id);
-            $menu->update($request->all());
+            $menu->update($request->only(['title', 'active']));
 
             // Invalider les caches
             $this->invalidateTenantCache($tenant->id);
@@ -217,7 +217,7 @@ class AdminMenuController extends Controller
     public function destroyMenu($tenantSlug, $id)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($id);
             $menu->delete();
 
@@ -242,7 +242,7 @@ class AdminMenuController extends Controller
      */
     public function categories($tenantSlug, $menuId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $menu = Menu::with('categories.dishes')->where('tenant_id', $tenant->id)->findOrFail($menuId);
         return view('admin.categories', compact('tenant', 'menu'));
     }
@@ -258,7 +258,7 @@ class AdminMenuController extends Controller
                 'sort_order' => 'integer'
             ]);
 
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($menuId);
 
             Category::create([
@@ -285,7 +285,7 @@ class AdminMenuController extends Controller
      */
     public function dishes($tenantSlug, $categoryId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $category = Category::with(['dishes.variants', 'dishes.options'])
                            ->whereHas('menu', function($query) use ($tenant) {
                                $query->where('tenant_id', $tenant->id);
@@ -299,26 +299,29 @@ class AdminMenuController extends Controller
      */
     public function storeDish(Request $request, $tenantSlug, $categoryId)
     {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price_base' => 'required|numeric|min:0',
+            'active' => 'boolean'
+        ]);
+
         DB::beginTransaction();
         try {
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'price_base' => 'required|numeric|min:0',
-                'active' => 'boolean'
-            ]);
-
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $category = Category::whereHas('menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($categoryId);
 
             $dish = Dish::create([
+                'tenant_id' => $tenant->id,
                 'category_id' => $categoryId,
                 'name' => $request->name,
                 'description' => $request->description,
                 'price_base' => $request->price_base,
-                'active' => $request->active ?? true
+                'active' => $request->boolean('active', true),
+                'allergens' => $request->input('allergens', []),
+                'tags' => $request->input('tags', []),
             ]);
 
             // Gérer les variantes
@@ -382,7 +385,7 @@ class AdminMenuController extends Controller
                 'active' => 'boolean'
             ]);
 
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
@@ -442,7 +445,7 @@ class AdminMenuController extends Controller
     public function destroyDish($tenantSlug, $id)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
@@ -470,7 +473,7 @@ class AdminMenuController extends Controller
     public function toggleDish($tenantSlug, $id)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
@@ -499,7 +502,7 @@ class AdminMenuController extends Controller
     public function getDish($tenantSlug, $id)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::with(['variants', 'options'])
                        ->whereHas('category.menu', function($query) use ($tenant) {
                            $query->where('tenant_id', $tenant->id);
@@ -525,7 +528,7 @@ class AdminMenuController extends Controller
     public function statistics($tenantSlug)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
 
             // Cache les stats pendant 2 minutes
             $cacheKey = "dashboard_stats_{$tenant->id}";
@@ -597,7 +600,7 @@ class AdminMenuController extends Controller
                 'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
             ]);
 
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($dishId);
@@ -642,7 +645,7 @@ class AdminMenuController extends Controller
     public function deleteDishPhoto($tenantSlug, $dishId)
     {
         try {
-            $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+            $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($dishId);

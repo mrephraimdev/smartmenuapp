@@ -1,6 +1,6 @@
 # 📊 GUIDE D'UTILISATION - EXPORTS PDF/EXCEL
 
-> Guide complet d'utilisation du système d'export de données SmartMenu SaaS
+> Guide complet d'utilisation du système d'export de données HorusPOS SaaS
 > Version 2.5 | Dernière mise à jour : 2026-01-28
 
 ---
@@ -20,7 +20,7 @@
 
 ## 🎯 PRÉSENTATION
 
-Le système d'export SmartMenu permet aux administrateurs d'extraire leurs données dans différents formats pour :
+Le système d'export HorusPOS permet aux administrateurs d'extraire leurs données dans différents formats pour :
 - **Archivage** : Sauvegarder les données comptables
 - **Analyse** : Analyser les tendances dans Excel
 - **Impression** : Imprimer des rapports professionnels
@@ -472,5 +472,5 @@ Carte menu imprimable pour distribution.
 
 ---
 
-**📊 SmartMenu SaaS - Export PDF/Excel v2.5**
+**📊 HorusPOS SaaS - Export PDF/Excel v2.5**
 *Documentation générée le 2026-01-28*

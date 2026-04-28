@@ -20,7 +20,7 @@ class PosController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $user = Auth::user();
 
         // Get current open session for this user
@@ -38,7 +38,7 @@ class PosController extends Controller
      */
     public function sessions(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $sessions = PosSession::where('tenant_id', $tenant->id)
             ->with('user')
@@ -57,7 +57,7 @@ class PosController extends Controller
      */
     public function open(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $user = Auth::user();
 
         $request->validate([
@@ -91,7 +91,7 @@ class PosController extends Controller
      */
     public function close(Request $request, string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -127,7 +127,7 @@ class PosController extends Controller
      */
     public function show(string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -147,7 +147,7 @@ class PosController extends Controller
      */
     public function zReport(string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -170,7 +170,7 @@ class PosController extends Controller
      */
     public function xReport(string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -193,7 +193,7 @@ class PosController extends Controller
      */
     public function exportZReport(string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -219,7 +219,7 @@ class PosController extends Controller
      */
     public function exportXReport(string $tenantSlug, PosSession $session)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         if ($session->tenant_id !== $tenant->id) {
             abort(403);
@@ -245,7 +245,7 @@ class PosController extends Controller
      */
     public function statistics(Request $request, string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         $startDate = Carbon::parse($request->get('start_date', now()->startOfMonth()));
         $endDate = Carbon::parse($request->get('end_date', now()));

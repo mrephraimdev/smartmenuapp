@@ -26,7 +26,16 @@
       "Bash(timeout 5 npm run dev:*)",
       "Bash(copy \"C:\\\\Users\\\\Mr-Ephraim\\\\Downloads\\\\SmartMenu.png\" \"c:\\\\Users\\\\Mr-Ephraim\\\\menu-qr-app\\\\public\\\\images\\\\SmartMenu.png\")",
       "Bash(grep:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)",
+      "Bash(python -m pip install pandas openpyxl -q)",
+      "Bash(pip install *)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(sed -i \"s/'type' => 'RESTAURANT'/'type' => 'restaurant'/g\" /c/Users/Mr-Ephraim/menu-qr-app/tests/Feature/TenantTest.php)",
+      "Bash(sed -i \"s/'type' => 'RESTAURANT'/'type' => 'restaurant'/g\" /c/Users/Mr-Ephraim/menu-qr-app/tests/Feature/PermissionsTest.php)",
+      "Bash(sed -i \"s/'type' => 'RESTAURANT'/'type' => 'restaurant'/g\" /c/Users/Mr-Ephraim/menu-qr-app/tests/Feature/MultiTenancyIsolationTest.php)",
+      "Bash(iconv -f UTF-8 -t ASCII//TRANSLIT)"
     ]
   }
 }

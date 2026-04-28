@@ -18,7 +18,7 @@ class StatisticsController extends Controller
      */
     public function index(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         // Résoudre la période (défaut : 30 derniers jours)
         $period   = $request->get('period', '30days');
@@ -80,7 +80,7 @@ class StatisticsController extends Controller
      */
     public function chartData(Request $request, $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         // SECURITE: Valider period contre liste blanche
         $allowedPeriods = ['7days', '30days', 'hourly'];

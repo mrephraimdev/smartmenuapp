@@ -42,6 +42,12 @@ class TenantObserver
             $this->auditService->logUpdated($tenant, static::$oldValuesCache[$tenant->id]);
             unset(static::$oldValuesCache[$tenant->id]);
         }
+
+        // Invalider le cache slug (ancien et nouveau slug en cas de changement)
+        Tenant::forgetSlugCache($tenant->slug);
+        if ($tenant->wasChanged('slug')) {
+            Tenant::forgetSlugCache($tenant->getOriginal('slug'));
+        }
     }
 
     /**
@@ -51,7 +57,9 @@ class TenantObserver
     {
         $this->auditService->logDeleted($tenant, "Restaurant \"{$tenant->name}\" supprimé");
 
-        // Nettoyer le cache si présent
+        // Invalider le cache slug
+        Tenant::forgetSlugCache($tenant->slug);
+
         if (isset(static::$oldValuesCache[$tenant->id])) {
             unset(static::$oldValuesCache[$tenant->id]);
         }

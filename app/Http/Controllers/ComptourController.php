@@ -29,17 +29,18 @@ class ComptourController extends Controller
      */
     public function index(string $tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
-        $menus = Menu::with([
+        $menus = Menu::forTenant($tenant->id)->with([
             'categories' => function ($q) {
-                $q->orderBy('name')->with(['dishes' => function ($q) {
+                $q->orderBy('sort_order')->with(['dishes' => function ($q) {
                     $q->where('active', true)->orderBy('name');
                 }]);
             }
         ])->where('active', true)->get();
 
-        $tables = Table::where('is_active', true)
+        $tables = Table::forTenant($tenant->id)
+            ->where('is_active', true)
             ->orderBy('code')
             ->get();
 
@@ -51,7 +52,7 @@ class ComptourController extends Controller
      */
     public function receipt(string $tenantSlug, int $orderId)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $order = Order::where('id', $orderId)
             ->where('tenant_id', $tenant->id)
             ->with(['items.dish', 'items.variant', 'table'])
@@ -67,7 +68,7 @@ class ComptourController extends Controller
      */
     public function store(Request $request, string $tenantSlug): JsonResponse
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
 
         try {
             $methodValues = implode(',', array_column(PaymentMethod::cases(), 'value'));

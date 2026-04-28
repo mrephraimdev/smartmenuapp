@@ -76,7 +76,7 @@ class TenantResource extends JsonResource
         return [
             'meta' => [
                 'version' => '1.0',
-                'api' => 'SmartMenu API',
+                'api' => 'HorusPOS API',
             ],
         ];
     }

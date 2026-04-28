@@ -16,43 +16,43 @@
 @endphp
 
 @section('content')
-<div x-data="ordersManager('{{ $tenantSlug }}', {{ $tenantId }}, {{ $showWaiterCalls ? 'true' : 'false' }})" x-init="init()" class="container mx-auto px-4 py-8">
+<div x-data="ordersManager('{{ $tenantSlug }}', {{ $tenantId }}, {{ $showWaiterCalls ? 'true' : 'false' }})" x-init="init()" class="container mx-auto">
     <!-- Header -->
-    <div class="mb-8 flex justify-between items-center">
+    <div class="mb-5 flex flex-wrap gap-3 justify-between items-start">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Commandes</h1>
-            <p class="text-gray-600">
+            <h1 class="text-xl sm:text-3xl font-bold text-gray-900">Commandes</h1>
+            <p class="text-gray-500 text-sm mt-0.5">
                 <span x-show="filters.date === '{{ now()->format('Y-m-d') }}'">Commandes du jour</span>
                 <span x-show="filters.date !== '{{ now()->format('Y-m-d') }}'" x-text="'Commandes du ' + new Date(filters.date).toLocaleDateString('fr-FR')"></span>
             </p>
         </div>
 
-        <div class="flex gap-3 items-center">
+        <div class="flex gap-2 items-center flex-shrink-0">
             <!-- Auto-refresh indicator -->
-            <div class="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
-                <span class="relative flex h-3 w-3">
+            <div class="flex items-center gap-1.5 bg-gray-100 px-2.5 py-1.5 rounded-lg">
+                <span class="relative flex h-2.5 w-2.5">
                     <span x-show="autoRefresh" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span :class="autoRefresh ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-3 w-3"></span>
+                    <span :class="autoRefresh ? 'bg-green-500' : 'bg-gray-400'" class="relative inline-flex rounded-full h-2.5 w-2.5"></span>
                 </span>
-                <button @click="autoRefresh = !autoRefresh" class="text-sm font-medium text-gray-700">
-                    Auto: <span x-text="autoRefresh ? 'ON' : 'OFF'"></span>
+                <button @click="autoRefresh = !autoRefresh" class="text-xs font-medium text-gray-700">
+                    <span x-text="autoRefresh ? 'Auto ON' : 'Auto OFF'"></span>
                 </button>
             </div>
 
             <button @click="refresh()"
                     :disabled="loading"
-                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium p-2 rounded-lg transition-colors">
+                <svg class="w-4 h-4" :class="loading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
             </button>
 
             <a href="{{ route('admin.exports.orders.excel', $tenantSlug) }}"
-               class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded-lg transition-colors flex items-center gap-1.5">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Export
+                <span class="hidden sm:inline text-sm">Export</span>
             </a>
         </div>
     </div>
@@ -219,7 +219,7 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-5">
         <div class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
             <p class="text-blue-700 text-xs font-medium mb-1">Total</p>
             <p class="text-2xl font-bold text-blue-900" x-text="stats.total"></p>
@@ -243,8 +243,8 @@
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
             <select x-model="filters.status" class="border border-gray-300 rounded-lg text-sm px-2 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <option value="">Tous les statuts</option>
                 <option value="RECU">Reçu</option>
@@ -278,9 +278,78 @@
         </div>
     </div>
 
-    <!-- Orders Table -->
+    <!-- Orders List -->
     <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
+
+        {{-- ── Vue CARTES (mobile uniquement) ───────────────────── --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            <template x-for="order in filteredOrders" :key="'m'+order.id">
+                <div class="p-4" :class="order.isNew && 'bg-green-50'">
+                    <div class="flex items-start justify-between mb-2">
+                        <div>
+                            <p class="font-bold text-gray-900 text-sm" x-text="order.order_number || '#' + order.id"></p>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                <span x-text="order.table?.label || 'Comptoir'"></span>
+                                <span class="mx-1">·</span>
+                                <span x-text="(order.items?.length || 0) + ' art.'"></span>
+                                <span class="mx-1">·</span>
+                                <span x-text="formatTime(order.created_at)"></span>
+                            </p>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0"
+                              :class="getStatusClass(order.status)"
+                              x-text="getStatusLabel(order.status)"></span>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base font-bold text-gray-900" x-text="formatCurrency(order.total)"></span>
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-full"
+                                  :class="getPaymentStatusClass(order.payment_status)"
+                                  x-text="getPaymentStatusLabel(order.payment_status)"></span>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <a :href="`/admin/{{ $tenantSlug }}/orders/${order.id}`"
+                               class="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg" title="Voir">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+                            <template x-if="order.payment_status !== 'PAID' && order.status !== 'ANNULE'">
+                                <button @click="openPaymentModal(order)"
+                                        class="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg" title="Encaisser">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </button>
+                            </template>
+                            <template x-if="order.status !== 'SERVI' && order.status !== 'ANNULE'">
+                                <button @click="progressOrder(order.id)"
+                                        class="p-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg" title="Avancer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                    </svg>
+                                </button>
+                            </template>
+                            <template x-if="order.status !== 'ANNULE'">
+                                <button @click="cancelOrder(order.id)"
+                                        class="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg" title="Annuler">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div x-show="filteredOrders.length === 0" class="py-10 text-center text-gray-400 text-sm">
+                Aucune commande
+            </div>
+        </div>
+
+        {{-- ── Vue TABLEAU (sm et plus) ─────────────────────────── --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -323,7 +392,6 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
                                 <div class="flex gap-1">
-                                    <!-- Voir -->
                                     <a :href="`/admin/{{ $tenantSlug }}/orders/${order.id}`"
                                        class="p-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg" title="Voir">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +399,6 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
-                                    <!-- Encaisser (si non payé) -->
                                     <template x-if="order.payment_status !== 'PAID' && order.status !== 'ANNULE'">
                                         <button @click="openPaymentModal(order)"
                                                 class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 rounded-lg" title="Encaisser">
@@ -340,7 +407,6 @@
                                             </svg>
                                         </button>
                                     </template>
-                                    <!-- Avancer statut -->
                                     <template x-if="order.status !== 'SERVI' && order.status !== 'ANNULE'">
                                         <button @click="progressOrder(order.id)"
                                                 class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg" title="Avancer">
@@ -349,7 +415,6 @@
                                             </svg>
                                         </button>
                                     </template>
-                                    <!-- Annuler -->
                                     <template x-if="order.status !== 'ANNULE'">
                                         <button @click="cancelOrder(order.id)"
                                                 class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg" title="Annuler">

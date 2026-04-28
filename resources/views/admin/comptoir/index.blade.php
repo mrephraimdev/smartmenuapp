@@ -17,6 +17,9 @@
     .cart-item-enter { animation: slideIn 0.2s ease; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
     .qty-badge { min-width: 1.4rem; }
+    @media (min-width: 1024px) {
+        .comptoir-catalog, .comptoir-cart { display: flex !important; }
+    }
 </style>
 @endpush
 
@@ -24,13 +27,34 @@
 <div
     x-data="comptoir()"
     x-init="init()"
-    class="flex gap-3 h-[calc(100vh-7.5rem)]"
+    class="flex flex-col gap-3 h-[calc(100vh-7.5rem)]"
 >
+
+{{-- Tab bar mobile --}}
+<div class="lg:hidden flex flex-shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <button @click="showCart = false"
+            :class="!showCart ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-50'"
+            class="flex-1 py-3 text-sm font-bold transition-colors">
+        Catalogue
+    </button>
+    <button @click="showCart = true"
+            :class="showCart ? 'bg-amber-500 text-white' : 'text-gray-600 hover:bg-gray-50'"
+            class="flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2">
+        Panier
+        <span x-show="cart.length > 0"
+              class="inline-flex items-center justify-center w-5 h-5 bg-white text-amber-600 text-xs font-extrabold rounded-full"
+              x-text="cart.length"></span>
+    </button>
+</div>
+
+{{-- Panneaux --}}
+<div class="flex gap-3 flex-1 overflow-hidden">
 
 {{-- ═══════════════════════════════════════════════════════
      COLONNE GAUCHE — Catalogue
 ═══════════════════════════════════════════════════════ --}}
-<div class="flex-1 flex flex-col min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+<div class="comptoir-catalog flex-1 flex flex-col min-w-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+     x-show="!showCart">
 
     {{-- Header catalogue --}}
     <div class="px-4 pt-3 pb-2 border-b border-gray-100 flex-shrink-0 bg-gray-50">
@@ -156,7 +180,8 @@
 {{-- ═══════════════════════════════════════════════════════
      COLONNE DROITE — Commande & Paiement
 ═══════════════════════════════════════════════════════ --}}
-<div class="w-[320px] flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex-shrink-0">
+<div class="comptoir-cart w-full lg:w-[320px] flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex-shrink-0"
+     x-show="showCart">
 
     {{-- Header panier --}}
     <div class="px-4 py-3 bg-slate-900 flex items-center justify-between flex-shrink-0">
@@ -346,6 +371,7 @@
     </div>
 </div>
 
+</div>{{-- fin panneaux --}}
 </div>
 @endsection
 
@@ -353,6 +379,7 @@
 <script>
 function comptoir() {
     return {
+        showCart: false,
         cart: [],
         search: '',
         activeCategory: null,

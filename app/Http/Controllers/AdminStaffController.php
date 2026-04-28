@@ -28,7 +28,7 @@ class AdminStaffController extends Controller
      */
     private function getTenant(string $tenantSlug): Tenant
     {
-        return Tenant::where('slug', $tenantSlug)->firstOrFail();
+        return Tenant::findBySlug($tenantSlug);
     }
 
     /**

@@ -116,6 +116,10 @@ Route::get('/kds/orders', [OrderController::class, 'index']);
 // URL: /api/orders/tenant/{tenantSlug}
 Route::get('/orders/tenant/{tenantSlug}', [OrderController::class, 'getOrdersByTenant'])->middleware(['web', 'auth:web']);
 
+// ✅ Route KDS groupée par statut (accepte tenant ID)
+// URL: /api/orders/kds/{tenantId}
+Route::get('/orders/kds/{tenantId}', [OrderController::class, 'kdsDataById'])->middleware(['web', 'auth:web']);
+
 // ✅ Route pour mettre à jour le statut (PATCH)
 // URL: /api/orders/{id}/status
 Route::patch('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware(['web', 'auth:web']);

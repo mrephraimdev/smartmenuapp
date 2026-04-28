@@ -38,7 +38,7 @@ class TenantService
             // Create default menu
             Menu::create([
                 'tenant_id' => $tenant->id,
-                'name' => 'Menu Principal',
+                'title' => 'Menu Principal',
                 'active' => true,
             ]);
 

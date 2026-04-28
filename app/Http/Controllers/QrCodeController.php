@@ -16,7 +16,7 @@ class QrCodeController extends Controller
      */
     public function index($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->orderBy('code')->get();
 
         $qrCodes = [];
@@ -132,7 +132,7 @@ class QrCodeController extends Controller
      */
     public function downloadAllPdf($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->orderBy('code')->get();
 
         // Pré-générer les QR codes en base64 pour chaque table
@@ -155,7 +155,7 @@ class QrCodeController extends Controller
      */
     public function generateAll($tenantSlug)
     {
-        $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
+        $tenant = Tenant::findBySlug($tenantSlug);
         $tables = Table::where('tenant_id', $tenant->id)->get();
 
         $qrCodes = [];

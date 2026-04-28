@@ -73,9 +73,9 @@ class LoginController extends Controller
             return route('admin.dashboard', $tenant->slug);
         }
 
-        // CAISSIER → Interface Caisse (POS)
+        // CAISSIER → Interface Caisse
         if ($user->hasRole(UserRole::CAISSIER) && $tenant) {
-            return route('caisse.pos.index', $tenant->slug);
+            return route('caisse.payments.index', $tenant->slug);
         }
 
         // CHEF → Écran Cuisine (KDS)

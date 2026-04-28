@@ -7,10 +7,12 @@ use App\Models\Dish;
 use App\Models\Tenant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
-class MenuImport implements ToCollection, WithHeadingRow
+class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
 {
     protected Tenant $tenant;
     protected int $menuId;
@@ -25,6 +27,28 @@ class MenuImport implements ToCollection, WithHeadingRow
         $this->menuId = $menuId;
     }
 
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter'      => ',',
+            'input_encoding' => 'UTF-8',
+        ];
+    }
+
+    protected function normalizeKey(string $key): string
+    {
+        return Str::slug($key, '_');
+    }
+
+    protected function buildLookup($row): array
+    {
+        $lookup = [];
+        foreach ($row as $key => $value) {
+            $lookup[$this->normalizeKey((string) $key)] = $value;
+        }
+        return $lookup;
+    }
+
     /**
      * Process the collection of rows from the Excel file.
      * WithHeadingRow normalizes headers to lowercase with underscores,
@@ -36,13 +60,13 @@ class MenuImport implements ToCollection, WithHeadingRow
             $rowNumber = $index + 2; // +2 because row 1 is the heading
 
             try {
-                // Normalize values
-                $categorieName = trim((string) ($row['categorie'] ?? ''));
-                $nomPlat       = trim((string) ($row['nom_plat'] ?? ''));
+                // Normalize values — accepte plusieurs variantes de noms de colonnes
+                $categorieName = trim((string) ($row['categorie'] ?? $row['category'] ?? ''));
+                $nomPlat       = trim((string) ($row['nom_plat'] ?? $row['name'] ?? $row['nom'] ?? ''));
                 $description   = trim((string) ($row['description'] ?? ''));
-                $prix          = (float) str_replace(',', '.', (string) ($row['prix'] ?? 0));
+                $prix          = (float) str_replace(',', '.', (string) ($row['prix'] ?? $row['price'] ?? 0));
                 $actif         = isset($row['actif']) && $row['actif'] !== '' ? (bool)(int)$row['actif'] : true;
-                $imageUrl      = trim((string) ($row['image_url'] ?? ''));
+                $imageUrl      = trim((string) ($row['image_url'] ?? $row['image'] ?? ''));
 
                 // Skip rows missing required fields
                 if ($categorieName === '' || $nomPlat === '' || $prix <= 0) {
@@ -84,12 +108,8 @@ class MenuImport implements ToCollection, WithHeadingRow
                 $dish->description = $description !== '' ? $description : null;
                 $dish->price_base  = $prix;
                 $dish->active      = $actif;
+                $dish->photo_url   = $imageUrl !== '' && filter_var($imageUrl, FILTER_VALIDATE_URL) ? $imageUrl : null;
                 $dish->saveQuietly();
-
-                // Download and store image if a valid URL was provided
-                if ($imageUrl !== '' && filter_var($imageUrl, FILTER_VALIDATE_URL)) {
-                    $this->downloadAndStoreImage($dish, $imageUrl);
-                }
 
                 $this->imported++;
 

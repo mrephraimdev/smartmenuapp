@@ -1,4 +1,4 @@
-# DOSSIER PRODUCTION - SmartMenu
+# DOSSIER PRODUCTION - HorusPOS
 ## Guide complet de deploiement VPS de A a Z
 
 > **Stack technique** : Laravel 12 + PHP 8.2 + MySQL 8 + Nginx + Node.js (Vite) + Redis
@@ -17,7 +17,7 @@
 | Stockage  | 20 Go SSD | 40 Go SSD | 80 Go NVMe        |
 | Bande passante | 1 To | 2 To    | Illimitee           |
 
-> **Pour SmartMenu** : 2 vCPU / 2 Go RAM / 40 Go SSD est ideal pour demarrer.
+> **Pour HorusPOS** : 2 vCPU / 2 Go RAM / 40 Go SSD est ideal pour demarrer.
 > Laravel + MySQL + Nginx tournent confortablement avec ca.
 
 ## 1.2 Comparatif des fournisseurs
@@ -475,7 +475,7 @@ nano .env
 Voici le `.env` de production complet :
 
 ```env
-APP_NAME=SmartMenu
+APP_NAME=HorusPOS
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
@@ -513,10 +513,10 @@ MAIL_USERNAME=votre-email@gmail.com
 MAIL_PASSWORD=votre-app-password
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS=noreply@votre-domaine.com
-MAIL_FROM_NAME="SmartMenu"
+MAIL_FROM_NAME="HorusPOS"
 
 # Pas de Vite en production (les assets sont deja compiles)
-VITE_APP_NAME=SmartMenu
+VITE_APP_NAME=HorusPOS
 ```
 
 ### Generer la cle d'application
@@ -828,7 +828,7 @@ nano /home/deploy/backup-db.sh
 
 ```bash
 #!/bin/bash
-# Backup de la base de donnees SmartMenu
+# Backup de la base de donnees HorusPOS
 
 BACKUP_DIR="/var/backups/smartmenu"
 DATE=$(date +%Y%m%d_%H%M%S)
@@ -1178,7 +1178,7 @@ MAINTENANCE :
 
 ---
 
-> **Felicitations !** Si vous avez suivi chaque etape, votre application SmartMenu
+> **Felicitations !** Si vous avez suivi chaque etape, votre application HorusPOS
 > est en production, securisee, optimisee et facile a maintenir.
 >
 > Pour deployer une mise a jour, il suffit de lancer `./deploy.sh` depuis le serveur.

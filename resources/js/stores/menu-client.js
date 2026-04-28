@@ -335,12 +335,12 @@ export default function menuClientStore() {
             return colors[status] || 'bg-gray-400';
         },
 
-        // Vérifier si une étape est complétée
+        // Vérifier si une étape est complétée (dans le flux RECU→PREP→PRET→SERVI)
         isStepCompleted(step, currentStatus) {
+            // SERVI ou PAID = toutes les étapes de commande sont passées
+            if (currentStatus === 'SERVI' || this.activeOrder?.payment_status === 'PAID') return true;
             const order = ['RECU', 'PREP', 'PRET', 'SERVI'];
-            const stepIndex = order.indexOf(step);
-            const currentIndex = order.indexOf(currentStatus);
-            return stepIndex <= currentIndex;
+            return order.indexOf(step) <= order.indexOf(currentStatus);
         },
 
         // Démarrer le suivi de commande
@@ -372,7 +372,7 @@ export default function menuClientStore() {
 
             try {
                 console.log('Chargement commande:', orderId);
-                const response = await fetch(`/api/orders/${orderId}`);
+                const response = await fetch(`/api/orders/${orderId}?tenant_id=${this.tenant.id}`);
                 const data = await response.json();
                 console.log('Réponse API:', data);
 
@@ -396,39 +396,65 @@ export default function menuClientStore() {
         handleOrderPaid() {
             this.stopOrderTracking();
 
-            // Afficher un message de remerciement puis réinitialiser
+            // Laisser 5s pour voir le statut "Payé" puis réinitialiser
             setTimeout(() => {
-                // Réinitialiser tout pour le prochain client
+                this._clearActiveOrder();
+                localStorage.removeItem('smartmenu_cart');
                 this.activeOrder = null;
                 this.myOrders = [];
                 this.cart = [];
                 this.currentView = 'menu';
-
-                // Supprimer les données locales
-                if (this.table?.id) {
-                    localStorage.removeItem(`smartmenu_orders_${this.table.id}`);
-                    localStorage.removeItem(`smartmenu_active_order_${this.table.id}`);
-                }
-                localStorage.removeItem('smartmenu_cart');
-
-                // Message de confirmation
                 this.orderSuccess = true;
                 setTimeout(() => this.orderSuccess = false, 3000);
-            }, 5000); // 5 secondes pour voir le message "Payé"
+            }, 5000);
         },
 
         // Vérifier s'il y a une commande active au chargement
         async checkActiveOrder() {
             if (!this.table?.id) return;
 
-            // Vérifier localStorage d'abord
             const activeOrderId = localStorage.getItem(`smartmenu_active_order_${this.table.id}`);
-            if (activeOrderId) {
-                console.log('Commande active trouvée:', activeOrderId);
-                this.startOrderTracking(parseInt(activeOrderId));
-                // Basculer vers la vue tracking si une commande active existe
-                this.currentView = 'tracking';
+            if (!activeOrderId) return;
+
+            // Vérifier la date de création — si ce n'est pas aujourd'hui, ignorer
+            const orderDate = localStorage.getItem(`smartmenu_active_order_date_${this.table.id}`);
+            const today = new Date().toDateString();
+            if (orderDate && orderDate !== today) {
+                this._clearActiveOrder();
+                return;
             }
+
+            // Vérifier l'état réel de la commande côté serveur avant de l'afficher
+            try {
+                const resp = await fetch(`/api/orders/${activeOrderId}?tenant_id=${this.tenant.id}`);
+                const data = await resp.json();
+                if (data.success && data.order) {
+                    const terminalStatuses = ['SERVI', 'ANNULE'];
+                    const isPaid = data.order.payment_status === 'PAID';
+                    if (terminalStatuses.includes(data.order.status) || isPaid) {
+                        // Commande terminée : nettoyer sans afficher le tracking
+                        this._clearActiveOrder();
+                        return;
+                    }
+                } else {
+                    // Commande introuvable côté serveur
+                    this._clearActiveOrder();
+                    return;
+                }
+            } catch (e) {
+                // Réseau indisponible : continuer avec ce qu'on a
+            }
+
+            this.startOrderTracking(parseInt(activeOrderId));
+            this.currentView = 'tracking';
+        },
+
+        // Nettoyer la commande active du localStorage
+        _clearActiveOrder() {
+            if (!this.table?.id) return;
+            localStorage.removeItem(`smartmenu_active_order_${this.table.id}`);
+            localStorage.removeItem(`smartmenu_active_order_date_${this.table.id}`);
+            localStorage.removeItem(`smartmenu_orders_${this.table.id}`);
         },
 
         // Charger les commandes du client (basé sur la table)
@@ -525,6 +551,7 @@ export default function menuClientStore() {
                     // Sauvegarder l'ID de la commande active pour le suivi
                     if (orderId) {
                         localStorage.setItem(`smartmenu_active_order_${this.table.id}`, orderId.toString());
+                        localStorage.setItem(`smartmenu_active_order_date_${this.table.id}`, new Date().toDateString());
                         // Initialiser activeOrder immédiatement pour affichage
                         this.activeOrder = newOrder;
                         this.startOrderTracking(orderId);

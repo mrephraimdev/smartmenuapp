@@ -44,10 +44,10 @@ class QrCodeService
      */
     public function saveQrCode(Table $table, array $options = []): string
     {
-        $qrCode = $this->generateQrCode($table, array_merge($options, ['format' => 'png']));
+        $qrCode = $this->generateQrCode($table, array_merge($options, ['format' => 'svg']));
 
         $filename = sprintf(
-            'qrcodes/tenant-%d/table-%s.png',
+            'qrcodes/tenant-%d/table-%s.svg',
             $table->tenant_id,
             $table->code
         );
@@ -98,8 +98,8 @@ class QrCodeService
      */
     public function getQrCodeBase64(Table $table, array $options = []): string
     {
-        $qrCode = $this->generateQrCode($table, array_merge($options, ['format' => 'png']));
-        return 'data:image/png;base64,' . base64_encode($qrCode);
+        $qrCode = $this->generateQrCode($table, array_merge($options, ['format' => 'svg']));
+        return 'data:image/svg+xml;base64,' . base64_encode($qrCode);
     }
 
     /**
@@ -148,7 +148,7 @@ class QrCodeService
     public function deleteQrCode(Table $table): bool
     {
         $filename = sprintf(
-            'qrcodes/tenant-%d/table-%s.png',
+            'qrcodes/tenant-%d/table-%s.svg',
             $table->tenant_id,
             $table->code
         );

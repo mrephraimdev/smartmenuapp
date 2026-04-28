@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartMenu - Tableau de Bord</title>
+    <title>HorusPOS - Tableau de Bord</title>
 
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -41,9 +41,9 @@
         <div class="container mx-auto px-4 py-6">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <img src="{{ asset('images/SmartMenu.png') }}" alt="SmartMenu" class="h-12 w-auto">
+                    <img src="{{ asset('images/HorusPOS.png') }}" alt="HorusPOS" class="h-12 w-auto">
                     <div>
-                        <h1 class="text-2xl font-bold">SmartMenu</h1>
+                        <h1 class="text-2xl font-bold">HorusPOS</h1>
                         <p class="text-white/80 text-sm">Plateforme de Gestion Restaurant</p>
                     </div>
                 </div>
@@ -398,7 +398,7 @@
         <div class="container mx-auto px-4 py-6">
             <div class="text-center">
                 <p class="text-gray-400 text-sm">
-                    SmartMenu © {{ date('Y') }}
+                    HorusPOS © {{ date('Y') }}
                 </p>
             </div>
         </div>

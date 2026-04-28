@@ -126,7 +126,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*SmartMenu SaaS Deployment* :rocket:\n*Version:* ${{ github.ref_name }}\n*Status:* Success ✅\n*Environment:* ${{ github.event.inputs.environment || 'production' }}"
+                    "text": "*HorusPOS SaaS Deployment* :rocket:\n*Version:* ${{ github.ref_name }}\n*Status:* Success ✅\n*Environment:* ${{ github.event.inputs.environment || 'production' }}"
                   }
                 }
               ]
@@ -145,7 +145,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*SmartMenu SaaS Deployment* :x:\n*Version:* ${{ github.ref_name }}\n*Status:* Failed ❌\n*Environment:* ${{ github.event.inputs.environment || 'production' }}\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                    "text": "*HorusPOS SaaS Deployment* :x:\n*Version:* ${{ github.ref_name }}\n*Status:* Failed ❌\n*Environment:* ${{ github.event.inputs.environment || 'production' }}\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
                   }
                 }
               ]

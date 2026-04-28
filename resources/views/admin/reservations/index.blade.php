@@ -77,12 +77,50 @@
     </div>
     @endif
 
-    <!-- Upcoming Reservations Table -->
+    <!-- Upcoming Reservations -->
     <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+        <div class="px-4 py-4 border-b border-gray-200">
             <h3 class="text-lg font-medium text-gray-900">Réservations à venir</h3>
         </div>
-        <div class="overflow-x-auto">
+
+        {{-- ── Vue CARTES (mobile) ──────────────────────────── --}}
+        <div class="sm:hidden divide-y divide-gray-100">
+            @forelse($reservations as $reservation)
+            <div class="p-4">
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <p class="font-semibold text-gray-900 text-sm">{{ $reservation->customer_name }}</p>
+                        <p class="text-xs text-gray-500">{{ $reservation->customer_phone }}</p>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ml-2
+                        @if($reservation->status === 'PENDING') bg-yellow-100 text-yellow-800
+                        @elseif($reservation->status === 'CONFIRMED') bg-blue-100 text-blue-800
+                        @elseif($reservation->status === 'SEATED') bg-green-100 text-green-800
+                        @elseif($reservation->status === 'COMPLETED') bg-gray-100 text-gray-800
+                        @elseif($reservation->status === 'CANCELLED') bg-red-100 text-red-800
+                        @else bg-orange-100 text-orange-800 @endif">
+                        {{ $reservation->status_label }}
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500">
+                    {{ $reservation->reservation_date->format('d/m/Y') }} à {{ $reservation->reservation_time->format('H:i') }}
+                    · {{ $reservation->party_size }} pers.
+                    · {{ $reservation->table->label ?? $reservation->table->code }}
+                </p>
+                <div class="flex gap-2 mt-3">
+                    <a href="{{ route('admin.reservations.show', [$tenant->slug, $reservation->id]) }}"
+                       class="flex-1 text-center text-xs font-semibold py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">Voir</a>
+                    <a href="{{ route('admin.reservations.edit', [$tenant->slug, $reservation->id]) }}"
+                       class="flex-1 text-center text-xs font-semibold py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg transition-colors">Modifier</a>
+                </div>
+            </div>
+            @empty
+            <div class="py-10 text-center text-gray-400 text-sm">Aucune réservation à venir</div>
+            @endforelse
+        </div>
+
+        {{-- ── Vue TABLEAU (sm et plus) ─────────────────────── --}}
+        <div class="hidden sm:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>

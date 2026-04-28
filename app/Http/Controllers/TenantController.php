@@ -80,7 +80,14 @@ class TenantController extends Controller
             $data['cover_url'] = '/storage/' . $coverPath;
         }
 
-        Tenant::create($data);
+        $tenant = Tenant::create($data);
+
+        // Créer le menu par défaut
+        \App\Models\Menu::create([
+            'tenant_id' => $tenant->id,
+            'title' => 'Menu Principal',
+            'active' => true,
+        ]);
 
         return redirect()->route('superadmin.tenants.index')->with('success', 'Tenant créé avec succès!');
     }
@@ -140,8 +147,12 @@ class TenantController extends Controller
             'address' => $request->address,
             'phone' => $request->phone,
             'email' => $request->email,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->boolean('is_active'),
         ];
+
+        if ($request->filled('theme_id')) {
+            $data['theme_id'] = $request->integer('theme_id');
+        }
 
         // Gérer l'upload du logo
         if ($request->hasFile('logo')) {
@@ -185,7 +196,11 @@ class TenantController extends Controller
             Storage::disk('public')->delete($coverPath);
         }
 
-        $tenant->delete();
+        // Nettoyer les données dépendantes avant suppression
+        \App\Models\AuditLog::where('tenant_id', $tenant->id)->delete();
+
+        // Désactiver l'observer pour éviter l'insertion d'un audit_log après suppression (FK constraint)
+        \App\Models\Tenant::withoutEvents(fn() => $tenant->delete());
         return redirect()->route('superadmin.tenants.index')->with('success', 'Tenant supprimé avec succès!');
     }
 }

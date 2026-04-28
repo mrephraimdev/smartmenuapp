@@ -27,6 +27,7 @@ class TenantServiceTest extends TestCase
             'slug' => 'default',
             'colors' => ['primary' => '#000000'],
             'fonts' => ['heading' => 'Arial'],
+            'category' => 'restaurant',
             'is_default' => true,
             'is_active' => true,
         ]);
@@ -51,7 +52,7 @@ class TenantServiceTest extends TestCase
 
         // Check default menu was created
         $this->assertCount(1, $tenant->menus);
-        $this->assertEquals('Menu Principal', $tenant->menus->first()->name);
+        $this->assertEquals('Menu Principal', $tenant->menus->first()->title);
     }
 
     /** @test */
@@ -157,6 +158,7 @@ class TenantServiceTest extends TestCase
             'slug' => 'wedding',
             'colors' => ['primary' => '#FFD700'],
             'fonts' => ['heading' => 'Playfair Display'],
+            'category' => 'mariage',
             'is_active' => true,
         ]);
 

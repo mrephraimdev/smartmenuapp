@@ -15,8 +15,8 @@ class Order extends Model
     use HasFactory, TenantScope, SoftDeletes;
 
     protected $fillable = [
-        'tenant_id', 'table_id', 'pos_session_id', 'order_number', 'status', 'total', 'notes',
-        'payment_status', 'paid_amount', 'paid_at'
+        'tenant_id', 'table_id', 'pos_session_id', 'serveur_id', 'order_number', 'status', 'total', 'notes',
+        'payment_status', 'paid_amount', 'paid_at', 'collected_by_id', 'collected_by_name'
     ];
 
     protected $casts = [
@@ -75,6 +75,11 @@ class Order extends Model
     public function posSession()
     {
         return $this->belongsTo(PosSession::class);
+    }
+
+    public function serveur()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'serveur_id');
     }
 
     public function payments(): HasMany
