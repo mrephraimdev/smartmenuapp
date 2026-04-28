@@ -12,10 +12,14 @@ return new class() extends Migration
      */
     public function up(): void
     {
-        // Drop avec CASCADE pour PostgreSQL (respecte les FK)
+        // PostgreSQL requires CASCADE to drop tables with FK constraints; SQLite doesn't support it
         $tables = ['role_user', 'order_items', 'orders', 'options', 'variants', 'dishes', 'categories', 'menus', 'tables'];
         foreach ($tables as $t) {
-            DB::statement("DROP TABLE IF EXISTS \"{$t}\" CASCADE");
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement("DROP TABLE IF EXISTS \"{$t}\" CASCADE");
+            } else {
+                Schema::dropIfExists($t);
+            }
         }
 
         // Tables

@@ -5,25 +5,18 @@ parameters:
     level: 3
     paths:
         - app
-        - routes
-        - config
-        - database
 
-    # Exclude paths
     excludePaths:
-        - app/Console/Kernel.php
-        - app/Exceptions/Handler.php
+        - app/Console/Kernel.php (?)
+        - app/Exceptions/Handler.php (?)
         - database/migrations
-        - database/seeders/DatabaseSeeder.php
+        - database/seeders
 
-    # Check missing typehints
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
-
-    # Ignore errors
     ignoreErrors:
         - '#Unsafe usage of new static#'
         - '#Access to an undefined property#'
+        - '#Relation .* is not found in App\\#'
+        - '#Class Laravel\\Telescope#'
+        - '#Class Laravel\\Nightwatch#'
 
-    # Report uncovered functions
     reportUnmatchedIgnoredErrors: false
