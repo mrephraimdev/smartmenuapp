@@ -152,6 +152,9 @@ RUN mkdir -p \
     storage \
     bootstrap/cache
 
+# Copy nginx configuration
+COPY docker/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+
 # Copy supervisor configuration
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
