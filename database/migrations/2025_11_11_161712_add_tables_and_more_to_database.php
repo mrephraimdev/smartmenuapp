@@ -11,8 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tables
+        // Drop dans le bon ordre (dépendances d'abord)
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('order_items');
+        Schema::dropIfExists('orders');
+        Schema::dropIfExists('options');
+        Schema::dropIfExists('variants');
+        Schema::dropIfExists('dishes');
+        Schema::dropIfExists('categories');
+        Schema::dropIfExists('menus');
         Schema::dropIfExists('tables');
+
+        // Tables
         Schema::create('tables', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
@@ -24,7 +34,6 @@ return new class extends Migration
         });
 
         // Menus
-        Schema::dropIfExists('menus');
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
@@ -35,7 +44,6 @@ return new class extends Migration
         });
 
         // Catégories
-        Schema::dropIfExists('categories');
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_id')->constrained()->onDelete('cascade');
@@ -45,7 +53,6 @@ return new class extends Migration
         });
 
         // Plats
-        Schema::dropIfExists('dishes');
         Schema::create('dishes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
@@ -57,7 +64,6 @@ return new class extends Migration
         });
 
         // Variantes de plats
-        Schema::dropIfExists('variants');
         Schema::create('variants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dish_id')->constrained()->onDelete('cascade');
@@ -67,7 +73,6 @@ return new class extends Migration
         });
 
         // Options de plats
-        Schema::dropIfExists('options');
         Schema::create('options', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dish_id')->constrained()->onDelete('cascade');
@@ -78,7 +83,6 @@ return new class extends Migration
         });
 
         // Commandes
-        Schema::dropIfExists('orders');
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
@@ -90,7 +94,6 @@ return new class extends Migration
         });
 
         // Items de commande
-        Schema::dropIfExists('order_items');
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
@@ -104,7 +107,6 @@ return new class extends Migration
         });
 
         // Table pivot rôles-utilisateurs
-        Schema::dropIfExists('role_user');
         Schema::create('role_user', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
