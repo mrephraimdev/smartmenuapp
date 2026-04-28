@@ -50,24 +50,27 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureSentry(): void
     {
-        if (!app()->bound('sentry')) {
+        if (!app()->bound('sentry') || empty(config('sentry.dsn'))) {
             return;
         }
 
-        // Masquer les champs sensibles (PII / données financières) avant envoi à Sentry
         $sensitiveKeys = ['password', 'password_confirmation', 'token', 'secret', 'card_number', 'cvv', 'amount_received'];
 
         \Sentry\State\Scope::addGlobalEventProcessor(function (\Sentry\Event $event, \Sentry\EventHint $hint) use ($sensitiveKeys): \Sentry\Event {
-            $request = $event->getRequest();
-            if ($request !== null) {
-                $data = $request->getData();
-                if (!empty($data)) {
-                    foreach ($sensitiveKeys as $key) {
-                        if (array_key_exists($key, $data)) {
-                            $data[$key] = '[Filtered]';
+            try {
+                $request = $event->getRequest();
+                if ($request !== null && method_exists($request, 'getData')) {
+                    $data = $request->getData();
+                    if (is_array($data) && !empty($data)) {
+                        foreach ($sensitiveKeys as $key) {
+                            if (array_key_exists($key, $data)) {
+                                $data[$key] = '[Filtered]';
+                            }
                         }
                     }
                 }
+            } catch (\Throwable $e) {
+                // Ne pas bloquer l'app si Sentry échoue
             }
             return $event;
         });
