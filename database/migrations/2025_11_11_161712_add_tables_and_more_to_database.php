@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,16 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop dans le bon ordre (dépendances d'abord)
-        Schema::dropIfExists('role_user');
-        Schema::dropIfExists('order_items');
-        Schema::dropIfExists('orders');
-        Schema::dropIfExists('options');
-        Schema::dropIfExists('variants');
-        Schema::dropIfExists('dishes');
-        Schema::dropIfExists('categories');
-        Schema::dropIfExists('menus');
-        Schema::dropIfExists('tables');
+        // Drop avec CASCADE pour PostgreSQL (respecte les FK)
+        $tables = ['role_user', 'order_items', 'orders', 'options', 'variants', 'dishes', 'categories', 'menus', 'tables'];
+        foreach ($tables as $t) {
+            DB::statement("DROP TABLE IF EXISTS \"{$t}\" CASCADE");
+        }
 
         // Tables
         Schema::create('tables', function (Blueprint $table) {
