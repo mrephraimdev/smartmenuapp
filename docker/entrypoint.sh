@@ -1,0 +1,60 @@
+#!/bin/sh
+set -e
+
+echo "=== HorusPOS - Démarrage du conteneur ==="
+
+# -----------------------------------------------
+# 1. Attendre que PostgreSQL soit prêt
+# -----------------------------------------------
+echo "Attente de PostgreSQL sur ${DB_HOST}:${DB_PORT}..."
+until php -r "
+    try {
+        \$pdo = new PDO(
+            'pgsql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE'),
+            getenv('DB_USERNAME'),
+            getenv('DB_PASSWORD')
+        );
+        echo 'OK';
+    } catch (Exception \$e) {
+        exit(1);
+    }
+" 2>/dev/null; do
+    echo "PostgreSQL pas encore prêt, nouvelle tentative dans 3s..."
+    sleep 3
+done
+echo "PostgreSQL est prêt."
+
+# -----------------------------------------------
+# 2. Générer APP_KEY si absent
+# -----------------------------------------------
+if [ -z "$APP_KEY" ]; then
+    echo "Génération de APP_KEY..."
+    php artisan key:generate --force
+fi
+
+# -----------------------------------------------
+# 3. Migrations
+# -----------------------------------------------
+echo "Exécution des migrations..."
+php artisan migrate --force
+
+# -----------------------------------------------
+# 4. Lien symbolique storage
+# -----------------------------------------------
+echo "Création du lien storage..."
+php artisan storage:link 2>/dev/null || true
+
+# -----------------------------------------------
+# 5. Cache (uniquement en production/staging)
+# -----------------------------------------------
+if [ "$APP_ENV" = "production" ] || [ "$APP_ENV" = "staging" ]; then
+    echo "Mise en cache de la configuration..."
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+else
+    echo "Mode ${APP_ENV} — cache ignoré."
+fi
+
+echo "=== Démarrage des services ==="
+exec "$@"

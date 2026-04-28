@@ -1,0 +1,57 @@
+# Dépendances locales (reconstruites dans le container)
+node_modules/
+vendor/
+
+# Assets compilés localement (reconstruits dans le container)
+public/build/
+public/hot
+
+# Fichiers d'environnement (ne jamais inclure dans l'image)
+.env
+.env.*
+!.env.example
+!.env.docker.example
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker (pas besoin dans l'image)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+DOCKER-PRODUCTION-GUIDE.md
+
+# Logs
+storage/logs/*.log
+*.log
+
+# Cache Laravel
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+
+# Outils de dev
+.phpunit.result.cache
+phpunit.xml
+.editorconfig
+.styleci.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
+
+# Tests
+tests/
+coverage/
