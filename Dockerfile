@@ -40,7 +40,7 @@ RUN npm ci --production=false
 
 # Copy source files needed for build
 COPY resources ./resources
-COPY vite.config.js tailwind.config.js postcss.config.js ./
+COPY vite.config.js ./
 
 # Build production assets
 RUN npm run build
