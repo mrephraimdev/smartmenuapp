@@ -33,11 +33,17 @@ class AuditLog extends Model
 
     // Action constants
     public const ACTION_CREATED = 'created';
+
     public const ACTION_UPDATED = 'updated';
+
     public const ACTION_DELETED = 'deleted';
+
     public const ACTION_RESTORED = 'restored';
+
     public const ACTION_LOGIN = 'login';
+
     public const ACTION_LOGOUT = 'logout';
+
     public const ACTION_STATUS_CHANGED = 'status_changed';
 
     /**
@@ -61,13 +67,13 @@ class AuditLog extends Model
      */
     public function entity(): ?Model
     {
-        if (!$this->entity_type || !$this->entity_id) {
+        if (! $this->entity_type || ! $this->entity_id) {
             return null;
         }
 
         $modelClass = $this->entity_type;
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             return null;
         }
 
@@ -119,7 +125,7 @@ class AuditLog extends Model
      */
     public function getActionLabelAttribute(): string
     {
-        return match($this->action) {
+        return match ($this->action) {
             self::ACTION_CREATED => 'Créé',
             self::ACTION_UPDATED => 'Modifié',
             self::ACTION_DELETED => 'Supprimé',
@@ -136,7 +142,7 @@ class AuditLog extends Model
      */
     public function getEntityShortNameAttribute(): string
     {
-        if (!$this->entity_type) {
+        if (! $this->entity_type) {
             return 'N/A';
         }
 
@@ -148,7 +154,7 @@ class AuditLog extends Model
      */
     public function getEntityTypeLabelAttribute(): string
     {
-        return match($this->entity_short_name) {
+        return match ($this->entity_short_name) {
             'Dish' => 'Plat',
             'Category' => 'Catégorie',
             'Menu' => 'Menu',

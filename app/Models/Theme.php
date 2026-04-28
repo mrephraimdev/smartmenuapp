@@ -10,14 +10,14 @@ class Theme extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name', 'slug', 'description', 'colors', 'fonts', 'category', 'is_default', 'is_active'
+        'name', 'slug', 'description', 'colors', 'fonts', 'category', 'is_default', 'is_active',
     ];
 
     protected $casts = [
         'colors' => 'array',
         'fonts' => 'array',
         'is_default' => 'boolean',
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     // Relations

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Tenant;
-use App\Enums\OrderStatus;
 use App\Services\OrderService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Suivi des commandes en temps réel (board kanban).
@@ -23,6 +23,7 @@ class SuiviController extends Controller
     public function index(string $tenantSlug)
     {
         $tenant = Tenant::findBySlug($tenantSlug);
+
         return view('admin.suivi.index', compact('tenant'));
     }
 
@@ -45,21 +46,21 @@ class SuiviController extends Controller
             ->get()
             ->map(function ($order) {
                 return [
-                    'id'            => $order->id,
-                    'order_number'  => $order->order_number,
-                    'status'        => $order->status,
-                    'total'         => $order->total,
-                    'notes'         => $order->notes,
-                    'items_count'   => $order->items->sum('quantity'),
-                    'created_at'    => $order->created_at->diffForHumans(),
-                    'created_raw'   => $order->created_at->format('H:i'),
-                    'table'         => $order->table
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'status' => $order->status,
+                    'total' => $order->total,
+                    'notes' => $order->notes,
+                    'items_count' => $order->items->sum('quantity'),
+                    'created_at' => $order->created_at->diffForHumans(),
+                    'created_raw' => $order->created_at->format('H:i'),
+                    'table' => $order->table
                         ? ['code' => $order->table->code, 'label' => $order->table->label]
                         : null,
-                    'items'         => $order->items->map(fn($i) => [
-                        'name'     => $i->dish->name ?? 'Plat supprimé',
+                    'items' => $order->items->map(fn ($i) => [
+                        'name' => $i->dish->name ?? 'Plat supprimé',
                         'quantity' => $i->quantity,
-                        'notes'    => $i->notes,
+                        'notes' => $i->notes,
                     ]),
                 ];
             });
@@ -72,8 +73,8 @@ class SuiviController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $grouped,
-            'total'   => $orders->count(),
+            'data' => $grouped,
+            'total' => $orders->count(),
         ]);
     }
 
@@ -93,8 +94,8 @@ class SuiviController extends Controller
         $fresh = $order->fresh();
 
         return response()->json([
-            'success'    => true,
-            'message'    => 'Statut mis à jour.',
+            'success' => true,
+            'message' => 'Statut mis à jour.',
             'new_status' => $fresh->status,
         ]);
     }

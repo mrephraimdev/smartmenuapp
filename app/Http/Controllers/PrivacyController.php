@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tenant;
 use App\Models\Order;
 use App\Models\Reservation;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -20,7 +20,7 @@ class PrivacyController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403);
         }
 

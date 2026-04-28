@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\UserRole;
 use App\Enums\TenantType;
+use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -118,22 +118,22 @@ class StoreTenantRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Auto-generate slug from name if not provided
-        if (!$this->slug && $this->name) {
+        if (! $this->slug && $this->name) {
             $this->merge([
                 'slug' => \Illuminate\Support\Str::slug($this->name),
             ]);
         }
 
         // Set default values
-        if (!$this->has('is_active')) {
+        if (! $this->has('is_active')) {
             $this->merge(['is_active' => true]);
         }
 
-        if (!$this->currency) {
+        if (! $this->currency) {
             $this->merge(['currency' => 'XOF']);
         }
 
-        if (!$this->locale) {
+        if (! $this->locale) {
             $this->merge(['locale' => 'fr']);
         }
     }

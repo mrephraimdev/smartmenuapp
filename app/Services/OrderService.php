@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
+use App\Models\Dish;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Dish;
-use App\Models\Variant;
 use App\Models\Tenant;
-use App\Enums\OrderStatus;
+use App\Models\Variant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -20,19 +20,19 @@ use Illuminate\Support\Facades\DB;
  * - Annulation avec restauration du stock
  * - Récupération pour le KDS (Kitchen Display System)
  *
- * @package App\Services
  * @author HorusPOS Team
  */
 class OrderService
 {
     protected ?NotificationService $notificationService = null;
+
     protected ?InventoryService $inventoryService = null;
 
     /**
      * Constructeur du service
      *
-     * @param NotificationService|null $notificationService Service de notifications (optionnel)
-     * @param InventoryService|null $inventoryService Service de gestion des stocks (optionnel)
+     * @param  NotificationService|null  $notificationService  Service de notifications (optionnel)
+     * @param  InventoryService|null  $inventoryService  Service de gestion des stocks (optionnel)
      */
     public function __construct(
         ?NotificationService $notificationService = null,
@@ -50,13 +50,12 @@ class OrderService
      * - Prix des variantes sélectionnées
      * - Quantités commandées
      *
-     * @param array $data Données de la commande
-     *   - tenant_id: int ID du restaurant
-     *   - table_id: int ID de la table
-     *   - items: array Liste des items [{dish_id, quantity, variant_id?, options?, notes?}]
-     *   - notes: string|null Notes générales de la commande
-     *   - customer_email: string|null Email pour les notifications
-     *
+     * @param  array  $data  Données de la commande
+     *                       - tenant_id: int ID du restaurant
+     *                       - table_id: int ID de la table
+     *                       - items: array Liste des items [{dish_id, quantity, variant_id?, options?, notes?}]
+     *                       - notes: string|null Notes générales de la commande
+     *                       - customer_email: string|null Email pour les notifications
      * @return Order La commande créée avec ses relations chargées
      *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException Si un plat n'existe pas
@@ -72,7 +71,7 @@ class OrderService
                 $dish = Dish::findOrFail($item['dish_id']);
                 $itemPrice = $dish->price_base;
 
-                if (!empty($item['variant_id'])) {
+                if (! empty($item['variant_id'])) {
                     $variant = Variant::find($item['variant_id']);
                     if ($variant) {
                         $itemPrice += $variant->extra_price;
@@ -88,17 +87,17 @@ class OrderService
                     'options' => json_encode($item['options'] ?? []),
                     'quantity' => $item['quantity'],
                     'unit_price' => $itemPrice,
-                    'notes' => $item['notes'] ?? ''
+                    'notes' => $item['notes'] ?? '',
                 ];
             }
 
             $order = Order::createWithNumber([
-                'tenant_id'  => $data['tenant_id'],
-                'table_id'   => $data['table_id'],
+                'tenant_id' => $data['tenant_id'],
+                'table_id' => $data['table_id'],
                 'serveur_id' => $data['serveur_id'] ?? null,
-                'status'     => OrderStatus::RECEIVED->value,
-                'total'      => $total,
-                'notes'      => $data['notes'] ?? '',
+                'status' => OrderStatus::RECEIVED->value,
+                'total' => $total,
+                'notes' => $data['notes'] ?? '',
             ]);
 
             foreach ($orderItems as $itemData) {
@@ -129,10 +128,9 @@ class OrderService
      *
      * Envoie une notification si le service est configuré.
      *
-     * @param Order $order La commande à mettre à jour
-     * @param OrderStatus $newStatus Le nouveau statut
-     * @param string|null $customerEmail Email du client (pour notifications)
-     *
+     * @param  Order  $order  La commande à mettre à jour
+     * @param  OrderStatus  $newStatus  Le nouveau statut
+     * @param  string|null  $customerEmail  Email du client (pour notifications)
      * @return Order La commande mise à jour
      */
     public function updateStatus(Order $order, OrderStatus $newStatus, ?string $customerEmail = null): Order
@@ -153,8 +151,7 @@ class OrderService
      *
      * Progression automatique: RECU → PREP → PRET → SERVI
      *
-     * @param Order $order La commande à faire progresser
-     *
+     * @param  Order  $order  La commande à faire progresser
      * @return Order|null La commande mise à jour, ou null si déjà au statut final
      */
     public function progressStatus(Order $order): ?Order
@@ -236,7 +233,7 @@ class OrderService
         $previousStatus = $order->status;
         $order->update([
             'status' => OrderStatus::CANCELLED->value,
-            'notes' => $notes
+            'notes' => $notes,
         ]);
 
         // Restore stock when order is cancelled
@@ -271,7 +268,7 @@ class OrderService
             ->whereDate('created_at', now())
             ->whereIn('status', [
                 OrderStatus::READY->value,
-                OrderStatus::SERVED->value
+                OrderStatus::SERVED->value,
             ])
             ->sum('total');
     }

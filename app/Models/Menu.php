@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Menu extends Model
 {
-    use HasFactory, TenantScope, SoftDeletes;
+    use HasFactory, SoftDeletes, TenantScope;
 
     protected $fillable = ['tenant_id', 'title', 'active'];
 

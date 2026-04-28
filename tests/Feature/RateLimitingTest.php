@@ -18,6 +18,7 @@ class RateLimitingTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected User $user;
 
     protected function setUp(): void
@@ -96,13 +97,13 @@ class RateLimitingTest extends TestCase
     {
         // Requête depuis IP 1
         $response1 = $this->getJson('/api/menu?tenant=1&table=A01', [
-            'REMOTE_ADDR' => '192.168.1.1'
+            'REMOTE_ADDR' => '192.168.1.1',
         ]);
         $this->assertNotEquals(429, $response1->status());
 
         // Requête depuis IP 2 (compteur indépendant)
         $response2 = $this->getJson('/api/menu?tenant=1&table=A01', [
-            'REMOTE_ADDR' => '192.168.1.2'
+            'REMOTE_ADDR' => '192.168.1.2',
         ]);
         $this->assertNotEquals(429, $response2->status());
     }

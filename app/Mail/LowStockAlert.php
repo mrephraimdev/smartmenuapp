@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Dish;
 use App\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,6 +16,7 @@ class LowStockAlert extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public Tenant $tenant;
+
     public Collection $dishes;
 
     /**

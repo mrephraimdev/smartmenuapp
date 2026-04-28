@@ -15,7 +15,7 @@ class UpdateDishRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -30,6 +30,7 @@ class UpdateDishRequest extends FormRequest
             if (is_numeric($dish)) {
                 $dish = \App\Models\Dish::find($dish);
             }
+
             return $dish && $dish->tenant_id === $user->tenant_id;
         }
 

@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Table;
 use App\Models\Tenant;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class TableSeeder extends Seeder
@@ -34,7 +33,7 @@ class TableSeeder extends Seeder
             foreach ($tables as $tableData) {
                 Table::firstOrCreate([
                     'tenant_id' => $tenant->id,
-                    'code' => $tableData['code']
+                    'code' => $tableData['code'],
                 ], $tableData);
             }
         }

@@ -22,7 +22,7 @@ class AuditService
     ): AuditLog {
         $tenantId = $this->getTenantId($model);
 
-        if (!$tenantId) {
+        if (! $tenantId) {
             throw new \InvalidArgumentException('Cannot audit model without tenant_id');
         }
 
@@ -252,14 +252,14 @@ class AuditService
      */
     protected function getChangedFields(?array $oldValues, ?array $newValues): ?array
     {
-        if (!$oldValues || !$newValues) {
+        if (! $oldValues || ! $newValues) {
             return null;
         }
 
         $changed = [];
 
         foreach ($newValues as $key => $value) {
-            if (!array_key_exists($key, $oldValues) || $oldValues[$key] !== $value) {
+            if (! array_key_exists($key, $oldValues) || $oldValues[$key] !== $value) {
                 $changed[] = $key;
             }
         }

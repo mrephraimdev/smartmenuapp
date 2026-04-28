@@ -19,8 +19,6 @@ class HealthController extends Controller
      * - Cache functionality
      * - Queue status
      * - Storage availability
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -34,7 +32,7 @@ class HealthController extends Controller
         ];
 
         // Determine overall health status
-        $allOk = !in_array('error', array_column($checks, 'status'), true);
+        $allOk = ! in_array('error', array_column($checks, 'status'), true);
         $httpStatus = $allOk ? 200 : 503;
 
         // Add summary
@@ -48,8 +46,6 @@ class HealthController extends Controller
 
     /**
      * Ping endpoint for simple uptime monitoring.
-     *
-     * @return \Illuminate\Http\JsonResponse
      */
     public function ping(): JsonResponse
     {
@@ -61,8 +57,6 @@ class HealthController extends Controller
 
     /**
      * Check database connectivity and performance.
-     *
-     * @return array
      */
     protected function checkDatabase(): array
     {
@@ -97,8 +91,6 @@ class HealthController extends Controller
 
     /**
      * Check cache functionality.
-     *
-     * @return array
      */
     protected function checkCache(): array
     {
@@ -141,8 +133,6 @@ class HealthController extends Controller
 
     /**
      * Check queue status.
-     *
-     * @return array
      */
     protected function checkQueue(): array
     {
@@ -185,8 +175,6 @@ class HealthController extends Controller
 
     /**
      * Check storage availability and disk space.
-     *
-     * @return array
      */
     protected function checkStorage(): array
     {

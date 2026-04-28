@@ -2,23 +2,28 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
 use App\Models\Menu;
+use App\Models\Role;
 use App\Models\Table;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class PermissionsTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Tenant $tenant1;
+
     protected Tenant $tenant2;
+
     protected User $superAdmin;
+
     protected User $admin;
+
     protected User $chef;
+
     protected User $serveur;
 
     protected function setUp(): void

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Dish;
 use App\Models\Tenant;
-use App\Models\Category;
 use App\Services\FileUploadService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class UploadController extends Controller
@@ -33,7 +33,7 @@ class UploadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation échouée',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -52,12 +52,12 @@ class UploadController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Logo uploadé avec succès',
-                'url' => $url
+                'url' => $url,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -75,7 +75,7 @@ class UploadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation échouée',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -94,12 +94,12 @@ class UploadController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Image de couverture uploadée avec succès',
-                'url' => $url
+                'url' => $url,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -117,7 +117,7 @@ class UploadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation échouée',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -136,12 +136,12 @@ class UploadController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Photo du plat uploadée avec succès',
-                'url' => $url
+                'url' => $url,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -159,7 +159,7 @@ class UploadController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Validation échouée',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -178,12 +178,12 @@ class UploadController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Image de la catégorie uploadée avec succès',
-                'url' => $url
+                'url' => $url,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage()
+                'message' => 'Erreur lors de l\'upload: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -196,22 +196,22 @@ class UploadController extends Controller
         $validator = Validator::make($request->all(), [
             'url' => 'required|url',
             'type' => 'required|in:logo,cover,dish,category',
-            'id' => 'required|integer'
+            'id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation échouée',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422);
         }
 
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Non authentifié'
+                'message' => 'Non authentifié',
             ], 401);
         }
 
@@ -234,10 +234,10 @@ class UploadController extends Controller
                 break;
         }
 
-        if (!$authorized) {
+        if (! $authorized) {
             return response()->json([
                 'success' => false,
-                'message' => 'Non autorisé à supprimer cette image'
+                'message' => 'Non autorisé à supprimer cette image',
             ], 403);
         }
 
@@ -262,12 +262,12 @@ class UploadController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Image supprimée avec succès'
+                'message' => 'Image supprimée avec succès',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la suppression: ' . $e->getMessage()
+                'message' => 'Erreur lors de la suppression: ' . $e->getMessage(),
             ], 500);
         }
     }

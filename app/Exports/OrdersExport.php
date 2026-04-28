@@ -18,7 +18,9 @@ class OrdersExport implements FromCollection, WithHeadings, WithMapping, WithSty
     use Exportable;
 
     protected int $tenantId;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(int $tenantId, Carbon $startDate, Carbon $endDate)

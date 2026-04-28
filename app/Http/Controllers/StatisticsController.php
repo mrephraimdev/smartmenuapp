@@ -5,10 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Tenant;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class StatisticsController extends Controller
 {
@@ -21,27 +20,27 @@ class StatisticsController extends Controller
         $tenant = Tenant::findBySlug($tenantSlug);
 
         // Résoudre la période (défaut : 30 derniers jours)
-        $period   = $request->get('period', '30days');
+        $period = $request->get('period', '30days');
         $dateFrom = $request->get('date_from');
-        $dateTo   = $request->get('date_to');
+        $dateTo = $request->get('date_to');
 
         [$from, $to] = $this->resolveDateRange($period, $dateFrom, $dateTo);
 
         // Pas de cache pour les requêtes filtrées par date (ou cache très court)
         $data = [
-            'stats'          => $this->getGeneralStats($tenant, $from, $to),
-            'hourlyPeaks'    => $this->getHourlyPeaks($tenant, $from, $to),
-            'topDishes'      => $this->getTopDishes($tenant, $from, $to),
+            'stats' => $this->getGeneralStats($tenant, $from, $to),
+            'hourlyPeaks' => $this->getHourlyPeaks($tenant, $from, $to),
+            'topDishes' => $this->getTopDishes($tenant, $from, $to),
             'conversionRate' => $this->getConversionRate($tenant),
-            'revenueByPeriod'=> $this->getRevenueByPeriod($tenant),
-            'trendData'      => $this->getLast7DaysData($tenant),
+            'revenueByPeriod' => $this->getRevenueByPeriod($tenant),
+            'trendData' => $this->getLast7DaysData($tenant),
         ];
 
         return view('admin.statistics', array_merge([
-            'tenant'      => $tenant,
-            'period'      => $period,
-            'dateFrom'    => $from->toDateString(),
-            'dateTo'      => $to->toDateString(),
+            'tenant' => $tenant,
+            'period' => $period,
+            'dateFrom' => $from->toDateString(),
+            'dateTo' => $to->toDateString(),
             'periodLabel' => $this->buildPeriodLabel($period, $from, $to),
         ], $data));
     }
@@ -49,28 +48,29 @@ class StatisticsController extends Controller
     private function resolveDateRange(string $period, ?string $dateFrom, ?string $dateTo): array
     {
         $today = Carbon::today();
+
         return match ($period) {
-            'today'     => [$today, $today],
+            'today' => [$today, $today],
             'yesterday' => [$today->copy()->subDay(), $today->copy()->subDay()],
-            '7days'     => [$today->copy()->subDays(6), $today],
-            'month'     => [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()],
-            'custom'    => [
+            '7days' => [$today->copy()->subDays(6), $today],
+            'month' => [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()],
+            'custom' => [
                 Carbon::parse($dateFrom ?? $today),
-                Carbon::parse($dateTo   ?? $today),
+                Carbon::parse($dateTo ?? $today),
             ],
-            default     => [$today->copy()->subDays(29), $today], // 30days
+            default => [$today->copy()->subDays(29), $today], // 30days
         };
     }
 
     private function buildPeriodLabel(string $period, Carbon $from, Carbon $to): string
     {
         return match ($period) {
-            'today'     => "Aujourd'hui",
+            'today' => "Aujourd'hui",
             'yesterday' => 'Hier',
-            '7days'     => '7 derniers jours',
-            'month'     => 'Ce mois',
-            'custom'    => $from->format('d/m/Y') . ' – ' . $to->format('d/m/Y'),
-            default     => '30 derniers jours',
+            '7days' => '7 derniers jours',
+            'month' => 'Ce mois',
+            'custom' => $from->format('d/m/Y') . ' – ' . $to->format('d/m/Y'),
+            default => '30 derniers jours',
         };
     }
 
@@ -86,7 +86,7 @@ class StatisticsController extends Controller
         $allowedPeriods = ['7days', '30days', 'hourly'];
         $period = $request->get('period', '7days');
 
-        if (!in_array($period, $allowedPeriods)) {
+        if (! in_array($period, $allowedPeriods)) {
             return response()->json(['error' => 'Période invalide'], 400);
         }
 
@@ -122,12 +122,12 @@ class StatisticsController extends Controller
             ->first();
 
         return [
-            'total_orders'    => (int) $stats->total_orders,
-            'total_revenue'   => (float) $stats->total_revenue,
+            'total_orders' => (int) $stats->total_orders,
+            'total_revenue' => (float) $stats->total_revenue,
             'avg_order_value' => round((float) $stats->avg_order_value, 2),
-            'today_orders'    => (int) $stats->today_orders,
-            'today_revenue'   => (float) $stats->today_revenue,
-            'pending_orders'  => (int) $stats->pending_orders,
+            'today_orders' => (int) $stats->today_orders,
+            'today_revenue' => (float) $stats->today_revenue,
+            'pending_orders' => (int) $stats->pending_orders,
         ];
     }
 
@@ -147,11 +147,12 @@ class StatisticsController extends Controller
         $peaks = [];
         for ($hour = 0; $hour < 24; $hour++) {
             $peaks[] = [
-                'hour'  => $hour,
+                'hour' => $hour,
                 'count' => $hourlyData->get($hour)->count ?? 0,
                 'label' => sprintf('%02d:00', $hour),
             ];
         }
+
         return $peaks;
     }
 
@@ -169,10 +170,10 @@ class StatisticsController extends Controller
             ->orderBy('total_quantity', 'desc')
             ->limit($limit)
             ->get()
-            ->map(fn($item) => [
-                'name'     => $item->name,
+            ->map(fn ($item) => [
+                'name' => $item->name,
                 'quantity' => $item->total_quantity,
-                'orders'   => $item->order_count,
+                'orders' => $item->order_count,
             ]);
     }
 
@@ -189,7 +190,7 @@ class StatisticsController extends Controller
         return [
             'rate' => round($rate, 1),
             'orders' => $totalOrders,
-            'estimated_visits' => $estimatedVisits
+            'estimated_visits' => $estimatedVisits,
         ];
     }
 
@@ -212,17 +213,17 @@ class StatisticsController extends Controller
             '7days' => [
                 'revenue' => (float) ($results->revenue_7days ?? 0),
                 'days' => 7,
-                'avg_daily' => round(((float) ($results->revenue_7days ?? 0)) / 7, 2)
+                'avg_daily' => round(((float) ($results->revenue_7days ?? 0)) / 7, 2),
             ],
             '30days' => [
                 'revenue' => (float) ($results->revenue_30days ?? 0),
                 'days' => 30,
-                'avg_daily' => round(((float) ($results->revenue_30days ?? 0)) / 30, 2)
+                'avg_daily' => round(((float) ($results->revenue_30days ?? 0)) / 30, 2),
             ],
             '90days' => [
                 'revenue' => (float) ($results->revenue_90days ?? 0),
                 'days' => 90,
-                'avg_daily' => round(((float) ($results->revenue_90days ?? 0)) / 90, 2)
+                'avg_daily' => round(((float) ($results->revenue_90days ?? 0)) / 90, 2),
             ],
         ];
     }
@@ -250,7 +251,7 @@ class StatisticsController extends Controller
             $data[] = [
                 'date' => Carbon::parse($date)->format('d/m'),
                 'orders' => $dayData ? (int) $dayData->orders : 0,
-                'revenue' => $dayData ? (float) $dayData->revenue : 0
+                'revenue' => $dayData ? (float) $dayData->revenue : 0,
             ];
         }
 
@@ -280,7 +281,7 @@ class StatisticsController extends Controller
             $data[] = [
                 'date' => Carbon::parse($date)->format('d/m'),
                 'orders' => $dayData ? (int) $dayData->orders : 0,
-                'revenue' => $dayData ? (float) $dayData->revenue : 0
+                'revenue' => $dayData ? (float) $dayData->revenue : 0,
             ];
         }
 
@@ -304,7 +305,7 @@ class StatisticsController extends Controller
         for ($hour = 0; $hour < 24; $hour++) {
             $data[] = [
                 'hour' => sprintf('%02d:00', $hour),
-                'orders' => $hourlyData->get($hour)?->orders ?? 0
+                'orders' => $hourlyData->get($hour)?->orders ?? 0,
             ];
         }
 

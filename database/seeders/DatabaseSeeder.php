@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'ADMIN', 'description' => 'Administrateur de tenant'],
             ['name' => 'CHEF', 'description' => 'Chef de cuisine'],
             ['name' => 'SERVEUR', 'description' => 'Serveur'],
-            ['name' => 'CLIENT', 'description' => 'Client']
+            ['name' => 'CLIENT', 'description' => 'Client'],
         ];
 
         foreach ($roles as $roleData) {
@@ -35,12 +35,12 @@ class DatabaseSeeder extends Seeder
             'type' => 'restaurant',
             'currency' => 'FCFA',
             'locale' => 'fr',
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Créer un super admin
         User::updateOrCreate([
-            'email' => 'superadmin@smartmenu.com'
+            'email' => 'superadmin@smartmenu.com',
         ], [
             'name' => 'Super Admin',
             'password' => Hash::make('HorusPOS2026!'),
@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
 
         // Créer un admin pour le tenant demo
         User::updateOrCreate([
-            'email' => 'admin@demo.com'
+            'email' => 'admin@demo.com',
         ], [
             'name' => 'Admin Demo',
             'password' => Hash::make('password'),

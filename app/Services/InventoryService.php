@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Dish;
-use App\Models\Tenant;
 use App\Models\Order;
+use App\Models\Tenant;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -76,6 +76,7 @@ class InventoryService
     public function addStock(Dish $dish, int $quantity): Dish
     {
         $dish->increment('stock_quantity', $quantity);
+
         return $dish->fresh();
     }
 
@@ -111,7 +112,7 @@ class InventoryService
     {
         $tenant = $dish->tenant ?? $dish->category?->menu?->tenant;
 
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 
@@ -119,7 +120,7 @@ class InventoryService
         Log::warning("Low stock alert: {$dish->name} has only {$dish->stock_quantity} units left", [
             'dish_id' => $dish->id,
             'tenant_id' => $tenant->id,
-            'stock' => $dish->stock_quantity
+            'stock' => $dish->stock_quantity,
         ]);
 
         // Auto-disable if out of stock
@@ -162,14 +163,14 @@ class InventoryService
             'low_stock_items' => $dishes->where('stock_quantity', '<=', 10)
                 ->sortBy('stock_quantity')
                 ->take(10)
-                ->map(fn($d) => [
+                ->map(fn ($d) => [
                     'id' => $d->id,
                     'name' => $d->name,
                     'category' => $d->category->name ?? 'N/A',
                     'stock' => $d->stock_quantity,
-                    'active' => $d->active
+                    'active' => $d->active,
                 ])
-                ->values()
+                ->values(),
         ];
     }
 

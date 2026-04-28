@@ -175,7 +175,7 @@ class Reservation extends Model
      */
     public function getStatusLabelAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'PENDING' => 'En attente',
             'CONFIRMED' => 'Confirmée',
             'SEATED' => 'Installé',
@@ -191,7 +191,7 @@ class Reservation extends Model
      */
     public function getStatusColorAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'PENDING' => 'amber',
             'CONFIRMED' => 'blue',
             'SEATED' => 'green',

@@ -1,27 +1,26 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminMenuController;
-use App\Http\Controllers\QrCodeController;
-use App\Http\Controllers\TableController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\ComptourController;
+use App\Http\Controllers\ExportController;
+use App\Http\Controllers\HealthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MenuImportController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\SuperAdminController;
-use App\Http\Controllers\TenantController;
-use App\Http\Controllers\ThemeController;
-use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PrintController;
+use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReviewController;
-use App\Http\Controllers\ExportController;
-use App\Http\Controllers\PrintController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\HealthController;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\ComptourController;
-use App\Http\Controllers\SuiviController;
-use App\Http\Controllers\MenuImportController;
 use App\Http\Controllers\ServeurController;
+use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\SuiviController;
+use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\TableController;
+use App\Http\Controllers\TenantController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -53,6 +52,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 // Onboarding dismiss (auth only)
 Route::post('/admin/onboarding/dismiss', function () {
     session(['onboarding_dismissed' => true]);
+
     return response()->json(['ok' => true]);
 })->middleware('auth')->name('admin.onboarding.dismiss');
 
@@ -107,7 +107,6 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         // QR Codes
         Route::get('/qrcodes/download-all-pdf', [QrCodeController::class, 'downloadAllPdf'])->name('admin.qrcodes.download-all-pdf');
         Route::resource('/qrcodes', QrCodeController::class, ['as' => 'admin']);
-
 
         // Statistics (Admin only)
         Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');
@@ -228,10 +227,11 @@ Route::middleware(['auth', 'role:ADMIN,CAISSIER'])->group(function () {
         // Notification endpoint – must be BEFORE /orders/{order} to avoid route conflict
         Route::get('/orders-notify', function (string $tenantSlug) {
             $tenant = \App\Models\Tenant::where('slug', $tenantSlug)->firstOrFail();
+
             return response()->json([
-                'latest_id'     => \App\Models\Order::where('tenant_id', $tenant->id)->max('id') ?? 0,
+                'latest_id' => \App\Models\Order::where('tenant_id', $tenant->id)->max('id') ?? 0,
                 'pending_count' => \App\Models\Order::where('tenant_id', $tenant->id)
-                                        ->where('status', 'EN_ATTENTE')->count(),
+                    ->where('status', 'EN_ATTENTE')->count(),
             ]);
         })->name('admin.orders.notify');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');

@@ -2,22 +2,25 @@
 
 namespace Tests\Feature\Api;
 
-use Tests\TestCase;
-use App\Models\Tenant;
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
+use App\Models\Menu;
 use App\Models\Table;
+use App\Models\Tenant;
 use App\Models\Theme;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MenuApiTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Menu $menu;
+
     protected Category $category;
+
     protected Table $table;
 
     protected function setUp(): void

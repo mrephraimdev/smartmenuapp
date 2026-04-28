@@ -22,7 +22,7 @@ class CategoryObserver
     public function created(Category $category): void
     {
         // Load menu relation if not loaded
-        if (!$category->relationLoaded('menu')) {
+        if (! $category->relationLoaded('menu')) {
             $category->load('menu');
         }
 
@@ -36,7 +36,7 @@ class CategoryObserver
      */
     public function updating(Category $category): void
     {
-        if (!$category->relationLoaded('menu')) {
+        if (! $category->relationLoaded('menu')) {
             $category->load('menu');
         }
 
@@ -50,7 +50,7 @@ class CategoryObserver
      */
     public function updated(Category $category): void
     {
-        if (!$category->relationLoaded('menu')) {
+        if (! $category->relationLoaded('menu')) {
             $category->load('menu');
         }
 
@@ -66,7 +66,7 @@ class CategoryObserver
      */
     public function deleted(Category $category): void
     {
-        if (!$category->relationLoaded('menu')) {
+        if (! $category->relationLoaded('menu')) {
             $category->load('menu');
         }
 
@@ -80,7 +80,7 @@ class CategoryObserver
      */
     public function restored(Category $category): void
     {
-        if (!$category->relationLoaded('menu')) {
+        if (! $category->relationLoaded('menu')) {
             $category->load('menu');
         }
 

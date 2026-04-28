@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethod;
 use App\Models\Dish;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Table;
 use App\Models\Tenant;
-use App\Enums\PaymentMethod;
 use App\Services\OrderService;
 use App\Services\PaymentService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Prise de commande au comptoir (présentiel)
@@ -36,7 +36,7 @@ class ComptourController extends Controller
                 $q->orderBy('sort_order')->with(['dishes' => function ($q) {
                     $q->where('active', true)->orderBy('name');
                 }]);
-            }
+            },
         ])->where('active', true)->get();
 
         $tables = Table::forTenant($tenant->id)
@@ -74,21 +74,21 @@ class ComptourController extends Controller
             $methodValues = implode(',', array_column(PaymentMethod::cases(), 'value'));
 
             $validated = $request->validate([
-                'table_id'          => 'nullable|exists:tables,id',
-                'customer_name'     => 'nullable|string|max:100',
-                'items'             => 'required|array|min:1',
-                'items.*.dish_id'   => 'required|integer|exists:dishes,id',
-                'items.*.quantity'  => 'required|integer|min:1|max:99',
-                'items.*.notes'     => 'nullable|string|max:500',
-                'notes'             => 'nullable|string|max:1000',
-                'payment_method'    => "nullable|string|in:{$methodValues}",
-                'amount_received'   => 'nullable|numeric|min:0',
+                'table_id' => 'nullable|exists:tables,id',
+                'customer_name' => 'nullable|string|max:100',
+                'items' => 'required|array|min:1',
+                'items.*.dish_id' => 'required|integer|exists:dishes,id',
+                'items.*.quantity' => 'required|integer|min:1|max:99',
+                'items.*.notes' => 'nullable|string|max:500',
+                'notes' => 'nullable|string|max:1000',
+                'payment_method' => "nullable|string|in:{$methodValues}",
+                'amount_received' => 'nullable|numeric|min:0',
             ]);
 
             // Validate table belongs to this tenant
-            if (!empty($validated['table_id'])) {
+            if (! empty($validated['table_id'])) {
                 $table = Table::find($validated['table_id']);
-                if (!$table || $table->tenant_id !== $tenant->id) {
+                if (! $table || $table->tenant_id !== $tenant->id) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Cette table n\'appartient pas à ce restaurant.',
@@ -99,7 +99,7 @@ class ComptourController extends Controller
             // Validate all dishes belong to this tenant
             foreach ($validated['items'] as $item) {
                 $dish = Dish::find($item['dish_id']);
-                if (!$dish || $dish->tenant_id !== $tenant->id) {
+                if (! $dish || $dish->tenant_id !== $tenant->id) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Un plat ne correspond pas à ce restaurant.',
@@ -109,9 +109,9 @@ class ComptourController extends Controller
 
             // Build notes with customer name if provided
             $notes = '';
-            if (!empty($validated['customer_name'])) {
+            if (! empty($validated['customer_name'])) {
                 $notes = 'Client : ' . $validated['customer_name'];
-                if (!empty($validated['notes'])) {
+                if (! empty($validated['notes'])) {
                     $notes .= "\n" . $validated['notes'];
                 }
             } else {
@@ -120,22 +120,22 @@ class ComptourController extends Controller
 
             $order = $this->orderService->createOrder([
                 'tenant_id' => $tenant->id,
-                'table_id'  => $validated['table_id'] ?? null,
-                'items'     => $validated['items'],
-                'notes'     => $notes,
+                'table_id' => $validated['table_id'] ?? null,
+                'items' => $validated['items'],
+                'notes' => $notes,
             ]);
 
             // Traiter le paiement si un mode est fourni
             $payment = null;
-            if (!empty($validated['payment_method'])) {
+            if (! empty($validated['payment_method'])) {
                 $method = PaymentMethod::from($validated['payment_method']);
-                $payment = match($method) {
+                $payment = match ($method) {
                     PaymentMethod::CASH => $this->paymentService->processCashPayment(
                         $order,
                         $validated['amount_received'] ?? $order->getRemainingAmount(),
                     ),
                     PaymentMethod::CARD => $this->paymentService->processCardPayment($order),
-                    default             => $this->paymentService->processMobilePayment($order, $method),
+                    default => $this->paymentService->processMobilePayment($order, $method),
                 };
             }
 
@@ -148,21 +148,21 @@ class ComptourController extends Controller
                 : "Commande {$order->order_number} créée avec succès !";
 
             return response()->json([
-                'success'      => true,
-                'message'      => $message,
-                'order_id'     => $order->id,
+                'success' => true,
+                'message' => $message,
+                'order_id' => $order->id,
                 'order_number' => $order->order_number,
-                'total'        => $order->total,
-                'receipt_url'  => $receiptUrl,
-                'payment_id'   => $payment?->id,
-                'change'       => $payment?->change_given ?? 0,
+                'total' => $order->total,
+                'receipt_url' => $receiptUrl,
+                'payment_id' => $payment?->id,
+                'change' => $payment?->change_given ?? 0,
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur de validation.',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

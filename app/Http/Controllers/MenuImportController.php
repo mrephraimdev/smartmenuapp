@@ -7,7 +7,6 @@ use App\Models\Menu;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -44,8 +43,8 @@ class MenuImportController extends Controller
             ->get();
 
         return view('admin.menus.import', [
-            'tenant'     => $tenant,
-            'menus'      => $menus,
+            'tenant' => $tenant,
+            'menus' => $menus,
             'tenantSlug' => $tenantSlug,
         ]);
     }
@@ -59,15 +58,15 @@ class MenuImportController extends Controller
         $this->validateTenantAccess($tenant);
 
         $request->validate([
-            'file'    => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
             'menu_id' => ['required', 'integer', 'exists:menus,id'],
         ], [
-            'file.required'    => 'Veuillez sélectionner un fichier à importer.',
-            'file.file'        => 'Le fichier est invalide.',
-            'file.mimes'       => 'Le fichier doit être au format XLSX, XLS ou CSV.',
-            'file.max'         => 'Le fichier ne doit pas dépasser 10 Mo.',
+            'file.required' => 'Veuillez sélectionner un fichier à importer.',
+            'file.file' => 'Le fichier est invalide.',
+            'file.mimes' => 'Le fichier doit être au format XLSX, XLS ou CSV.',
+            'file.max' => 'Le fichier ne doit pas dépasser 10 Mo.',
             'menu_id.required' => 'Veuillez sélectionner un menu.',
-            'menu_id.exists'   => 'Le menu sélectionné est invalide.',
+            'menu_id.exists' => 'Le menu sélectionné est invalide.',
         ]);
 
         // Verify the menu belongs to this tenant
@@ -83,8 +82,8 @@ class MenuImportController extends Controller
             ->route('admin.menu.import', $tenantSlug)
             ->with('import_result', [
                 'imported' => $import->getImported(),
-                'skipped'  => $import->getSkipped(),
-                'errors'   => $import->getErrors(),
+                'skipped' => $import->getSkipped(),
+                'errors' => $import->getErrors(),
             ]);
     }
 
@@ -94,7 +93,7 @@ class MenuImportController extends Controller
     public function template(): StreamedResponse
     {
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="template_import_menu.csv"',
         ];
 

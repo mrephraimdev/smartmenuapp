@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Enums\PaymentMethod;
 use App\Services\PaymentService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
@@ -24,7 +24,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403);
         }
 
@@ -82,7 +82,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['success' => false, 'error' => 'Accès non autorisé'], 403);
         }
 
@@ -93,7 +93,7 @@ class PaymentController extends Controller
         if ($order->isPaid()) {
             return response()->json([
                 'success' => false,
-                'error' => 'Cette commande est déjà payée'
+                'error' => 'Cette commande est déjà payée',
             ], 422);
         }
 
@@ -118,7 +118,7 @@ class PaymentController extends Controller
         }
 
         try {
-            $payment = match($method) {
+            $payment = match ($method) {
                 PaymentMethod::CASH => $this->paymentService->processCashPayment(
                     $order,
                     $validated['amount_received'] ?? $order->getRemainingAmount(),
@@ -156,7 +156,7 @@ class PaymentController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'Erreur lors du paiement: ' . $e->getMessage()
+                'error' => 'Erreur lors du paiement: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -169,7 +169,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
@@ -183,7 +183,7 @@ class PaymentController extends Controller
             'remaining' => $order->getRemainingAmount(),
             'formatted_total' => $order->getFormattedTotal(),
             'formatted_remaining' => $order->getFormattedRemainingAmount(),
-            'payment_methods' => collect(PaymentMethod::cashierMethods())->map(fn($m) => [
+            'payment_methods' => collect(PaymentMethod::cashierMethods())->map(fn ($m) => [
                 'value' => $m->value,
                 'label' => $m->label(),
                 'color' => $m->color(),
@@ -199,7 +199,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403);
         }
 
@@ -225,7 +225,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
@@ -247,7 +247,7 @@ class PaymentController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 

@@ -94,7 +94,7 @@ class PosSession extends Model
      */
     public function getDurationInMinutes(): ?int
     {
-        if (!$this->closed_at) {
+        if (! $this->closed_at) {
             return now()->diffInMinutes($this->opened_at);
         }
 
@@ -137,7 +137,7 @@ class PosSession extends Model
      */
     public function getStatusLabel(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'OPEN' => 'Ouvert',
             'CLOSED' => 'Fermé',
             default => $this->status

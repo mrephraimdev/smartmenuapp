@@ -6,8 +6,8 @@ use App\Models\Menu;
 use App\Models\Tenant;
 use App\Services\ExportService;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class ExportController extends Controller
@@ -47,7 +47,7 @@ class ExportController extends Controller
         return view('admin.reports.index', [
             'tenantSlug' => $tenantSlug,
             'tenant' => $tenant,
-            'menus' => $menus
+            'menus' => $menus,
         ]);
     }
 
@@ -130,12 +130,12 @@ class ExportController extends Controller
         $data['tenant'] = [
             'name' => $tenant->name,
             'address' => $tenant->address,
-            'phone' => $tenant->phone
+            'phone' => $tenant->phone,
         ];
 
         return response()->json([
             'success' => true,
-            'report' => $data
+            'report' => $data,
         ]);
     }
 
@@ -204,14 +204,14 @@ class ExportController extends Controller
 
         $menuId = $request->get('menu_id');
 
-        if (!$menuId) {
+        if (! $menuId) {
             // Get the first active menu
             $menu = $tenant->menus()->where('active', true)->first();
         } else {
             $menu = Menu::where('tenant_id', $tenant->id)->findOrFail($menuId);
         }
 
-        if (!$menu) {
+        if (! $menu) {
             abort(404, 'Aucun menu actif trouvé');
         }
 

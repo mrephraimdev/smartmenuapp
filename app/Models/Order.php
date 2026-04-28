@@ -2,21 +2,21 @@
 
 namespace App\Models;
 
-use App\Traits\TenantScope;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Traits\TenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-    use HasFactory, TenantScope, SoftDeletes;
+    use HasFactory, SoftDeletes, TenantScope;
 
     protected $fillable = [
         'tenant_id', 'table_id', 'pos_session_id', 'serveur_id', 'order_number', 'status', 'total', 'notes',
-        'payment_status', 'paid_amount', 'paid_at', 'collected_by_id', 'collected_by_name'
+        'payment_status', 'paid_amount', 'paid_at', 'collected_by_id', 'collected_by_name',
     ];
 
     protected $casts = [
@@ -130,7 +130,7 @@ class Order extends Model
     {
         return in_array($this->payment_status, [
             PaymentStatus::PENDING->value,
-            PaymentStatus::PARTIAL->value
+            PaymentStatus::PARTIAL->value,
         ]);
     }
 
@@ -171,8 +171,8 @@ class Order extends Model
     {
         $date = now()->format('Ymd');
         $count = self::where('tenant_id', $tenantId)
-                     ->whereDate('created_at', now())
-                     ->count() + 1;
+            ->whereDate('created_at', now())
+            ->count() + 1;
 
         return sprintf('%s-T%d-%04d', $date, $tenantId, $count);
     }
@@ -180,7 +180,7 @@ class Order extends Model
     // Créer une commande avec numéro automatique
     public static function createWithNumber(array $data)
     {
-        if (!isset($data['order_number'])) {
+        if (! isset($data['order_number'])) {
             $data['order_number'] = self::generateOrderNumber($data['tenant_id']);
         }
 

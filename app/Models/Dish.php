@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dish extends Model
 {
-    use HasFactory, TenantScope, SoftDeletes;
+    use HasFactory, SoftDeletes, TenantScope;
 
     protected $fillable = [
         'tenant_id',
@@ -22,14 +22,14 @@ class Dish extends Model
         'tags',
         'stock_quantity',
         'preparation_time_minutes',
-        'active'
+        'active',
     ];
 
     protected $casts = [
         'allergens' => 'array',
         'tags' => 'array',
         'active' => 'boolean',
-        'price_base' => 'decimal:2'
+        'price_base' => 'decimal:2',
     ];
 
     /**
@@ -52,7 +52,7 @@ class Dish extends Model
     {
         // Assigner automatiquement le tenant_id si manquant
         static::creating(function ($dish) {
-            if (!$dish->tenant_id && $dish->category_id) {
+            if (! $dish->tenant_id && $dish->category_id) {
                 $category = \App\Models\Category::withoutGlobalScope('tenant')
                     ->with('menu')
                     ->find($dish->category_id);
@@ -87,7 +87,7 @@ class Dish extends Model
     // Vérifier si le plat est disponible
     public function isAvailable()
     {
-        if (!$this->active) {
+        if (! $this->active) {
             return false;
         }
 

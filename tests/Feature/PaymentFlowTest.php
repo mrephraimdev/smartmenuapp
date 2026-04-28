@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Enums\OrderStatus;
-use App\Enums\PaymentStatus;
-use App\Enums\PaymentMethod;
 
 beforeEach(function () {
     $this->tenant = createTenant();

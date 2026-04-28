@@ -2,25 +2,28 @@
 
 namespace Tests\Feature\Api;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
-use App\Models\Menu;
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Dish;
-use App\Models\Table;
+use App\Models\Menu;
 use App\Models\Order;
-use App\Enums\OrderStatus;
+use App\Models\Role;
+use App\Models\Table;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class OrderApiTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Table $table;
+
     protected Dish $dish;
+
     protected User $admin;
 
     protected function setUp(): void

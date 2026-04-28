@@ -60,7 +60,7 @@ Broadcast::channel('menu.{tenantId}', function () {
  * Private channel for order tracking by table.
  * Used for customer-facing order status updates.
  */
-Broadcast::channel('table.{tableId}', function (User $user = null, int $tableId) {
+Broadcast::channel('table.{tableId}', function (?User $user, int $tableId) {
     // Allow anonymous access for customers tracking their orders
     return true;
 });
@@ -69,7 +69,7 @@ Broadcast::channel('table.{tableId}', function (User $user = null, int $tableId)
  * Private channel for specific order updates.
  * Used for real-time order status tracking.
  */
-Broadcast::channel('order.{orderId}', function (User $user = null, int $orderId) {
+Broadcast::channel('order.{orderId}', function (?User $user, int $orderId) {
     // Allow access for order tracking
     return true;
 });

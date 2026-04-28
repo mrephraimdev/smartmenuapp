@@ -2,26 +2,27 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Table;
-use App\Models\Menu;
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Dish;
+use App\Models\Menu;
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Models\Table;
+use App\Models\Tenant;
 use App\Services\OrderService;
-use App\Enums\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class OrderServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected OrderService $orderService;
+
     protected Tenant $tenant;
+
     protected Table $table;
+
     protected Dish $dish;
 
     protected function setUp(): void
@@ -221,7 +222,7 @@ class OrderServiceTest extends TestCase
         $orders = $this->orderService->getOrdersByTenant($this->tenant->id);
 
         $this->assertCount(2, $orders);
-        $this->assertTrue($orders->every(fn($o) => $o->tenant_id === $this->tenant->id));
+        $this->assertTrue($orders->every(fn ($o) => $o->tenant_id === $this->tenant->id));
     }
 
     /** @test */

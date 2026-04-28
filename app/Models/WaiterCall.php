@@ -100,7 +100,7 @@ class WaiterCall extends Model
      */
     public function getCallTypeLabelAttribute(): string
     {
-        return match($this->call_type) {
+        return match ($this->call_type) {
             'SERVICE' => 'Demande de service',
             'QUESTION' => 'Question',
             'URGENCE' => 'Urgence',
@@ -113,7 +113,7 @@ class WaiterCall extends Model
      */
     public function getCallTypeColorAttribute(): string
     {
-        return match($this->call_type) {
+        return match ($this->call_type) {
             'SERVICE' => 'blue',
             'QUESTION' => 'yellow',
             'URGENCE' => 'red',

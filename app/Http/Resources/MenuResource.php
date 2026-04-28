@@ -22,7 +22,7 @@ class MenuResource extends JsonResource
                 return $this->categories
                     ->sortBy('sort_order')
                     ->values()
-                    ->map(fn($category) => [
+                    ->map(fn ($category) => [
                         'id' => $category->id,
                         'name' => $category->name,
                         'sort_order' => $category->sort_order,
@@ -38,7 +38,7 @@ class MenuResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
             'links' => [
-                'self' => $this->when($this->id, fn() => route('api.menus.show', $this->id, false)),
+                'self' => $this->when($this->id, fn () => route('api.menus.show', $this->id, false)),
             ],
         ];
     }

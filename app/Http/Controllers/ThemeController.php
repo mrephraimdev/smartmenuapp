@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Theme;
 use App\Models\Tenant;
+use App\Models\Theme;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ThemeController extends Controller
 {
@@ -21,6 +20,7 @@ class ThemeController extends Controller
     {
         $tenant = Tenant::findBySlug($tenantSlug);
         $themes = Theme::where('is_active', true)->get();
+
         return view('admin.themes.index', compact('themes', 'tenant'));
     }
 
@@ -58,13 +58,14 @@ class ThemeController extends Controller
     public function show($tenantSlug, Theme $theme)
     {
         $tenant = Tenant::findBySlug($tenantSlug);
+
         return view('admin.themes.show', compact('theme', 'tenant'));
     }
 
     public function assignToTenant(Request $request, Tenant $tenant)
     {
         $request->validate([
-            'theme_id' => 'required|exists:themes,id'
+            'theme_id' => 'required|exists:themes,id',
         ]);
 
         $tenant->update(['theme_id' => $request->theme_id]);
@@ -81,6 +82,7 @@ class ThemeController extends Controller
     public function preview($tenantSlug, Theme $theme)
     {
         $tenant = Tenant::findBySlug($tenantSlug);
+
         return view('admin.themes.preview', compact('theme', 'tenant'));
     }
 
@@ -94,8 +96,8 @@ class ThemeController extends Controller
                 'name' => $theme->name,
                 'colors' => $theme->colors,
                 'fonts' => $theme->fonts,
-                'category' => $theme->category
-            ]
+                'category' => $theme->category,
+            ],
         ]);
     }
 

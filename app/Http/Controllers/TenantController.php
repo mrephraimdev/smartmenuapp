@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Tenant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
@@ -15,6 +15,7 @@ class TenantController extends Controller
     public function index()
     {
         $tenants = Tenant::orderBy('created_at', 'desc')->get();
+
         return view('tenants.index', compact('tenants'));
     }
 
@@ -65,7 +66,7 @@ class TenantController extends Controller
             'address' => $request->address,
             'phone' => $request->phone,
             'email' => $request->email,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
         ];
 
         // Gérer l'upload du logo
@@ -200,7 +201,8 @@ class TenantController extends Controller
         \App\Models\AuditLog::where('tenant_id', $tenant->id)->delete();
 
         // Désactiver l'observer pour éviter l'insertion d'un audit_log après suppression (FK constraint)
-        \App\Models\Tenant::withoutEvents(fn() => $tenant->delete());
+        \App\Models\Tenant::withoutEvents(fn () => $tenant->delete());
+
         return redirect()->route('superadmin.tenants.index')->with('success', 'Tenant supprimé avec succès!');
     }
 }

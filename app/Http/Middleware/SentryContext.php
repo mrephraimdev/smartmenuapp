@@ -24,16 +24,16 @@ class SentryContext
 
             if ($user) {
                 $scope->setUser([
-                    'id'    => $user->id,
+                    'id' => $user->id,
                     'email' => $user->email,
-                    'name'  => $user->name,
-                    'role'  => $user->role,
+                    'name' => $user->name,
+                    'role' => $user->role,
                 ]);
 
                 if ($user->tenant_id) {
                     $scope->setTag('tenant.id', (string) $user->tenant_id);
                     $scope->setContext('tenant', [
-                        'id'   => $user->tenant_id,
+                        'id' => $user->tenant_id,
                         'slug' => $user->tenant?->slug ?? 'unknown',
                         'name' => $user->tenant?->name ?? 'unknown',
                     ]);

@@ -12,7 +12,7 @@ enum PaymentStatus: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'En attente',
             self::PAID => 'Payé',
             self::PARTIAL => 'Partiel',
@@ -23,7 +23,7 @@ enum PaymentStatus: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'yellow',
             self::PAID => 'green',
             self::PARTIAL => 'orange',
@@ -34,7 +34,7 @@ enum PaymentStatus: string
 
     public function badgeClass(): string
     {
-        return match($this) {
+        return match ($this) {
             self::PENDING => 'bg-yellow-100 text-yellow-800',
             self::PAID => 'bg-green-100 text-green-800',
             self::PARTIAL => 'bg-orange-100 text-orange-800',

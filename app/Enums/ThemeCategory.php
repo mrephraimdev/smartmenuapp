@@ -17,7 +17,7 @@ enum ThemeCategory: string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'Restaurant',
             self::WEDDING => 'Mariage',
             self::CORPORATE => 'Entreprise',
@@ -33,7 +33,7 @@ enum ThemeCategory: string
      */
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'Thèmes pour restaurants traditionnels',
             self::WEDDING => 'Thèmes élégants pour mariages et événements',
             self::CORPORATE => 'Thèmes professionnels pour événements d\'entreprise',
@@ -49,7 +49,7 @@ enum ThemeCategory: string
      */
     public function icon(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'heroicon-o-building-storefront',
             self::WEDDING => 'heroicon-o-heart',
             self::CORPORATE => 'heroicon-o-briefcase',
@@ -65,7 +65,7 @@ enum ThemeCategory: string
      */
     public function defaultColors(): array
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => [
                 'primary' => '#C1440E',
                 'secondary' => '#1A1A1A',

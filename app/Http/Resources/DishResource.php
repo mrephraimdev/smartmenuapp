@@ -39,7 +39,7 @@ class DishResource extends JsonResource
             }),
             'category_id' => $this->category_id,
             'variants' => $this->when($this->relationLoaded('variants'), function () {
-                return $this->variants->map(fn($variant) => [
+                return $this->variants->map(fn ($variant) => [
                     'id' => $variant->id,
                     'name' => $variant->name,
                     'price_modifier' => (float) $variant->price_modifier,
@@ -48,7 +48,7 @@ class DishResource extends JsonResource
                 ]);
             }),
             'options' => $this->when($this->relationLoaded('options'), function () {
-                return $this->options->map(fn($option) => [
+                return $this->options->map(fn ($option) => [
                     'id' => $option->id,
                     'name' => $option->name,
                     'price' => (float) $option->price,
@@ -69,7 +69,7 @@ class DishResource extends JsonResource
      */
     protected function getPreparationTimeFormatted(): ?string
     {
-        if (!$this->preparation_time_minutes) {
+        if (! $this->preparation_time_minutes) {
             return null;
         }
 

@@ -2,20 +2,22 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
 use App\Models\Role;
 use App\Models\Table;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class QrCodeTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected User $admin;
+
     protected Table $table;
 
     protected function setUp(): void

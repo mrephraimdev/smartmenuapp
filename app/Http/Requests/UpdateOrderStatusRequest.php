@@ -17,7 +17,7 @@ class UpdateOrderStatusRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -34,6 +34,7 @@ class UpdateOrderStatusRequest extends FormRequest
             if (is_numeric($order)) {
                 $order = \App\Models\Order::find($order);
             }
+
             return $order && $order->tenant_id === $user->tenant_id;
         }
 
@@ -63,7 +64,7 @@ class UpdateOrderStatusRequest extends FormRequest
     public function messages(): array
     {
         $validStatuses = implode(', ', array_map(
-            fn($status) => $status->value . ' (' . $status->label() . ')',
+            fn ($status) => $status->value . ' (' . $status->label() . ')',
             OrderStatus::cases()
         ));
 
@@ -105,22 +106,24 @@ class UpdateOrderStatusRequest extends FormRequest
             $order = \App\Models\Order::find($order);
         }
 
-        if (!$order) {
+        if (! $order) {
             return;
         }
 
         $currentStatus = OrderStatus::tryFrom($order->status);
         $newStatus = OrderStatus::tryFrom($this->status);
 
-        if (!$currentStatus || !$newStatus) {
+        if (! $currentStatus || ! $newStatus) {
             return;
         }
 
         // Cannot change status of already served or cancelled orders
         if (in_array($currentStatus, [OrderStatus::SERVED, OrderStatus::CANCELLED])) {
-            $validator->errors()->add('status',
+            $validator->errors()->add(
+                'status',
                 'Impossible de modifier le statut d\'une commande ' . $currentStatus->label() . '.'
             );
+
             return;
         }
 
@@ -128,26 +131,27 @@ class UpdateOrderStatusRequest extends FormRequest
         $validTransitions = [
             OrderStatus::RECEIVED->value => [
                 OrderStatus::PREPARING->value,
-                OrderStatus::CANCELLED->value
+                OrderStatus::CANCELLED->value,
             ],
             OrderStatus::PREPARING->value => [
                 OrderStatus::READY->value,
-                OrderStatus::CANCELLED->value
+                OrderStatus::CANCELLED->value,
             ],
             OrderStatus::READY->value => [
                 OrderStatus::SERVED->value,
-                OrderStatus::CANCELLED->value
+                OrderStatus::CANCELLED->value,
             ],
         ];
 
         $allowedNextStatuses = $validTransitions[$currentStatus->value] ?? [];
 
-        if (!in_array($newStatus->value, $allowedNextStatuses)) {
+        if (! in_array($newStatus->value, $allowedNextStatuses)) {
             $allowedLabels = array_map(
-                fn($s) => OrderStatus::from($s)->label(),
+                fn ($s) => OrderStatus::from($s)->label(),
                 $allowedNextStatuses
             );
-            $validator->errors()->add('status',
+            $validator->errors()->add(
+                'status',
                 'Transition invalide. Depuis "' . $currentStatus->label() .
                 '", vous pouvez passer à : ' . implode(', ', $allowedLabels) . '.'
             );

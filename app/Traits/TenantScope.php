@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Auth;
  * pour garantir l'isolation des données entre tenants.
  *
  * Les utilisateurs SUPER_ADMIN ont accès à tous les tenants.
- *
- * @package App\Traits
  */
 trait TenantScope
 {
@@ -32,7 +30,7 @@ trait TenantScope
 
         // Lors de la création d'un nouveau modèle, assigne automatiquement le tenant_id
         static::creating(function (Model $model) {
-            if (static::shouldApplyTenantScope() && !$model->{static::getTenantColumn()}) {
+            if (static::shouldApplyTenantScope() && ! $model->{static::getTenantColumn()}) {
                 $model->{static::getTenantColumn()} = Auth::user()->tenant_id;
             }
         });
@@ -40,14 +38,12 @@ trait TenantScope
 
     /**
      * Détermine si le scope tenant doit être appliqué
-     *
-     * @return bool
      */
     protected static function shouldApplyTenantScope(): bool
     {
         // Ne pas appliquer si :
         // 1. L'utilisateur n'est pas authentifié
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return false;
         }
 
@@ -57,7 +53,7 @@ trait TenantScope
         }
 
         // 3. L'utilisateur n'a pas de tenant_id (cas edge)
-        if (!Auth::user()->tenant_id) {
+        if (! Auth::user()->tenant_id) {
             return false;
         }
 
@@ -66,8 +62,6 @@ trait TenantScope
 
     /**
      * Retourne le nom de la colonne tenant
-     *
-     * @return string
      */
     protected static function getTenantColumn(): string
     {
@@ -77,9 +71,6 @@ trait TenantScope
     /**
      * Query scope pour exclure le filtre tenant
      * Utilisation : Model::withoutTenantScope()->get()
-     *
-     * @param Builder $query
-     * @return Builder
      */
     public function scopeWithoutTenantScope(Builder $query): Builder
     {
@@ -89,10 +80,6 @@ trait TenantScope
     /**
      * Query scope pour forcer un tenant spécifique
      * Utilisation : Model::forTenant($tenantId)->get()
-     *
-     * @param Builder $query
-     * @param int $tenantId
-     * @return Builder
      */
     public function scopeForTenant(Builder $query, int $tenantId): Builder
     {
@@ -103,9 +90,6 @@ trait TenantScope
     /**
      * Query scope pour tous les tenants (alias de withoutTenantScope)
      * Utilisation : Model::allTenants()->get()
-     *
-     * @param Builder $query
-     * @return Builder
      */
     public function scopeAllTenants(Builder $query): Builder
     {

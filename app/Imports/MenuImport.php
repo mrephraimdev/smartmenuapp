@@ -9,16 +9,19 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
+class MenuImport implements ToCollection, WithCustomCsvSettings, WithHeadingRow
 {
     protected Tenant $tenant;
+
     protected int $menuId;
 
     protected int $imported = 0;
+
     protected int $skipped = 0;
+
     protected array $errors = [];
 
     public function __construct(Tenant $tenant, int $menuId)
@@ -30,7 +33,7 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
     public function getCsvSettings(): array
     {
         return [
-            'delimiter'      => ',',
+            'delimiter' => ',',
             'input_encoding' => 'UTF-8',
         ];
     }
@@ -46,6 +49,7 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
         foreach ($row as $key => $value) {
             $lookup[$this->normalizeKey((string) $key)] = $value;
         }
+
         return $lookup;
     }
 
@@ -62,11 +66,11 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
             try {
                 // Normalize values — accepte plusieurs variantes de noms de colonnes
                 $categorieName = trim((string) ($row['categorie'] ?? $row['category'] ?? ''));
-                $nomPlat       = trim((string) ($row['nom_plat'] ?? $row['name'] ?? $row['nom'] ?? ''));
-                $description   = trim((string) ($row['description'] ?? ''));
-                $prix          = (float) str_replace(',', '.', (string) ($row['prix'] ?? $row['price'] ?? 0));
-                $actif         = isset($row['actif']) && $row['actif'] !== '' ? (bool)(int)$row['actif'] : true;
-                $imageUrl      = trim((string) ($row['image_url'] ?? $row['image'] ?? ''));
+                $nomPlat = trim((string) ($row['nom_plat'] ?? $row['name'] ?? $row['nom'] ?? ''));
+                $description = trim((string) ($row['description'] ?? ''));
+                $prix = (float) str_replace(',', '.', (string) ($row['prix'] ?? $row['price'] ?? 0));
+                $actif = isset($row['actif']) && $row['actif'] !== '' ? (bool) (int) $row['actif'] : true;
+                $imageUrl = trim((string) ($row['image_url'] ?? $row['image'] ?? ''));
 
                 // Skip rows missing required fields
                 if ($categorieName === '' || $nomPlat === '' || $prix <= 0) {
@@ -80,11 +84,11 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
                     ->where('name', $categorieName)
                     ->first();
 
-                if (!$category) {
+                if (! $category) {
                     // Create without global scope interference (Category scopes via menu relation)
                     $category = new Category();
-                    $category->menu_id    = $this->menuId;
-                    $category->name       = $categorieName;
+                    $category->menu_id = $this->menuId;
+                    $category->name = $categorieName;
                     $category->sort_order = 0;
                     $category->saveQuietly();
                 }
@@ -102,13 +106,13 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
 
                 // Create the dish — pass tenant_id explicitly so the creating hook doesn't need auth
                 $dish = new Dish();
-                $dish->tenant_id   = $this->tenant->id;
+                $dish->tenant_id = $this->tenant->id;
                 $dish->category_id = $category->id;
-                $dish->name        = $nomPlat;
+                $dish->name = $nomPlat;
                 $dish->description = $description !== '' ? $description : null;
-                $dish->price_base  = $prix;
-                $dish->active      = $actif;
-                $dish->photo_url   = $imageUrl !== '' && filter_var($imageUrl, FILTER_VALIDATE_URL) ? $imageUrl : null;
+                $dish->price_base = $prix;
+                $dish->active = $actif;
+                $dish->photo_url = $imageUrl !== '' && filter_var($imageUrl, FILTER_VALIDATE_URL) ? $imageUrl : null;
                 $dish->saveQuietly();
 
                 $this->imported++;
@@ -130,10 +134,11 @@ class MenuImport implements ToCollection, WithHeadingRow, WithCustomCsvSettings
 
             if ($contents === false || strlen($contents) === 0) {
                 $this->errors[] = "Plat \"{$dish->name}\" : impossible de télécharger l'image depuis {$url}";
+
                 return;
             }
 
-            $filename  = "dishes/{$this->tenant->id}/dish_{$dish->id}_" . time() . '.jpg';
+            $filename = "dishes/{$this->tenant->id}/dish_{$dish->id}_" . time() . '.jpg';
             Storage::disk('public')->put($filename, $contents);
 
             $dish->update(['photo_url' => Storage::disk('public')->url($filename)]);

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
-use App\Models\Variant;
+use App\Models\Menu;
 use App\Models\Option;
 use App\Models\Tenant;
+use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +22,7 @@ class AdminMenuController extends Controller
         $tenant = Tenant::findBySlug($tenantSlug);
 
         $allowed = ['SERVEUR', 'CAISSIER', 'ADMIN'];
-        $targets = array_values(array_filter($request->input('targets', []), fn($t) => in_array($t, $allowed)));
+        $targets = array_values(array_filter($request->input('targets', []), fn ($t) => in_array($t, $allowed)));
 
         $branding = $tenant->branding ?? [];
         $branding['notification_targets'] = $targets ?: ['SERVEUR', 'CAISSIER', 'ADMIN'];
@@ -51,9 +51,9 @@ class AdminMenuController extends Controller
         $tenantId = $tenant->id;
 
         // Période sélectionnée (défaut : aujourd'hui)
-        $period    = $request->get('period', 'today');
-        $dateFrom  = $request->get('date_from');
-        $dateTo    = $request->get('date_to');
+        $period = $request->get('period', 'today');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
         [$from, $to] = $this->resolveDateRange($period, $dateFrom, $dateTo);
 
@@ -67,7 +67,7 @@ class AdminMenuController extends Controller
             ->whereBetween('created_at', [$from->startOfDay(), $to->copy()->endOfDay()]);
 
         $orderStats = (clone $orderQuery)
-            ->selectRaw("COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue")
+            ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue')
             ->first();
 
         $activeDishes = Dish::where('tenant_id', $tenantId)->where('active', true)->count();
@@ -84,17 +84,17 @@ class AdminMenuController extends Controller
             ->get();
 
         return view('admin.dashboard', [
-            'tenant'       => $tenant,
-            'menus'        => $menus,
-            'period'       => $period,
-            'dateFrom'     => $from->toDateString(),
-            'dateTo'       => $to->toDateString(),
-            'periodLabel'  => $this->periodLabel($period, $from, $to),
-            'stats'        => [
-                'totalOrders'  => $orderStats->total_orders ?? 0,
+            'tenant' => $tenant,
+            'menus' => $menus,
+            'period' => $period,
+            'dateFrom' => $from->toDateString(),
+            'dateTo' => $to->toDateString(),
+            'periodLabel' => $this->periodLabel($period, $from, $to),
+            'stats' => [
+                'totalOrders' => $orderStats->total_orders ?? 0,
                 'totalRevenue' => $orderStats->total_revenue ?? 0,
                 'activeDishes' => $activeDishes,
-                'popularDishes'=> $popularDishes,
+                'popularDishes' => $popularDishes,
             ],
         ]);
     }
@@ -102,15 +102,16 @@ class AdminMenuController extends Controller
     private function resolveDateRange(string $period, ?string $dateFrom, ?string $dateTo): array
     {
         $today = \Carbon\Carbon::today();
+
         return match ($period) {
             'yesterday' => [$today->copy()->subDay(), $today->copy()->subDay()],
-            'week'      => [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()],
-            'month'     => [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()],
-            'custom'    => [
+            'week' => [$today->copy()->startOfWeek(), $today->copy()->endOfWeek()],
+            'month' => [$today->copy()->startOfMonth(), $today->copy()->endOfMonth()],
+            'custom' => [
                 \Carbon\Carbon::parse($dateFrom ?? $today),
-                \Carbon\Carbon::parse($dateTo   ?? $today),
+                \Carbon\Carbon::parse($dateTo ?? $today),
             ],
-            default     => [$today, $today], // today
+            default => [$today, $today], // today
         };
     }
 
@@ -118,10 +119,10 @@ class AdminMenuController extends Controller
     {
         return match ($period) {
             'yesterday' => 'Hier',
-            'week'      => 'Cette semaine',
-            'month'     => 'Ce mois',
-            'custom'    => $from->format('d/m/Y') . ' – ' . $to->format('d/m/Y'),
-            default     => "Aujourd'hui",
+            'week' => 'Cette semaine',
+            'month' => 'Ce mois',
+            'custom' => $from->format('d/m/Y') . ' – ' . $to->format('d/m/Y'),
+            default => "Aujourd'hui",
         };
     }
 
@@ -161,7 +162,7 @@ class AdminMenuController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Menu créé avec succès!'
+                    'message' => 'Menu créé avec succès!',
                 ]);
             }
 
@@ -172,7 +173,7 @@ class AdminMenuController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Erreur: ' . $e->getMessage()
+                    'message' => 'Erreur: ' . $e->getMessage(),
                 ], 500);
             }
 
@@ -188,7 +189,7 @@ class AdminMenuController extends Controller
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
-                'active' => 'boolean'
+                'active' => 'boolean',
             ]);
 
             $tenant = Tenant::findBySlug($tenantSlug);
@@ -200,13 +201,13 @@ class AdminMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Menu mis à jour avec succès!'
+                'message' => 'Menu mis à jour avec succès!',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -226,13 +227,13 @@ class AdminMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Menu supprimé avec succès!'
+                'message' => 'Menu supprimé avec succès!',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -244,6 +245,7 @@ class AdminMenuController extends Controller
     {
         $tenant = Tenant::findBySlug($tenantSlug);
         $menu = Menu::with('categories.dishes')->where('tenant_id', $tenant->id)->findOrFail($menuId);
+
         return view('admin.categories', compact('tenant', 'menu'));
     }
 
@@ -255,7 +257,7 @@ class AdminMenuController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|max:255',
-                'sort_order' => 'integer'
+                'sort_order' => 'integer',
             ]);
 
             $tenant = Tenant::findBySlug($tenantSlug);
@@ -264,18 +266,18 @@ class AdminMenuController extends Controller
             Category::create([
                 'menu_id' => $menuId,
                 'name' => $request->name,
-                'sort_order' => $request->sort_order ?? 0
+                'sort_order' => $request->sort_order ?? 0,
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Catégorie créée avec succès!'
+                'message' => 'Catégorie créée avec succès!',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -287,10 +289,11 @@ class AdminMenuController extends Controller
     {
         $tenant = Tenant::findBySlug($tenantSlug);
         $category = Category::with(['dishes.variants', 'dishes.options'])
-                           ->whereHas('menu', function($query) use ($tenant) {
-                               $query->where('tenant_id', $tenant->id);
-                           })
-                           ->findOrFail($categoryId);
+            ->whereHas('menu', function ($query) use ($tenant) {
+                $query->where('tenant_id', $tenant->id);
+            })
+            ->findOrFail($categoryId);
+
         return view('admin.dishes', compact('tenant', 'category'));
     }
 
@@ -303,13 +306,13 @@ class AdminMenuController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price_base' => 'required|numeric|min:0',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ]);
 
         DB::beginTransaction();
         try {
             $tenant = Tenant::findBySlug($tenantSlug);
-            $category = Category::whereHas('menu', function($query) use ($tenant) {
+            $category = Category::whereHas('menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($categoryId);
 
@@ -327,11 +330,11 @@ class AdminMenuController extends Controller
             // Gérer les variantes
             if ($request->has('variants')) {
                 foreach ($request->variants as $variant) {
-                    if (!empty($variant['name'])) {
+                    if (! empty($variant['name'])) {
                         Variant::create([
                             'dish_id' => $dish->id,
                             'name' => $variant['name'],
-                            'extra_price' => $variant['extra_price'] ?? 0
+                            'extra_price' => $variant['extra_price'] ?? 0,
                         ]);
                     }
                 }
@@ -340,12 +343,12 @@ class AdminMenuController extends Controller
             // Gérer les options
             if ($request->has('options')) {
                 foreach ($request->options as $option) {
-                    if (!empty($option['name'])) {
+                    if (! empty($option['name'])) {
                         Option::create([
                             'dish_id' => $dish->id,
                             'name' => $option['name'],
                             'kind' => $option['kind'] ?? 'toggle',
-                            'extra_price' => $option['extra_price'] ?? 0
+                            'extra_price' => $option['extra_price'] ?? 0,
                         ]);
                     }
                 }
@@ -359,14 +362,15 @@ class AdminMenuController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Plat créé avec succès!',
-                'dish_id' => $dish->id
+                'dish_id' => $dish->id,
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -382,11 +386,11 @@ class AdminMenuController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'price_base' => 'required|numeric|min:0',
-                'active' => 'boolean'
+                'active' => 'boolean',
             ]);
 
             $tenant = Tenant::findBySlug($tenantSlug);
-            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+            $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
             $dish->update($request->only(['name', 'description', 'price_base', 'active']));
@@ -395,11 +399,11 @@ class AdminMenuController extends Controller
             if ($request->has('variants')) {
                 $dish->variants()->delete();
                 foreach ($request->variants as $variant) {
-                    if (!empty($variant['name'])) {
+                    if (! empty($variant['name'])) {
                         Variant::create([
                             'dish_id' => $dish->id,
                             'name' => $variant['name'],
-                            'extra_price' => $variant['extra_price'] ?? 0
+                            'extra_price' => $variant['extra_price'] ?? 0,
                         ]);
                     }
                 }
@@ -409,12 +413,12 @@ class AdminMenuController extends Controller
             if ($request->has('options')) {
                 $dish->options()->delete();
                 foreach ($request->options as $option) {
-                    if (!empty($option['name'])) {
+                    if (! empty($option['name'])) {
                         Option::create([
                             'dish_id' => $dish->id,
                             'name' => $option['name'],
                             'kind' => $option['kind'] ?? 'toggle',
-                            'extra_price' => $option['extra_price'] ?? 0
+                            'extra_price' => $option['extra_price'] ?? 0,
                         ]);
                     }
                 }
@@ -427,14 +431,15 @@ class AdminMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Plat mis à jour avec succès!'
+                'message' => 'Plat mis à jour avec succès!',
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -446,7 +451,7 @@ class AdminMenuController extends Controller
     {
         try {
             $tenant = Tenant::findBySlug($tenantSlug);
-            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+            $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
             $dish->delete();
@@ -456,13 +461,13 @@ class AdminMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Plat supprimé avec succès!'
+                'message' => 'Plat supprimé avec succès!',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -474,10 +479,10 @@ class AdminMenuController extends Controller
     {
         try {
             $tenant = Tenant::findBySlug($tenantSlug);
-            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+            $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($id);
-            $dish->update(['active' => !$dish->active]);
+            $dish->update(['active' => ! $dish->active]);
 
             // Invalider les caches
             $this->invalidateTenantCache($tenant->id);
@@ -485,13 +490,13 @@ class AdminMenuController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Statut du plat mis à jour!',
-                'active' => $dish->active
+                'active' => $dish->active,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -504,20 +509,20 @@ class AdminMenuController extends Controller
         try {
             $tenant = Tenant::findBySlug($tenantSlug);
             $dish = Dish::with(['variants', 'options'])
-                       ->whereHas('category.menu', function($query) use ($tenant) {
-                           $query->where('tenant_id', $tenant->id);
-                       })
-                       ->findOrFail($id);
+                ->whereHas('category.menu', function ($query) use ($tenant) {
+                    $query->where('tenant_id', $tenant->id);
+                })
+                ->findOrFail($id);
 
             return response()->json([
                 'success' => true,
-                'dish' => $dish
+                'dish' => $dish,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -558,7 +563,7 @@ class AdminMenuController extends Controller
                     'popular_dishes' => $popularDishes,
                     'total_orders' => $orderStats->total_orders ?? 0,
                     'total_revenue' => $orderStats->total_revenue ?? 0,
-                    'active_dishes' => $activeDishes
+                    'active_dishes' => $activeDishes,
                 ];
             });
 
@@ -567,13 +572,13 @@ class AdminMenuController extends Controller
                 'popular_dishes' => $stats['popular_dishes'],
                 'total_orders' => $stats['total_orders'],
                 'total_revenue' => $stats['total_revenue'],
-                'active_dishes' => $stats['active_dishes']
+                'active_dishes' => $stats['active_dishes'],
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -597,11 +602,11 @@ class AdminMenuController extends Controller
     {
         try {
             $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             ]);
 
             $tenant = Tenant::findBySlug($tenantSlug);
-            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+            $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($dishId);
 
@@ -627,14 +632,15 @@ class AdminMenuController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Photo uploadée avec succès!',
-                'photo_url' => $dish->photo_url
+                'photo_url' => $dish->photo_url,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Erreur upload photo plat: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -646,7 +652,7 @@ class AdminMenuController extends Controller
     {
         try {
             $tenant = Tenant::findBySlug($tenantSlug);
-            $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+            $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                 $query->where('tenant_id', $tenant->id);
             })->findOrFail($dishId);
 
@@ -666,14 +672,15 @@ class AdminMenuController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Photo supprimée avec succès!'
+                'message' => 'Photo supprimée avec succès!',
             ]);
 
         } catch (\Exception $e) {
             Log::error('Erreur suppression photo plat: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }

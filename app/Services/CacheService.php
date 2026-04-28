@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Menu;
 use App\Models\Tenant;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class CacheService
@@ -13,16 +12,22 @@ class CacheService
      * Cache TTL constants (in seconds)
      */
     public const TTL_MENU = 3600;        // 1 hour
+
     public const TTL_STATISTICS = 300;    // 5 minutes
+
     public const TTL_TENANT = 86400;      // 24 hours
+
     public const TTL_THEME = 86400;       // 24 hours
 
     /**
      * Cache key prefixes
      */
     public const PREFIX_MENU = 'menu';
+
     public const PREFIX_STATS = 'stats';
+
     public const PREFIX_TENANT = 'tenant';
+
     public const PREFIX_THEME = 'theme';
 
     /**
@@ -174,7 +179,7 @@ class CacheService
     {
         $tenant = Tenant::with(['theme'])->find($tenantId);
 
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 

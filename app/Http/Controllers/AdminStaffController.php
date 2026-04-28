@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Tenant;
 use App\Enums\UserRole;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
@@ -39,7 +39,7 @@ class AdminStaffController extends Controller
         $tenant = $this->getTenant($tenantSlug);
 
         $staff = User::where('tenant_id', $tenant->id)
-            ->whereIn('role', array_map(fn($r) => $r->value, $this->getAllowedRoles()))
+            ->whereIn('role', array_map(fn ($r) => $r->value, $this->getAllowedRoles()))
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -65,15 +65,15 @@ class AdminStaffController extends Controller
         $tenant = $this->getTenant($tenantSlug);
 
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'username' => 'required|string|max:50|alpha_dash|unique:users,username',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => ['required', new Enum(UserRole::class)],
+            'role' => ['required', new Enum(UserRole::class)],
         ]);
 
         // Vérifier que le rôle est autorisé
         $role = UserRole::from($request->role);
-        if (!in_array($role, $this->getAllowedRoles())) {
+        if (! in_array($role, $this->getAllowedRoles())) {
             return back()->withErrors(['role' => 'Ce rôle n\'est pas autorisé.'])->withInput();
         }
 
@@ -81,13 +81,13 @@ class AdminStaffController extends Controller
         $email = strtolower($request->username) . '_' . $tenant->id . '@smartmenu.local';
 
         $user = User::create([
-            'name'               => $request->name,
-            'username'           => strtolower($request->username),
-            'email'              => $email,
-            'password'           => Hash::make($request->password),
-            'role'               => $role->value,
-            'tenant_id'          => $tenant->id,
-            'email_verified_at'  => now(),
+            'name' => $request->name,
+            'username' => strtolower($request->username),
+            'email' => $email,
+            'password' => Hash::make($request->password),
+            'role' => $role->value,
+            'tenant_id' => $tenant->id,
+            'email_verified_at' => now(),
         ]);
 
         return redirect()
@@ -140,25 +140,25 @@ class AdminStaffController extends Controller
         }
 
         $request->validate([
-            'name'     => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'username' => 'required|string|max:50|alpha_dash|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role'     => ['required', new Enum(UserRole::class)],
+            'role' => ['required', new Enum(UserRole::class)],
         ]);
 
         // Vérifier que le rôle est autorisé
         $role = UserRole::from($request->role);
-        if (!in_array($role, $this->getAllowedRoles())) {
+        if (! in_array($role, $this->getAllowedRoles())) {
             return back()->withErrors(['role' => 'Ce rôle n\'est pas autorisé.'])->withInput();
         }
 
         $newUsername = strtolower($request->username);
 
-        $user->name     = $request->name;
+        $user->name = $request->name;
         $user->username = $newUsername;
         // Synchronise l'email interne si le username change
-        $user->email    = $newUsername . '_' . $tenant->id . '@smartmenu.local';
-        $user->role     = $role->value;
+        $user->email = $newUsername . '_' . $tenant->id . '@smartmenu.local';
+        $user->role = $role->value;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

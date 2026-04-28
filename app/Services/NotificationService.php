@@ -2,14 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\LowStockAlert;
 use App\Mail\OrderConfirmation;
 use App\Mail\OrderStatusUpdate;
-use App\Mail\LowStockAlert;
 use App\Models\Order;
 use App\Models\Tenant;
-use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -29,7 +28,7 @@ class NotificationService
 
             Log::info("Order confirmation sent for order #{$order->order_number}");
         } catch (\Exception $e) {
-            Log::error("Failed to send order confirmation: " . $e->getMessage());
+            Log::error('Failed to send order confirmation: ' . $e->getMessage());
         }
     }
 
@@ -40,7 +39,7 @@ class NotificationService
     {
         try {
             // Only send for significant status changes
-            if (!in_array($order->status, ['PRET', 'SERVI', 'ANNULE'])) {
+            if (! in_array($order->status, ['PRET', 'SERVI', 'ANNULE'])) {
                 return;
             }
 
@@ -50,7 +49,7 @@ class NotificationService
 
             Log::info("Order status update sent for order #{$order->order_number}: {$previousStatus} -> {$order->status}");
         } catch (\Exception $e) {
-            Log::error("Failed to send order status update: " . $e->getMessage());
+            Log::error('Failed to send order status update: ' . $e->getMessage());
         }
     }
 
@@ -74,7 +73,7 @@ class NotificationService
 
             Log::info("Low stock alert sent to tenant: {$tenant->name}");
         } catch (\Exception $e) {
-            Log::error("Failed to send low stock alert: " . $e->getMessage());
+            Log::error('Failed to send low stock alert: ' . $e->getMessage());
         }
     }
 

@@ -2,25 +2,28 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
-use App\Models\Role;
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
+use App\Models\Menu;
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class MenuCrudTest extends TestCase
 {
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected User $admin;
+
     protected User $client;
+
     protected Menu $menu;
+
     protected Category $category;
 
     protected function setUp(): void

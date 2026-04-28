@@ -13,7 +13,7 @@ enum UserRole: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SUPER_ADMIN => 'Super Administrateur',
             self::ADMIN => 'Administrateur',
             self::CHEF => 'Chef Cuisinier',
@@ -25,7 +25,7 @@ enum UserRole: string
 
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SUPER_ADMIN => 'Accès total à tous les tenants',
             self::ADMIN => 'Gère son restaurant : menu, tables, commandes, stats',
             self::CHEF => 'Cuisine : voir et préparer les commandes',
@@ -37,7 +37,7 @@ enum UserRole: string
 
     public function permissions(): array
     {
-        return match($this) {
+        return match ($this) {
             self::SUPER_ADMIN => ['*'],
             self::ADMIN => [
                 'manage_menu',
@@ -169,7 +169,7 @@ enum UserRole: string
      */
     public function badgeClass(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SUPER_ADMIN => 'bg-red-100 text-red-800',
             self::ADMIN => 'bg-purple-100 text-purple-800',
             self::CHEF => 'bg-orange-100 text-orange-800',
@@ -184,7 +184,7 @@ enum UserRole: string
      */
     public function icon(): string
     {
-        return match($this) {
+        return match ($this) {
             self::SUPER_ADMIN => 'shield-check',
             self::ADMIN => 'building-office',
             self::CHEF => 'fire',

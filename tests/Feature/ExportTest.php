@@ -18,8 +18,11 @@ class ExportTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected User $admin;
+
     protected Menu $menu;
+
     protected Category $category;
 
     protected function setUp(): void

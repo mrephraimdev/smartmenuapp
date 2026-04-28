@@ -2,13 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Tenant;
-use App\Models\Table;
+use App\Models\Dish;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Dish;
+use App\Models\Table;
+use App\Models\Tenant;
 use App\Models\Variant;
-use App\Models\Option;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
@@ -32,7 +31,7 @@ class OrderSeeder extends Seeder
                         ['dish_name' => 'Salade César', 'quantity' => 1, 'unit_price' => 4500],
                         ['dish_name' => 'Steak Frites', 'quantity' => 2, 'unit_price' => 12000, 'variant_name' => 'À point'],
                         ['dish_name' => 'Café', 'quantity' => 1, 'unit_price' => 2000, 'variant_name' => 'Expresso'],
-                    ]
+                    ],
                 ],
                 [
                     'table_code' => 'A02',
@@ -41,7 +40,7 @@ class OrderSeeder extends Seeder
                         ['dish_name' => 'Poulet Rôti', 'quantity' => 1, 'unit_price' => 9500],
                         ['dish_name' => 'Tiramisu', 'quantity' => 2, 'unit_price' => 4500],
                         ['dish_name' => 'Eau Minérale', 'quantity' => 1, 'unit_price' => 1500, 'variant_name' => 'Gazeuse'],
-                    ]
+                    ],
                 ],
                 [
                     'table_code' => 'A03',
@@ -50,7 +49,7 @@ class OrderSeeder extends Seeder
                         ['dish_name' => 'Pâtes Carbonara', 'quantity' => 1, 'unit_price' => 8500],
                         ['dish_name' => 'Fondant au Chocolat', 'quantity' => 1, 'unit_price' => 5000],
                         ['dish_name' => 'Jus de Fruits', 'quantity' => 1, 'unit_price' => 2500, 'variant_name' => 'Orange'],
-                    ]
+                    ],
                 ],
                 [
                     'table_code' => 'B01',
@@ -59,7 +58,7 @@ class OrderSeeder extends Seeder
                         ['dish_name' => 'Poisson du Jour', 'quantity' => 1, 'unit_price' => 11000],
                         ['dish_name' => 'Crème Brûlée', 'quantity' => 1, 'unit_price' => 4000],
                         ['dish_name' => 'Vin Rouge', 'quantity' => 2, 'unit_price' => 3500],
-                    ]
+                    ],
                 ],
             ];
 
@@ -82,7 +81,7 @@ class OrderSeeder extends Seeder
 
                     // Créer les items de commande
                     foreach ($orderData['items'] as $itemData) {
-                        $dish = Dish::whereHas('category.menu', function($query) use ($tenant) {
+                        $dish = Dish::whereHas('category.menu', function ($query) use ($tenant) {
                             $query->where('tenant_id', $tenant->id);
                         })->where('name', $itemData['dish_name'])->first();
 
@@ -90,8 +89,8 @@ class OrderSeeder extends Seeder
                             $variantId = null;
                             if (isset($itemData['variant_name'])) {
                                 $variant = Variant::where('dish_id', $dish->id)
-                                                 ->where('name', $itemData['variant_name'])
-                                                 ->first();
+                                    ->where('name', $itemData['variant_name'])
+                                    ->first();
                                 $variantId = $variant ? $variant->id : null;
                             }
 

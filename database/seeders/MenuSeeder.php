@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\Tenant;
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
-use App\Models\Variant;
+use App\Models\Menu;
 use App\Models\Option;
+use App\Models\Tenant;
+use App\Models\Variant;
 use Illuminate\Database\Seeder;
 
 class MenuSeeder extends Seeder
@@ -24,10 +24,10 @@ class MenuSeeder extends Seeder
             // Créer le menu principal
             $menu = Menu::firstOrCreate([
                 'tenant_id' => $tenant->id,
-                'title' => 'Menu Principal'
+                'title' => 'Menu Principal',
             ], [
                 'description' => 'Notre carte complète avec tous nos plats',
-                'active' => true
+                'active' => true,
             ]);
 
             // Créer les catégories
@@ -41,7 +41,7 @@ class MenuSeeder extends Seeder
             foreach ($categories as $categoryData) {
                 $category = Category::firstOrCreate([
                     'menu_id' => $menu->id,
-                    'name' => $categoryData['name']
+                    'name' => $categoryData['name'],
                 ], $categoryData);
 
                 // Créer des plats pour chaque catégorie
@@ -65,14 +65,14 @@ class MenuSeeder extends Seeder
                         'options' => [
                             ['name' => 'Ajouter poulet grillé', 'kind' => 'toggle', 'extra_price' => 2000],
                             ['name' => 'Ajouter crevettes', 'kind' => 'toggle', 'extra_price' => 3500],
-                        ]
+                        ],
                     ],
                     [
                         'name' => 'Soupe du jour',
                         'description' => 'Soupe fraîchement préparée selon la saison',
                         'price_base' => 3500,
                         'active' => true,
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Bruschetta',
@@ -81,7 +81,7 @@ class MenuSeeder extends Seeder
                         'active' => true,
                         'options' => [
                             ['name' => 'Ajouter jambon', 'kind' => 'toggle', 'extra_price' => 1500],
-                        ]
+                        ],
                     ],
                 ];
                 break;
@@ -102,7 +102,7 @@ class MenuSeeder extends Seeder
                         'options' => [
                             ['name' => 'Sauce au poivre', 'kind' => 'toggle', 'extra_price' => 1000],
                             ['name' => 'Sauce béarnaise', 'kind' => 'toggle', 'extra_price' => 1500],
-                        ]
+                        ],
                     ],
                     [
                         'name' => 'Poulet Rôti',
@@ -112,7 +112,7 @@ class MenuSeeder extends Seeder
                         'options' => [
                             ['name' => 'Ajouter frites', 'kind' => 'toggle', 'extra_price' => 1500],
                             ['name' => 'Ajouter riz', 'kind' => 'toggle', 'extra_price' => 1000],
-                        ]
+                        ],
                     ],
                     [
                         'name' => 'Pâtes Carbonara',
@@ -122,7 +122,7 @@ class MenuSeeder extends Seeder
                         'options' => [
                             ['name' => 'Ajouter champignons', 'kind' => 'toggle', 'extra_price' => 1200],
                             ['name' => 'Ajouter poulet', 'kind' => 'toggle', 'extra_price' => 2000],
-                        ]
+                        ],
                     ],
                     [
                         'name' => 'Poisson du Jour',
@@ -132,7 +132,7 @@ class MenuSeeder extends Seeder
                         'options' => [
                             ['name' => 'Accompagnement riz', 'kind' => 'toggle', 'extra_price' => 1000],
                             ['name' => 'Accompagnement légumes', 'kind' => 'toggle', 'extra_price' => 1500],
-                        ]
+                        ],
                     ],
                 ];
                 break;
@@ -144,14 +144,14 @@ class MenuSeeder extends Seeder
                         'description' => 'Classique italien au café et mascarpone',
                         'price_base' => 4500,
                         'active' => true,
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Crème Brûlée',
                         'description' => 'Crème vanille avec caramel croquant',
                         'price_base' => 4000,
                         'active' => true,
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Fondant au Chocolat',
@@ -160,7 +160,7 @@ class MenuSeeder extends Seeder
                         'active' => true,
                         'options' => [
                             ['name' => 'Ajouter boule de glace', 'kind' => 'toggle', 'extra_price' => 1000],
-                        ]
+                        ],
                     ],
                 ];
                 break;
@@ -176,7 +176,7 @@ class MenuSeeder extends Seeder
                             ['name' => 'Plate', 'extra_price' => 0],
                             ['name' => 'Gazeuse', 'extra_price' => 0],
                         ],
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Jus de Fruits',
@@ -189,7 +189,7 @@ class MenuSeeder extends Seeder
                             ['name' => 'Ananas', 'extra_price' => 0],
                             ['name' => 'Mangue', 'extra_price' => 0],
                         ],
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Café',
@@ -201,14 +201,14 @@ class MenuSeeder extends Seeder
                             ['name' => 'Café au lait', 'extra_price' => 500],
                             ['name' => 'Cappuccino', 'extra_price' => 800],
                         ],
-                        'options' => []
+                        'options' => [],
                     ],
                     [
                         'name' => 'Vin Rouge',
                         'description' => 'Verre de vin rouge de la maison',
                         'price_base' => 3500,
                         'active' => true,
-                        'options' => []
+                        'options' => [],
                     ],
                 ];
                 break;
@@ -217,11 +217,11 @@ class MenuSeeder extends Seeder
         foreach ($dishesData as $dishData) {
             $dish = Dish::firstOrCreate([
                 'category_id' => $category->id,
-                'name' => $dishData['name']
+                'name' => $dishData['name'],
             ], [
                 'description' => $dishData['description'],
                 'price_base' => $dishData['price_base'],
-                'active' => $dishData['active']
+                'active' => $dishData['active'],
             ]);
 
             // Créer les variantes si elles existent
@@ -229,7 +229,7 @@ class MenuSeeder extends Seeder
                 foreach ($dishData['variants'] as $variantData) {
                     Variant::firstOrCreate([
                         'dish_id' => $dish->id,
-                        'name' => $variantData['name']
+                        'name' => $variantData['name'],
                     ], $variantData);
                 }
             }
@@ -239,7 +239,7 @@ class MenuSeeder extends Seeder
                 foreach ($dishData['options'] as $optionData) {
                     Option::firstOrCreate([
                         'dish_id' => $dish->id,
-                        'name' => $optionData['name']
+                        'name' => $optionData['name'],
                     ], $optionData);
                 }
             }

@@ -15,7 +15,7 @@ class StoreDishRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 

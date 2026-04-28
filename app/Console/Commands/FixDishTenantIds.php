@@ -31,13 +31,15 @@ class FixDishTenantIds extends Command
 
         if ($dishesWithoutTenant === 0) {
             $this->info('✅ Tous les plats ont déjà un tenant_id assigné!');
+
             return Command::SUCCESS;
         }
 
         $this->warn("⚠️ Trouvé {$dishesWithoutTenant} plats sans tenant_id");
 
-        if (!$this->confirm('Voulez-vous corriger ces plats?', true)) {
+        if (! $this->confirm('Voulez-vous corriger ces plats?', true)) {
             $this->info('❌ Opération annulée');
+
             return Command::FAILURE;
         }
 
@@ -68,11 +70,11 @@ class FixDishTenantIds extends Command
 
             $this->table(
                 ['ID', 'Nom', 'Category ID', 'Category'],
-                $orphanDishes->map(fn($dish) => [
+                $orphanDishes->map(fn ($dish) => [
                     $dish->id,
                     $dish->name,
                     $dish->category_id,
-                    $dish->category?->name ?? 'N/A'
+                    $dish->category?->name ?? 'N/A',
                 ])
             );
 
@@ -80,6 +82,7 @@ class FixDishTenantIds extends Command
         }
 
         $this->info('🎉 Tous les plats ont maintenant un tenant_id valide!');
+
         return Command::SUCCESS;
     }
 }

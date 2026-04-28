@@ -16,7 +16,7 @@ class StoreTableRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -89,7 +89,7 @@ class StoreTableRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Set default tenant_id from authenticated user if not provided
-        if (!$this->tenant_id && Auth::check()) {
+        if (! $this->tenant_id && Auth::check()) {
             $user = Auth::user();
             if ($user->tenant_id) {
                 $this->merge(['tenant_id' => $user->tenant_id]);
@@ -97,7 +97,7 @@ class StoreTableRequest extends FormRequest
         }
 
         // Set default is_active
-        if (!$this->has('is_active')) {
+        if (! $this->has('is_active')) {
             $this->merge(['is_active' => true]);
         }
     }

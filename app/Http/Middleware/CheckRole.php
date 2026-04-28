@@ -16,14 +16,12 @@ class CheckRole
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @param  string  ...$roles  Un ou plusieurs rôles autorisés
      * @return mixed
      */
     public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
@@ -48,12 +46,12 @@ class CheckRole
             }
         }
 
-        if (!$hasRequiredRole) {
+        if (! $hasRequiredRole) {
             abort(403, 'Accès non autorisé. Rôle requis: ' . implode(' ou ', $roles));
         }
 
         // Pour les rôles tenant, vérifier que l'utilisateur a un tenant
-        if ($this->requiresTenant($user->role) && !$user->tenant) {
+        if ($this->requiresTenant($user->role) && ! $user->tenant) {
             abort(403, 'Vous devez être associé à un restaurant pour accéder à cette page');
         }
 

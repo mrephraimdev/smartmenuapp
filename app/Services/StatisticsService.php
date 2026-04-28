@@ -2,15 +2,13 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Dish;
-use App\Models\Tenant;
-use App\Models\Review;
 use App\Models\Reservation;
-use App\Enums\OrderStatus;
-use Illuminate\Support\Collection;
+use App\Models\Review;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class StatisticsService
@@ -265,7 +263,7 @@ class StatisticsService
      */
     private function getStartDate(string $period): Carbon
     {
-        return match($period) {
+        return match ($period) {
             'today' => now()->startOfDay(),
             'week' => now()->startOfWeek(),
             'month' => now()->startOfMonth(),
@@ -280,7 +278,7 @@ class StatisticsService
      */
     private function getPreviousPeriodRevenue(int $tenantId, string $period): float
     {
-        $dates = match($period) {
+        $dates = match ($period) {
             'today' => [now()->subDay()->startOfDay(), now()->subDay()->endOfDay()],
             'week' => [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()],
             'month' => [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()],
@@ -311,7 +309,7 @@ class StatisticsService
                 'food_average' => 0,
                 'service_average' => 0,
                 'ambiance_average' => 0,
-                'distribution' => array_fill(0, 5, 0)
+                'distribution' => array_fill(0, 5, 0),
             ];
         }
 
@@ -319,7 +317,7 @@ class StatisticsService
 
         $distribution = [];
         for ($i = 1; $i <= 5; $i++) {
-            $distribution[] = $published->filter(fn($r) => round($r->overall_rating) == $i)->count();
+            $distribution[] = $published->filter(fn ($r) => round($r->overall_rating) == $i)->count();
         }
 
         return [
@@ -330,7 +328,7 @@ class StatisticsService
             'food_average' => round($published->avg('food_rating') ?? 0, 1),
             'service_average' => round($published->avg('service_rating') ?? 0, 1),
             'ambiance_average' => round($published->avg('ambiance_rating') ?? 0, 1),
-            'distribution' => $distribution
+            'distribution' => $distribution,
         ];
     }
 
@@ -364,7 +362,7 @@ class StatisticsService
             'no_show_rate' => $completedThisMonth > 0
                 ? round(($noShowsThisMonth / $completedThisMonth) * 100, 1)
                 : 0,
-            'average_party_size' => round($reservations->avg('party_size') ?? 0, 1)
+            'average_party_size' => round($reservations->avg('party_size') ?? 0, 1),
         ];
     }
 
@@ -381,7 +379,7 @@ class StatisticsService
             'top_dishes' => $this->getTopDishes($tenantId, 10, 'month'),
             'table_stats' => $this->getTableStats($tenantId, 'month'),
             'reviews' => $this->getReviewsStats($tenantId),
-            'reservations' => $this->getReservationsStats($tenantId)
+            'reservations' => $this->getReservationsStats($tenantId),
         ];
     }
 }

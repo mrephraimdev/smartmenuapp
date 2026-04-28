@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\WaiterCall;
 use App\Models\Table;
-use Illuminate\Http\Request;
+use App\Models\WaiterCall;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class WaiterCallController extends Controller
 {
@@ -26,7 +26,7 @@ class WaiterCallController extends Controller
             ->where('tenant_id', $validated['tenant_id'])
             ->first();
 
-        if (!$table) {
+        if (! $table) {
             return response()->json([
                 'success' => false,
                 'message' => 'Table non trouvée pour ce restaurant',
@@ -68,7 +68,7 @@ class WaiterCallController extends Controller
     {
         $tenantId = $request->query('tenant_id');
 
-        if (!$tenantId) {
+        if (! $tenantId) {
             return response()->json([
                 'success' => false,
                 'message' => 'tenant_id requis',
@@ -116,7 +116,7 @@ class WaiterCallController extends Controller
         }
 
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
                 'message' => 'Non authentifié',

@@ -22,9 +22,6 @@ class AddContextToJsonLogs
 
     /**
      * Add context to log records.
-     *
-     * @param  \Monolog\LogRecord  $record
-     * @return \Monolog\LogRecord
      */
     public function processLogRecord(LogRecord $record): LogRecord
     {

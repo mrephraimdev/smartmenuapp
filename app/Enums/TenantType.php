@@ -12,7 +12,7 @@ enum TenantType: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'Restaurant',
             self::WEDDING => 'Mariage',
             self::EVENT => 'Événement',
@@ -23,7 +23,7 @@ enum TenantType: string
 
     public function icon(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'heroicon-o-building-storefront',
             self::WEDDING => 'heroicon-o-heart',
             self::EVENT => 'heroicon-o-calendar',
@@ -34,7 +34,7 @@ enum TenantType: string
 
     public function defaultTheme(): string
     {
-        return match($this) {
+        return match ($this) {
             self::RESTAURANT => 'bistrot-moderne',
             self::WEDDING => 'mariage-elegant',
             self::EVENT => 'corporate-clean',

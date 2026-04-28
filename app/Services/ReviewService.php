@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Review;
 use App\Models\Tenant;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class ReviewService
 {
@@ -137,10 +136,10 @@ class ReviewService
             ->orderBy('date')
             ->get();
 
-        return $data->map(fn($row) => [
+        return $data->map(fn ($row) => [
             'date' => $row->date,
             'average' => round($row->avg_rating, 1),
-            'count' => $row->count
+            'count' => $row->count,
         ])->toArray();
     }
 

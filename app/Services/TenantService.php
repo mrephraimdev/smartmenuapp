@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\TenantType;
+use App\Models\Menu;
 use App\Models\Tenant;
 use App\Models\Theme;
-use App\Models\Menu;
-use App\Models\User;
-use App\Enums\TenantType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -108,6 +107,7 @@ class TenantService
     public function updateLogo(Tenant $tenant, string $logoUrl): Tenant
     {
         $tenant->update(['logo_url' => $logoUrl]);
+
         return $tenant->fresh();
     }
 
@@ -117,6 +117,7 @@ class TenantService
     public function updateCover(Tenant $tenant, string $coverUrl): Tenant
     {
         $tenant->update(['cover_url' => $coverUrl]);
+
         return $tenant->fresh();
     }
 
@@ -186,6 +187,7 @@ class TenantService
     public function activateTenant(Tenant $tenant): Tenant
     {
         $tenant->update(['is_active' => true]);
+
         return $tenant->fresh();
     }
 
@@ -195,6 +197,7 @@ class TenantService
     public function deactivateTenant(Tenant $tenant): Tenant
     {
         $tenant->update(['is_active' => false]);
+
         return $tenant->fresh();
     }
 
@@ -208,7 +211,7 @@ class TenantService
         if ($tenantType) {
             $query->where(function ($q) use ($tenantType) {
                 $q->where('category', $tenantType)
-                  ->orWhereNull('category');
+                    ->orWhereNull('category');
             });
         }
 
@@ -246,7 +249,7 @@ class TenantService
      */
     private function getDefaultThemeId(?string $type): ?int
     {
-        if (!$type) {
+        if (! $type) {
             return Theme::where('is_default', true)->value('id');
         }
 

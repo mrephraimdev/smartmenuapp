@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tenant;
 use App\Models\Table;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrCodeController extends Controller
 {
@@ -41,8 +40,8 @@ class QrCodeController extends Controller
     {
         $tenant = Tenant::findOrFail($tenantId);
         $table = Table::where('tenant_id', $tenantId)
-                     ->where('code', $tableCode)
-                     ->firstOrFail();
+            ->where('code', $tableCode)
+            ->firstOrFail();
 
         $menuUrl = url("/menu/{$tenantId}/{$tableCode}");
 
@@ -50,9 +49,9 @@ class QrCodeController extends Controller
         $cacheKey = "qr_svg_{$tenantId}_{$tableCode}";
         $qrCode = Cache::remember($cacheKey, 86400, function () use ($menuUrl) {
             return QrCode::size(300)
-                         ->format('svg')
-                         ->errorCorrection('H')
-                         ->generate($menuUrl);
+                ->format('svg')
+                ->errorCorrection('H')
+                ->generate($menuUrl);
         });
 
         return response($qrCode)
@@ -67,8 +66,8 @@ class QrCodeController extends Controller
     {
         $tenant = Tenant::findOrFail($tenantId);
         $table = Table::where('tenant_id', $tenantId)
-                     ->where('code', $tableCode)
-                     ->firstOrFail();
+            ->where('code', $tableCode)
+            ->firstOrFail();
 
         $qrCodeUrl = url("/qrcode/generate/{$tenantId}/{$tableCode}");
         $menuUrl = url("/menu?tenant={$tenantId}&table={$tableCode}");
@@ -83,8 +82,8 @@ class QrCodeController extends Controller
     {
         $tenant = Tenant::findOrFail($tenantId);
         $table = Table::where('tenant_id', $tenantId)
-                     ->where('code', $tableCode)
-                     ->firstOrFail();
+            ->where('code', $tableCode)
+            ->firstOrFail();
 
         $menuUrl = url("/menu/{$tenantId}/{$tableCode}");
         // Utiliser la génération locale au lieu de l'API externe
@@ -99,9 +98,9 @@ class QrCodeController extends Controller
     private function generateQrBase64($url)
     {
         $svg = QrCode::format('svg')
-                     ->size(300)
-                     ->errorCorrection('H')
-                     ->generate($url);
+            ->size(300)
+            ->errorCorrection('H')
+            ->generate($url);
 
         return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
@@ -113,8 +112,8 @@ class QrCodeController extends Controller
     {
         $tenant = Tenant::findOrFail($tenantId);
         $table = Table::where('tenant_id', $tenantId)
-                     ->where('code', $tableCode)
-                     ->firstOrFail();
+            ->where('code', $tableCode)
+            ->firstOrFail();
 
         $menuUrl = url("/menu/{$tenantId}/{$tableCode}");
         $qrCodeBase64 = $this->generateQrBase64($menuUrl);
@@ -122,7 +121,7 @@ class QrCodeController extends Controller
         $pdf = Pdf::loadView('prints.qrcode-pdf', compact('tenant', 'table', 'qrCodeBase64', 'menuUrl'));
         $pdf->setPaper('A4', 'portrait');
 
-        $filename = "QRCode-{$tenant->name}-Table-" . ($table->label ?? $table->code) . ".pdf";
+        $filename = "QRCode-{$tenant->name}-Table-" . ($table->label ?? $table->code) . '.pdf';
 
         return $pdf->download($filename);
     }
@@ -163,7 +162,7 @@ class QrCodeController extends Controller
             $qrCodes[] = [
                 'table' => $table,
                 'url' => url("/qrcode/{$tenant->id}/{$table->code}"),
-                'menu_url' => url("/menu?tenant={$tenant->id}&table={$table->code}")
+                'menu_url' => url("/menu?tenant={$tenant->id}&table={$table->code}"),
             ];
         }
 

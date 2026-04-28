@@ -2,10 +2,10 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
     /**
      * Check if an index exists (compatible SQLite, MySQL, PostgreSQL)
@@ -16,22 +16,25 @@ return new class extends Migration
 
         if ($driver === 'sqlite') {
             $result = DB::select("SELECT name FROM sqlite_master WHERE type='index' AND name=?", [$indexName]);
-            return !empty($result);
+
+            return ! empty($result);
         }
 
         if ($driver === 'mysql') {
             $result = DB::select(
-                "SELECT COUNT(*) as cnt FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=? AND index_name=?",
+                'SELECT COUNT(*) as cnt FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name=? AND index_name=?',
                 [$table, $indexName]
             );
+
             return $result[0]->cnt > 0;
         }
 
         if ($driver === 'pgsql') {
             $result = DB::select(
-                "SELECT COUNT(*) as cnt FROM pg_indexes WHERE tablename=? AND indexname=?",
+                'SELECT COUNT(*) as cnt FROM pg_indexes WHERE tablename=? AND indexname=?',
                 [$table, $indexName]
             );
+
             return $result[0]->cnt > 0;
         }
 
@@ -48,7 +51,7 @@ return new class extends Migration
         }
 
         foreach ($columns as $column) {
-            if (!Schema::hasColumn($table, $column)) {
+            if (! Schema::hasColumn($table, $column)) {
                 return;
             }
         }
@@ -115,10 +118,13 @@ return new class extends Migration
     public function down(): void
     {
         $drop = function (string $table, string $indexName) {
-            if (!$this->indexExists($table, $indexName)) return;
+            if (! $this->indexExists($table, $indexName)) {
+                return;
+            }
             try {
                 Schema::table($table, fn (Blueprint $t) => $t->dropIndex($indexName));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         };
 
         $drop('orders', 'orders_tenant_created_idx');

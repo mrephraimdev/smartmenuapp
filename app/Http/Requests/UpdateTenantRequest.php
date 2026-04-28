@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\UserRole;
 use App\Enums\TenantType;
+use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -17,7 +17,7 @@ class UpdateTenantRequest extends FormRequest
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return false;
         }
 
@@ -32,6 +32,7 @@ class UpdateTenantRequest extends FormRequest
             if (is_numeric($tenant)) {
                 return $user->tenant_id == $tenant;
             }
+
             return $tenant && $user->tenant_id === $tenant->id;
         }
 
@@ -46,7 +47,7 @@ class UpdateTenantRequest extends FormRequest
     public function rules(): array
     {
         $tenantId = $this->route('tenant');
-        if (!is_numeric($tenantId)) {
+        if (! is_numeric($tenantId)) {
             $tenantId = $tenantId->id ?? null;
         }
 

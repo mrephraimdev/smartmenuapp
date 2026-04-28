@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Order;
 use App\Models\Dish;
 use App\Models\Menu;
+use App\Models\Order;
 use App\Models\Reservation;
 use App\Models\Review;
 use App\Models\Tenant;
@@ -45,7 +45,7 @@ class ExportService
                 'Statut',
                 'Nombre d\'articles',
                 'Total (FCFA)',
-                'Notes'
+                'Notes',
             ], ';');
 
             foreach ($orders as $order) {
@@ -57,7 +57,7 @@ class ExportService
                     $order->getStatusLabel(),
                     $order->items->sum('quantity'),
                     number_format($order->total, 0, ',', ' '),
-                    $order->notes ?? ''
+                    $order->notes ?? '',
                 ], ';');
             }
 
@@ -93,7 +93,7 @@ class ExportService
                 'Quantité',
                 'Prix unitaire',
                 'Sous-total',
-                'Notes'
+                'Notes',
             ], ';');
 
             foreach ($orders as $order) {
@@ -107,7 +107,7 @@ class ExportService
                         $item->quantity,
                         number_format($item->unit_price, 0, ',', ' '),
                         number_format($item->unit_price * $item->quantity, 0, ',', ' '),
-                        $item->notes ?? ''
+                        $item->notes ?? '',
                     ], ';');
                 }
             }
@@ -147,7 +147,7 @@ class ExportService
                 'Variantes',
                 'Options',
                 'Allergènes',
-                'Tags'
+                'Tags',
             ], ';');
 
             foreach ($dishes as $dish) {
@@ -161,7 +161,7 @@ class ExportService
                     $dish->variants->pluck('name')->implode(', '),
                     $dish->options->pluck('name')->implode(', '),
                     is_array($dish->allergens) ? implode(', ', $dish->allergens) : '',
-                    is_array($dish->tags) ? implode(', ', $dish->tags) : ''
+                    is_array($dish->tags) ? implode(', ', $dish->tags) : '',
                 ], ';');
             }
 
@@ -207,7 +207,7 @@ class ExportService
                 'Email',
                 'Personnes',
                 'Statut',
-                'Demandes spéciales'
+                'Demandes spéciales',
             ], ';');
 
             foreach ($reservations as $res) {
@@ -221,7 +221,7 @@ class ExportService
                     $res->customer_email ?? '',
                     $res->party_size,
                     $res->status_label,
-                    $res->special_requests ?? ''
+                    $res->special_requests ?? '',
                 ], ';');
             }
 
@@ -259,7 +259,7 @@ class ExportService
                 'Ambiance',
                 'Commentaire',
                 'Publié',
-                'Réponse'
+                'Réponse',
             ], ';');
 
             foreach ($reviews as $review) {
@@ -272,7 +272,7 @@ class ExportService
                     $review->ambiance_rating,
                     $review->comment ?? '',
                     $review->is_published ? 'Oui' : 'Non',
-                    $review->response ?? ''
+                    $review->response ?? '',
                 ], ';');
             }
 
@@ -292,11 +292,11 @@ class ExportService
         $completedOrders = $orders->whereIn('status', ['PRET', 'SERVI']);
 
         // Daily breakdown
-        $dailySales = $completedOrders->groupBy(fn($o) => $o->created_at->format('Y-m-d'))
-            ->map(fn($dayOrders) => [
+        $dailySales = $completedOrders->groupBy(fn ($o) => $o->created_at->format('Y-m-d'))
+            ->map(fn ($dayOrders) => [
                 'date' => $dayOrders->first()->created_at->format('d/m/Y'),
                 'orders' => $dayOrders->count(),
-                'revenue' => $dayOrders->sum('total')
+                'revenue' => $dayOrders->sum('total'),
             ])->values();
 
         // Top dishes
@@ -304,7 +304,7 @@ class ExportService
         foreach ($completedOrders as $order) {
             foreach ($order->items as $item) {
                 $dishName = $item->dish->name ?? 'Unknown';
-                if (!isset($dishSales[$dishName])) {
+                if (! isset($dishSales[$dishName])) {
                     $dishSales[$dishName] = ['quantity' => 0, 'revenue' => 0];
                 }
                 $dishSales[$dishName]['quantity'] += $item->quantity;
@@ -316,20 +316,20 @@ class ExportService
         return [
             'period' => [
                 'start' => Carbon::parse($startDate)->format('d/m/Y'),
-                'end' => Carbon::parse($endDate)->format('d/m/Y')
+                'end' => Carbon::parse($endDate)->format('d/m/Y'),
             ],
             'summary' => [
                 'total_orders' => $completedOrders->count(),
                 'total_revenue' => $completedOrders->sum('total'),
                 'average_order' => $completedOrders->avg('total') ?? 0,
-                'total_items' => $completedOrders->flatMap->items->sum('quantity')
+                'total_items' => $completedOrders->flatMap->items->sum('quantity'),
             ],
             'daily_sales' => $dailySales,
-            'top_dishes' => collect($dishSales)->take(10)->map(fn($data, $name) => [
+            'top_dishes' => collect($dishSales)->take(10)->map(fn ($data, $name) => [
                 'name' => $name,
                 'quantity' => $data['quantity'],
-                'revenue' => $data['revenue']
-            ])->values()
+                'revenue' => $data['revenue'],
+            ])->values(),
         ];
     }
 
@@ -353,11 +353,6 @@ class ExportService
 
     /**
      * Export orders as PDF for a given date range.
-     *
-     * @param Tenant $tenant
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return HttpResponse
      */
     public function exportOrdersPDF(Tenant $tenant, Carbon $startDate, Carbon $endDate): HttpResponse
     {
@@ -387,9 +382,7 @@ class ExportService
     /**
      * Export statistics as PDF for a given period.
      *
-     * @param Tenant $tenant
-     * @param string $period (day, week, month, year)
-     * @return HttpResponse
+     * @param  string  $period  (day, week, month, year)
      */
     public function exportStatisticsPDF(Tenant $tenant, string $period = 'month'): HttpResponse
     {
@@ -421,9 +414,6 @@ class ExportService
 
     /**
      * Export menu as printable PDF.
-     *
-     * @param Menu $menu
-     * @return HttpResponse
      */
     public function exportMenuPDF(Menu $menu): HttpResponse
     {
@@ -443,11 +433,6 @@ class ExportService
 
     /**
      * Get comprehensive statistics for a tenant.
-     *
-     * @param Tenant $tenant
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     protected function getDetailedStatistics(Tenant $tenant, Carbon $startDate, Carbon $endDate): array
     {
@@ -492,7 +477,7 @@ class ExportService
         // Hourly distribution
         $hourExpression = DB::getDriverName() === 'sqlite'
             ? "CAST(strftime('%H', created_at) AS INTEGER)"
-            : "EXTRACT(HOUR FROM created_at)";
+            : 'EXTRACT(HOUR FROM created_at)';
 
         $hourlyDistribution = Order::where('tenant_id', $tenant->id)
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -529,9 +514,6 @@ class ExportService
     /**
      * Export orders as Excel for a given date range.
      *
-     * @param Tenant $tenant
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function exportOrdersExcel(Tenant $tenant, Carbon $startDate, Carbon $endDate)
@@ -544,9 +526,6 @@ class ExportService
     /**
      * Export statistics as Excel for a given period.
      *
-     * @param Tenant $tenant
-     * @param Carbon $startDate
-     * @param Carbon $endDate
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function exportStatisticsExcel(Tenant $tenant, Carbon $startDate, Carbon $endDate)

@@ -2,14 +2,14 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Rend orders.table_id nullable pour permettre les commandes au comptoir
  * (sans table assignée : vente directe, emporter, etc.)
  */
-return new class extends Migration
+return new class() extends Migration
 {
     public function up(): void
     {

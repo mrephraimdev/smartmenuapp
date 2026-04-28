@@ -15,6 +15,7 @@ class OrderStatusUpdate extends Mailable implements ShouldQueue
     use Queueable, SerializesModels;
 
     public Order $order;
+
     public string $previousStatus;
 
     /**
@@ -32,6 +33,7 @@ class OrderStatusUpdate extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         $statusLabel = $this->order->getStatusLabel();
+
         return new Envelope(
             subject: "Votre commande #{$this->order->order_number} - {$statusLabel}",
         );

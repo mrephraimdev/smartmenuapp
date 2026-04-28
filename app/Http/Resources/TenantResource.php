@@ -27,6 +27,7 @@ class TenantResource extends JsonResource
             'branding' => $this->branding ?? [],
             'theme' => $this->when($this->relationLoaded('theme') || $this->theme_id, function () {
                 $theme = $this->relationLoaded('theme') ? $this->theme : $this->getTheme();
+
                 return $theme ? [
                     'id' => $theme->id,
                     'name' => $theme->name,

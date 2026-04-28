@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
     /**
      * Run the migrations.
@@ -13,43 +13,43 @@ return new class extends Migration
     {
         // Ajouter des champs manquants à la table tenants
         Schema::table('tenants', function (Blueprint $table) {
-            if (!Schema::hasColumn('tenants', 'cover_url')) {
+            if (! Schema::hasColumn('tenants', 'cover_url')) {
                 $table->string('cover_url')->nullable()->after('logo_url');
             }
         });
 
         // Ajouter des champs manquants à la table tables
         Schema::table('tables', function (Blueprint $table) {
-            if (!Schema::hasColumn('tables', 'qr_code_url')) {
+            if (! Schema::hasColumn('tables', 'qr_code_url')) {
                 $table->string('qr_code_url')->nullable()->after('capacity');
             }
         });
 
         // Ajouter des champs manquants à la table dishes
         Schema::table('dishes', function (Blueprint $table) {
-            if (!Schema::hasColumn('dishes', 'tenant_id')) {
+            if (! Schema::hasColumn('dishes', 'tenant_id')) {
                 $table->foreignId('tenant_id')->nullable()->after('id')->constrained()->onDelete('cascade');
             }
-            if (!Schema::hasColumn('dishes', 'photo_url')) {
+            if (! Schema::hasColumn('dishes', 'photo_url')) {
                 $table->string('photo_url')->nullable()->after('description');
             }
-            if (!Schema::hasColumn('dishes', 'allergens')) {
+            if (! Schema::hasColumn('dishes', 'allergens')) {
                 $table->json('allergens')->nullable()->after('photo_url')->comment('Liste des allergènes (arachides, gluten, lactose, etc.)');
             }
-            if (!Schema::hasColumn('dishes', 'tags')) {
+            if (! Schema::hasColumn('dishes', 'tags')) {
                 $table->json('tags')->nullable()->after('allergens')->comment('Tags nutritionnels (végétarien, vegan, sans gluten, halal, etc.)');
             }
-            if (!Schema::hasColumn('dishes', 'stock_quantity')) {
+            if (! Schema::hasColumn('dishes', 'stock_quantity')) {
                 $table->integer('stock_quantity')->nullable()->after('active')->comment('Quantité en stock (null = illimité)');
             }
-            if (!Schema::hasColumn('dishes', 'preparation_time_minutes')) {
+            if (! Schema::hasColumn('dishes', 'preparation_time_minutes')) {
                 $table->integer('preparation_time_minutes')->nullable()->after('stock_quantity')->comment('Temps de préparation estimé en minutes');
             }
         });
 
         // Ajouter un champ order_number unique aux commandes
         Schema::table('orders', function (Blueprint $table) {
-            if (!Schema::hasColumn('orders', 'order_number')) {
+            if (! Schema::hasColumn('orders', 'order_number')) {
                 $table->string('order_number')->unique()->nullable()->after('id')->comment('Numéro de commande unique (ex: 20260118-TENANT-0001)');
             }
         });

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\Order;
-use Illuminate\Http\Request;
 
 class SuperAdminController extends Controller
 {
@@ -19,7 +18,7 @@ class SuperAdminController extends Controller
             'active_tenants' => Tenant::where('is_active', true)->count(),
             'total_users' => User::count(),
             'total_orders' => Order::count(),
-            'total_revenue' => Order::sum('total')
+            'total_revenue' => Order::sum('total'),
         ];
 
         $recentTenants = Tenant::orderBy('created_at', 'desc')->limit(5)->get();
@@ -34,6 +33,7 @@ class SuperAdminController extends Controller
     public function tenants()
     {
         $tenants = Tenant::orderBy('created_at', 'desc')->paginate(15);
+
         return view('superadmin.tenants', compact('tenants'));
     }
 
@@ -43,6 +43,7 @@ class SuperAdminController extends Controller
     public function users()
     {
         $users = User::with(['tenant', 'roles'])->orderBy('created_at', 'desc')->paginate(15);
+
         return view('superadmin.users', compact('users'));
     }
 }

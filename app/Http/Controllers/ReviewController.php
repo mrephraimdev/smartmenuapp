@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Review;
 use App\Models\Tenant;
 use App\Services\ReviewService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
@@ -43,7 +43,7 @@ class ReviewController extends Controller
             'service_rating' => 'required|integer|min:1|max:5',
             'ambiance_rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
-            'is_anonymous' => 'boolean'
+            'is_anonymous' => 'boolean',
         ]);
 
         try {
@@ -52,12 +52,12 @@ class ReviewController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Merci pour votre avis ! Il sera publié après modération.',
-                'review_id' => $review->id
+                'review_id' => $review->id,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'envoi de votre avis'
+                'message' => 'Erreur lors de l\'envoi de votre avis',
             ], 500);
         }
     }
@@ -73,7 +73,7 @@ class ReviewController extends Controller
         return response()->json([
             'success' => true,
             'summary' => $summary,
-            'reviews' => $reviews->map(fn($r) => [
+            'reviews' => $reviews->map(fn ($r) => [
                 'id' => $r->id,
                 'name' => $r->display_name,
                 'overall_rating' => $r->overall_rating,
@@ -83,8 +83,8 @@ class ReviewController extends Controller
                 'comment' => $r->comment,
                 'response' => $r->response,
                 'date' => $r->created_at->format('d/m/Y'),
-                'is_featured' => $r->is_featured
-            ])
+                'is_featured' => $r->is_featured,
+            ]),
         ]);
     }
 
@@ -97,12 +97,12 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'reviews' => $reviews->map(fn($r) => [
+            'reviews' => $reviews->map(fn ($r) => [
                 'name' => $r->display_name,
                 'overall_rating' => $r->overall_rating,
                 'comment' => $r->comment,
-                'date' => $r->created_at->format('d/m/Y')
-            ])
+                'date' => $r->created_at->format('d/m/Y'),
+            ]),
         ]);
     }
 
@@ -112,7 +112,7 @@ class ReviewController extends Controller
     public function moderate(Request $request, string $tenantSlug, Review $review): JsonResponse
     {
         $validated = $request->validate([
-            'action' => 'required|in:approve,reject'
+            'action' => 'required|in:approve,reject',
         ]);
 
         $this->reviewService->moderateReview($review, $validated['action'] === 'approve');
@@ -121,7 +121,7 @@ class ReviewController extends Controller
             'success' => true,
             'message' => $validated['action'] === 'approve'
                 ? 'Avis publié'
-                : 'Avis rejeté'
+                : 'Avis rejeté',
         ]);
     }
 
@@ -131,14 +131,14 @@ class ReviewController extends Controller
     public function respond(Request $request, string $tenantSlug, Review $review): JsonResponse
     {
         $validated = $request->validate([
-            'response' => 'required|string|max:2000'
+            'response' => 'required|string|max:2000',
         ]);
 
         $this->reviewService->addResponse($review, $validated['response']);
 
         return response()->json([
             'success' => true,
-            'message' => 'Réponse ajoutée'
+            'message' => 'Réponse ajoutée',
         ]);
     }
 
@@ -158,7 +158,7 @@ class ReviewController extends Controller
         return response()->json([
             'success' => true,
             'message' => $message,
-            'is_featured' => $review->is_featured
+            'is_featured' => $review->is_featured,
         ]);
     }
 
@@ -171,7 +171,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Avis supprimé'
+            'message' => 'Avis supprimé',
         ]);
     }
 
@@ -187,7 +187,7 @@ class ReviewController extends Controller
         return response()->json([
             'success' => true,
             'statistics' => $statistics,
-            'trend' => $trend
+            'trend' => $trend,
         ]);
     }
 
@@ -211,7 +211,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Avis approuvé et publié'
+            'message' => 'Avis approuvé et publié',
         ]);
     }
 
@@ -224,7 +224,7 @@ class ReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Avis rejeté'
+            'message' => 'Avis rejeté',
         ]);
     }
 
@@ -260,13 +260,13 @@ class ReviewController extends Controller
             'service_rating' => 'nullable|integer|min:1|max:5',
             'ambiance_rating' => 'nullable|integer|min:1|max:5',
             'comment' => 'nullable|string|max:2000',
-            'is_anonymous' => 'boolean'
+            'is_anonymous' => 'boolean',
         ]);
 
         $validated['tenant_id'] = $tenant->id;
 
         // Si rating global fourni, l'utiliser pour les 3 ratings
-        if (isset($validated['rating']) && !isset($validated['food_rating'])) {
+        if (isset($validated['rating']) && ! isset($validated['food_rating'])) {
             $validated['food_rating'] = $validated['rating'];
             $validated['service_rating'] = $validated['rating'];
             $validated['ambiance_rating'] = $validated['rating'];
@@ -279,7 +279,7 @@ class ReviewController extends Controller
         }
 
         // Trouver la table par code si fourni
-        if (!empty($validated['table_code']) && empty($validated['table_id'])) {
+        if (! empty($validated['table_code']) && empty($validated['table_id'])) {
             $table = $tenant->tables()->where('code', $validated['table_code'])->first();
             if ($table) {
                 $validated['table_id'] = $table->id;
@@ -291,12 +291,12 @@ class ReviewController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Merci pour votre avis ! Il sera publié après modération.'
+                'message' => 'Merci pour votre avis ! Il sera publié après modération.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'envoi de votre avis'
+                'message' => 'Erreur lors de l\'envoi de votre avis',
             ], 500);
         }
     }

@@ -2,13 +2,13 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
+use App\Enums\TenantType;
+use App\Models\Menu;
 use App\Models\Tenant;
 use App\Models\Theme;
-use App\Models\Menu;
 use App\Services\TenantService;
-use App\Enums\TenantType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class TenantServiceTest extends TestCase
 {

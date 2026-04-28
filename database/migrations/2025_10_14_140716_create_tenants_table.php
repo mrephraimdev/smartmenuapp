@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+return new class() extends Migration
 {
     public function up()
     {
@@ -119,13 +119,13 @@ return new class extends Migration
         Schema::dropIfExists('categories');
         Schema::dropIfExists('menus');
         Schema::dropIfExists('tables');
-        
+
         // Retirer les colonnes ajoutées à users
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['tenant_id']);
             $table->dropColumn(['tenant_id', 'role']);
         });
-        
+
         Schema::dropIfExists('tenants');
     }
 };

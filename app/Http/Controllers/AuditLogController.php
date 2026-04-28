@@ -6,7 +6,6 @@ use App\Models\AuditLog;
 use App\Models\Tenant;
 use App\Services\AuditService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class AuditLogController extends Controller
 {
@@ -74,7 +73,7 @@ class AuditLogController extends Controller
         $entityTypes = AuditLog::forTenant($tenant->id)
             ->distinct()
             ->pluck('entity_type')
-            ->map(fn($type) => class_basename($type))
+            ->map(fn ($type) => class_basename($type))
             ->unique()
             ->sort()
             ->values();
@@ -131,7 +130,7 @@ class AuditLogController extends Controller
 
         $logs = $query->get();
 
-        $filename = "audit-logs-{$tenant->slug}-" . now()->format('Y-m-d') . ".csv";
+        $filename = "audit-logs-{$tenant->slug}-" . now()->format('Y-m-d') . '.csv';
 
         $headers = [
             'Content-Type' => 'text/csv',

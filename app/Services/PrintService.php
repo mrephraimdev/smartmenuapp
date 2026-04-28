@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Tenant;
-use App\Enums\PaymentMethod;
 use Illuminate\Support\Facades\View;
 
 class PrintService
@@ -22,7 +22,7 @@ class PrintService
             'tenant' => $order->tenant,
             'table' => $order->table,
             'items' => $order->items,
-            'printedAt' => now()
+            'printedAt' => now(),
         ])->render();
     }
 
@@ -38,7 +38,7 @@ class PrintService
             'tenant' => $order->tenant,
             'table' => $order->table,
             'items' => $order->items,
-            'printedAt' => now()
+            'printedAt' => now(),
         ])->render();
     }
 
@@ -80,7 +80,7 @@ class PrintService
             'payment_count' => $payments->count(),
             'payments_by_method' => $paymentsByMethod,
             'unpaid_orders' => $orders->where('payment_status', '!=', 'PAID')->where('status', '!=', 'ANNULE')->count(),
-            'unpaid_amount' => $orders->where('payment_status', '!=', 'PAID')->where('status', '!=', 'ANNULE')->sum(fn($o) => $o->total - $o->paid_amount),
+            'unpaid_amount' => $orders->where('payment_status', '!=', 'PAID')->where('status', '!=', 'ANNULE')->sum(fn ($o) => $o->total - $o->paid_amount),
         ];
 
         return View::make('prints.daily-report', [
@@ -88,7 +88,7 @@ class PrintService
             'date' => $date,
             'orders' => $orders,
             'stats' => $stats,
-            'printedAt' => now()
+            'printedAt' => now(),
         ])->render();
     }
 
@@ -102,7 +102,7 @@ class PrintService
         foreach ($orders as $order) {
             foreach ($order->items as $item) {
                 $dishName = $item->dish->name ?? 'Unknown';
-                if (!isset($dishes[$dishName])) {
+                if (! isset($dishes[$dishName])) {
                     $dishes[$dishName] = 0;
                 }
                 $dishes[$dishName] += $item->quantity;
@@ -110,6 +110,7 @@ class PrintService
         }
 
         arsort($dishes);
+
         return array_slice($dishes, 0, 10, true);
     }
 }

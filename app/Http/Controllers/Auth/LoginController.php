@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use App\Enums\UserRole;
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
@@ -37,7 +37,7 @@ class LoginController extends Controller
      */
     protected function credentials(Request $request): array
     {
-        $login    = $request->input('login');
+        $login = $request->input('login');
         $password = $request->input('password');
 
         if (str_contains($login, '@')) {

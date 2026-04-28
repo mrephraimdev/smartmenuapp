@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
-use App\Models\Variant;
-use App\Models\Option;
+use App\Models\Menu;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -25,11 +23,11 @@ class MenuService
                 $query->where('active', true)->orderBy('name');
             },
             'categories.dishes.variants',
-            'categories.dishes.options'
+            'categories.dishes.options',
         ])
-        ->where('tenant_id', $tenantId)
-        ->where('active', true)
-        ->first();
+            ->where('tenant_id', $tenantId)
+            ->where('active', true)
+            ->first();
     }
 
     /**
@@ -52,13 +50,13 @@ class MenuService
                 'active' => $data['active'] ?? true,
             ]);
 
-            if (!empty($data['variants'])) {
+            if (! empty($data['variants'])) {
                 foreach ($data['variants'] as $variantData) {
                     $dish->variants()->create($variantData);
                 }
             }
 
-            if (!empty($data['options'])) {
+            if (! empty($data['options'])) {
                 foreach ($data['options'] as $optionData) {
                     $dish->options()->create($optionData);
                 }
@@ -113,6 +111,7 @@ class MenuService
         return DB::transaction(function () use ($dish) {
             $dish->variants()->delete();
             $dish->options()->delete();
+
             return $dish->delete();
         });
     }
@@ -149,6 +148,7 @@ class MenuService
     public function updateAvailability(Dish $dish, bool $available): Dish
     {
         $dish->update(['active' => $available]);
+
         return $dish->fresh();
     }
 
@@ -158,6 +158,7 @@ class MenuService
     public function updateStock(Dish $dish, ?int $quantity): Dish
     {
         $dish->update(['stock_quantity' => $quantity]);
+
         return $dish->fresh();
     }
 
@@ -170,6 +171,7 @@ class MenuService
             $newStock = max(0, $dish->stock_quantity - $quantity);
             $dish->update(['stock_quantity' => $newStock]);
         }
+
         return $dish->fresh();
     }
 
@@ -195,7 +197,7 @@ class MenuService
             ->where('active', true)
             ->where(function ($query) {
                 $query->whereNull('stock_quantity')
-                      ->orWhere('stock_quantity', '>', 0);
+                    ->orWhere('stock_quantity', '>', 0);
             })
             ->orderBy('name')
             ->get();
@@ -211,7 +213,7 @@ class MenuService
             ->where('active', true)
             ->where(function ($q) use ($query) {
                 $q->where('name', 'LIKE', "%{$query}%")
-                  ->orWhere('description', 'LIKE', "%{$query}%");
+                    ->orWhere('description', 'LIKE', "%{$query}%");
             })
             ->orderBy('name')
             ->get();

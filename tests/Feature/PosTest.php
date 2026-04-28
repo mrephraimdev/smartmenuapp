@@ -17,7 +17,9 @@ class PosTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected User $admin;
+
     protected User $cashier;
 
     protected function setUp(): void

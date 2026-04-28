@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Reservation;
-use App\Models\Tenant;
 use App\Models\Table;
+use App\Models\Tenant;
 use App\Services\ReservationService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ReservationController extends Controller
 {
@@ -66,12 +66,12 @@ class ReservationController extends Controller
                 'success' => true,
                 'message' => 'Réservation créée avec succès',
                 'reservation' => $reservation,
-                'confirmation_code' => $reservation->confirmation_code
+                'confirmation_code' => $reservation->confirmation_code,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -94,7 +94,7 @@ class ReservationController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|in:CONFIRMED,SEATED,COMPLETED,CANCELLED,NO_SHOW',
-            'reason' => 'nullable|string|max:500'
+            'reason' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -119,12 +119,12 @@ class ReservationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Statut mis à jour',
-                'reservation' => $reservation->fresh()
+                'reservation' => $reservation->fresh(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -138,7 +138,7 @@ class ReservationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Réservation supprimée'
+            'message' => 'Réservation supprimée',
         ]);
     }
 
@@ -151,7 +151,7 @@ class ReservationController extends Controller
 
         $validated = $request->validate([
             'date' => 'required|date|after_or_equal:today',
-            'party_size' => 'required|integer|min:1|max:20'
+            'party_size' => 'required|integer|min:1|max:20',
         ]);
 
         $slots = $this->reservationService->getAvailableTimeSlots(
@@ -163,7 +163,7 @@ class ReservationController extends Controller
         return response()->json([
             'success' => true,
             'date' => $validated['date'],
-            'slots' => $slots
+            'slots' => $slots,
         ]);
     }
 
@@ -176,7 +176,7 @@ class ReservationController extends Controller
             'table_id' => 'required|exists:tables,id',
             'date' => 'required|date',
             'time' => 'required|date_format:H:i',
-            'duration' => 'nullable|integer|min:30'
+            'duration' => 'nullable|integer|min:30',
         ]);
 
         $available = $this->reservationService->isTableAvailable(
@@ -188,7 +188,7 @@ class ReservationController extends Controller
 
         return response()->json([
             'success' => true,
-            'available' => $available
+            'available' => $available,
         ]);
     }
 
@@ -199,7 +199,7 @@ class ReservationController extends Controller
     {
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$request->wantsJson() && !$request->ajax()) {
+        if (! $request->wantsJson() && ! $request->ajax()) {
             return view('admin.reservations.calendar', compact('tenant'));
         }
 
@@ -210,12 +210,12 @@ class ReservationController extends Controller
             ->whereBetween('reservation_date', [$startDate, $endDate])
             ->with('table')
             ->get()
-            ->map(fn($r) => [
+            ->map(fn ($r) => [
                 'id' => $r->id,
                 'title' => "{$r->customer_name} ({$r->party_size}p)",
                 'start' => "{$r->reservation_date->format('Y-m-d')}T{$r->reservation_time->format('H:i:s')}",
                 'end' => "{$r->reservation_date->format('Y-m-d')}T{$r->end_time}:00",
-                'backgroundColor' => match($r->status) {
+                'backgroundColor' => match ($r->status) {
                     'PENDING' => '#FCD34D',
                     'CONFIRMED' => '#60A5FA',
                     'SEATED' => '#34D399',
@@ -228,8 +228,8 @@ class ReservationController extends Controller
                     'table' => $r->table->label ?? $r->table->code,
                     'phone' => $r->customer_phone,
                     'status' => $r->status,
-                    'status_label' => $r->status_label
-                ]
+                    'status_label' => $r->status_label,
+                ],
             ]);
 
         return response()->json($reservations);
@@ -241,15 +241,15 @@ class ReservationController extends Controller
     public function findByCode(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'code' => 'required|string|size:8'
+            'code' => 'required|string|size:8',
         ]);
 
         $reservation = $this->reservationService->findByConfirmationCode($validated['code']);
 
-        if (!$reservation) {
+        if (! $reservation) {
             return response()->json([
                 'success' => false,
-                'message' => 'Réservation non trouvée'
+                'message' => 'Réservation non trouvée',
             ], 404);
         }
 
@@ -263,8 +263,8 @@ class ReservationController extends Controller
                 'party_size' => $reservation->party_size,
                 'table' => $reservation->table->label ?? $reservation->table->code,
                 'status' => $reservation->status_label,
-                'restaurant' => $reservation->tenant->name
-            ]
+                'restaurant' => $reservation->tenant->name,
+            ],
         ]);
     }
 
@@ -307,10 +307,10 @@ class ReservationController extends Controller
                 $validated['party_size']
             );
 
-            if (!$availableTable) {
+            if (! $availableTable) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Aucune table disponible pour cette date et heure'
+                    'message' => 'Aucune table disponible pour cette date et heure',
                 ], 400);
             }
 
@@ -323,13 +323,13 @@ class ReservationController extends Controller
                 'confirmation_code' => $reservation->confirmation_code,
                 'redirect' => route('reservation.confirmation', [
                     'tenantSlug' => $tenantSlug,
-                    'code' => $reservation->confirmation_code
-                ])
+                    'code' => $reservation->confirmation_code,
+                ]),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -342,7 +342,7 @@ class ReservationController extends Controller
         $tenant = Tenant::findBySlug($tenantSlug);
         $reservation = $this->reservationService->findByConfirmationCode($code);
 
-        if (!$reservation || $reservation->tenant_id !== $tenant->id) {
+        if (! $reservation || $reservation->tenant_id !== $tenant->id) {
             abort(404, 'Réservation non trouvée');
         }
 
@@ -384,12 +384,12 @@ class ReservationController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Réservation mise à jour',
-                'reservation' => $reservation->fresh()
+                'reservation' => $reservation->fresh(),
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 400);
         }
     }
@@ -404,7 +404,7 @@ class ReservationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Réservation confirmée',
-            'reservation' => $reservation->fresh()
+            'reservation' => $reservation->fresh(),
         ]);
     }
 
@@ -419,7 +419,7 @@ class ReservationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Réservation annulée',
-            'reservation' => $reservation->fresh()
+            'reservation' => $reservation->fresh(),
         ]);
     }
 
@@ -433,7 +433,7 @@ class ReservationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Réservation terminée',
-            'reservation' => $reservation->fresh()
+            'reservation' => $reservation->fresh(),
         ]);
     }
 
@@ -447,7 +447,7 @@ class ReservationController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Client marqué comme absent',
-            'reservation' => $reservation->fresh()
+            'reservation' => $reservation->fresh(),
         ]);
     }
 }

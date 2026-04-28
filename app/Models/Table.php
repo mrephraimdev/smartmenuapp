@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Table extends Model
 {
-    use HasFactory, TenantScope, SoftDeletes;
+    use HasFactory, SoftDeletes, TenantScope;
 
     protected $fillable = ['tenant_id', 'code', 'label', 'capacity', 'qr_code_url', 'is_active'];
 

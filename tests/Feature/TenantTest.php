@@ -2,20 +2,21 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\User;
-use App\Models\Tenant;
 use App\Models\Role;
+use App\Models\Tenant;
 use App\Models\Theme;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Tests\TestCase;
 
 class TenantTest extends TestCase
 {
     use RefreshDatabase;
 
     protected User $superAdmin;
+
     protected Theme $defaultTheme;
 
     protected function setUp(): void

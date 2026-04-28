@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Models\Tenant;
 use App\Enums\UserRole;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Enum;
@@ -29,6 +29,7 @@ class UserController extends Controller
         }
 
         $users = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+
         return view('users.index', compact('users'));
     }
 
@@ -38,6 +39,7 @@ class UserController extends Controller
     public function create()
     {
         $tenants = Tenant::where('is_active', true)->orderBy('name')->get();
+
         return view('users.create', compact('tenants'));
     }
 
@@ -82,6 +84,7 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load('tenant');
+
         return view('users.show', compact('user'));
     }
 
@@ -91,6 +94,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $tenants = Tenant::where('is_active', true)->orderBy('name')->get();
+
         return view('users.edit', compact('user', 'tenants'));
     }
 
@@ -145,6 +149,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return redirect()->route('superadmin.users.index')->with('success', 'Utilisateur supprimé avec succès!');
     }
 }

@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Tenant;
 use App\Services\OrderService;
-use App\Enums\OrderStatus;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -23,7 +23,7 @@ class OrderController extends Controller
     {
         // SECURITE: Scoper la commande au tenant pour éviter les fuites inter-tenants
         $tenantId = $request->query('tenant_id');
-        if (!$tenantId) {
+        if (! $tenantId) {
             return response()->json(['success' => false, 'message' => 'Paramètre tenant_id requis'], 400);
         }
 
@@ -31,10 +31,10 @@ class OrderController extends Controller
             ->where('tenant_id', $tenantId)
             ->find($id);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'success' => false,
-                'message' => 'Commande non trouvée'
+                'message' => 'Commande non trouvée',
             ], 404);
         }
 
@@ -50,7 +50,7 @@ class OrderController extends Controller
                     'id' => $order->table->id,
                     'code' => $order->table->code,
                 ] : null,
-                'items' => $order->items->map(fn($item) => [
+                'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,
                     'quantity' => $item->quantity,
                     'unit_price' => $item->unit_price,
@@ -61,7 +61,7 @@ class OrderController extends Controller
                 ]),
                 'created_at' => $order->created_at,
                 'updated_at' => $order->updated_at,
-            ]
+            ],
         ]);
     }
 
@@ -79,7 +79,7 @@ class OrderController extends Controller
                     // SECURITE: Vérifier que la table appartient au tenant
                     function ($attribute, $value, $fail) use ($request) {
                         $table = \App\Models\Table::find($value);
-                        if (!$table || $table->tenant_id != $request->tenant_id) {
+                        if (! $table || $table->tenant_id != $request->tenant_id) {
                             $fail('Cette table n\'appartient pas à ce restaurant.');
                         }
                     },
@@ -91,7 +91,7 @@ class OrderController extends Controller
                     // SECURITE: Vérifier que le plat appartient au tenant
                     function ($attribute, $value, $fail) use ($request) {
                         $dish = \App\Models\Dish::find($value);
-                        if (!$dish || $dish->tenant_id != $request->tenant_id) {
+                        if (! $dish || $dish->tenant_id != $request->tenant_id) {
                             $fail('Ce plat n\'appartient pas à ce restaurant.');
                         }
                     },
@@ -110,19 +110,19 @@ class OrderController extends Controller
                 'message' => 'Commande créée avec succès!',
                 'order_id' => $order->id,
                 'order_number' => $order->order_number,
-                'total' => $order->total
+                'total' => $order->total,
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur de validation',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
+                'message' => 'Erreur: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -134,16 +134,17 @@ class OrderController extends Controller
     {
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Non authentifié'], 401);
             }
+
             return redirect()->route('login');
         }
 
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Accès non autorisé'], 403);
             }
@@ -153,7 +154,7 @@ class OrderController extends Controller
         // Date filter - par défaut aujourd'hui si non spécifié
         $filterDate = $request->filled('date') ? $request->date : now()->format('Y-m-d');
         $dayStart = \Carbon\Carbon::parse($filterDate)->startOfDay();
-        $dayEnd   = \Carbon\Carbon::parse($filterDate)->endOfDay();
+        $dayEnd = \Carbon\Carbon::parse($filterDate)->endOfDay();
 
         // Build query with filters
         $query = Order::with(['table', 'items.dish', 'items.variant'])
@@ -185,10 +186,10 @@ class OrderController extends Controller
         $baseQuery = Order::where('tenant_id', $tenant->id)
             ->whereBetween('created_at', [$dayStart, $dayEnd]);
         $statistics = [
-            'total'     => (clone $baseQuery)->count(),
-            'pending'   => (clone $baseQuery)->whereIn('status', ['RECU', 'PREP', 'PRET'])->count(),
+            'total' => (clone $baseQuery)->count(),
+            'pending' => (clone $baseQuery)->whereIn('status', ['RECU', 'PREP', 'PRET'])->count(),
             'completed' => (clone $baseQuery)->where('status', 'SERVI')->count(),
-            'revenue'   => (clone $baseQuery)->where('payment_status', 'PAID')->sum('total'),
+            'revenue' => (clone $baseQuery)->where('payment_status', 'PAID')->sum('total'),
         ];
 
         return view('admin.orders.index', [
@@ -210,17 +211,17 @@ class OrderController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Non authentifié'], 401);
         }
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
         // Récupérer toutes les commandes du jour (pas annulées) pour le KDS
         $start = now()->startOfDay();
-        $end   = now()->endOfDay();
+        $end = now()->endOfDay();
         $orders = Order::with(['table', 'items.dish', 'items.variant', 'serveur'])
             ->where('tenant_id', $tenant->id)
             ->whereBetween('created_at', [$start, $end])
@@ -239,11 +240,11 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $user = auth()->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['success' => false, 'error' => 'Non authentifié'], 401);
         }
 
-        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
             return response()->json(['success' => false, 'error' => 'Accès non autorisé'], 403);
         }
 
@@ -257,7 +258,7 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Statut mis à jour',
-            'order' => $order
+            'order' => $order,
         ]);
     }
 
@@ -277,23 +278,23 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
         $order = $this->orderService->progressStatus($order);
 
-        if (!$order) {
+        if (! $order) {
             return response()->json([
                 'success' => false,
-                'message' => 'La commande ne peut pas progresser'
+                'message' => 'La commande ne peut pas progresser',
             ], 400);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Statut progressé',
-            'order' => $order
+            'order' => $order,
         ]);
     }
 
@@ -305,7 +306,7 @@ class OrderController extends Controller
         $order = Order::findOrFail($id);
         $user = auth()->user();
 
-        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 
@@ -315,7 +316,7 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Commande annulée',
-            'order' => $order
+            'order' => $order,
         ]);
     }
 
@@ -328,14 +329,14 @@ class OrderController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$order) {
+        if (! $order) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Commande non trouvée'], 404);
             }
             abort(404, 'Commande non trouvée');
         }
 
-        if (!$user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $order->tenant_id != $user->tenant_id) {
             if ($request->wantsJson()) {
                 return response()->json(['error' => 'Accès non autorisé'], 403);
             }
@@ -361,13 +362,13 @@ class OrderController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             abort(403, 'Accès non autorisé à ce tenant');
         }
 
         return view('kds', [
             'tenantId' => $tenant->id,
-            'tenantSlug' => $tenantSlug
+            'tenantSlug' => $tenantSlug,
         ]);
     }
 
@@ -377,12 +378,13 @@ class OrderController extends Controller
     public function kdsDataById(int $tenantId): JsonResponse
     {
         $user = auth()->user();
-        if (!$user) {
+        if (! $user) {
             return response()->json(['error' => 'Non authentifié'], 401);
         }
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenantId) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenantId) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
+
         return response()->json($this->orderService->getOrdersForKDS($tenantId));
     }
 
@@ -394,7 +396,7 @@ class OrderController extends Controller
         $user = auth()->user();
         $tenant = Tenant::findBySlug($tenantSlug);
 
-        if (!$user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
+        if (! $user->hasRole('SUPER_ADMIN') && $user->tenant_id != $tenant->id) {
             return response()->json(['error' => 'Accès non autorisé'], 403);
         }
 

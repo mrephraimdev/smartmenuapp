@@ -4,10 +4,8 @@ namespace App\Services;
 
 use App\Models\Reservation;
 use App\Models\Table;
-use App\Models\Tenant;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class ReservationService
 {
@@ -17,7 +15,7 @@ class ReservationService
     public function createReservation(array $data): Reservation
     {
         // Check availability first
-        if (!$this->isTableAvailable(
+        if (! $this->isTableAvailable(
             $data['table_id'],
             $data['reservation_date'],
             $data['reservation_time'],
@@ -131,12 +129,12 @@ class ReservationService
                 $slots[] = [
                     'time' => $time,
                     'available_tables' => $availableTables->count(),
-                    'tables' => $availableTables->map(fn($t) => [
+                    'tables' => $availableTables->map(fn ($t) => [
                         'id' => $t->id,
                         'code' => $t->code,
                         'label' => $t->label,
-                        'capacity' => $t->capacity
-                    ])
+                        'capacity' => $t->capacity,
+                    ]),
                 ];
             }
 
@@ -187,6 +185,7 @@ class ReservationService
     public function confirmReservation(Reservation $reservation): Reservation
     {
         $reservation->confirm();
+
         // Could send confirmation email here
         return $reservation;
     }
@@ -197,6 +196,7 @@ class ReservationService
     public function cancelReservation(Reservation $reservation, string $reason = ''): Reservation
     {
         $reservation->cancel($reason);
+
         // Could send cancellation email here
         return $reservation;
     }
@@ -207,6 +207,7 @@ class ReservationService
     public function seatReservation(Reservation $reservation): Reservation
     {
         $reservation->seat();
+
         return $reservation;
     }
 
@@ -216,6 +217,7 @@ class ReservationService
     public function completeReservation(Reservation $reservation): Reservation
     {
         $reservation->complete();
+
         return $reservation;
     }
 
@@ -225,6 +227,7 @@ class ReservationService
     public function markNoShow(Reservation $reservation): Reservation
     {
         $reservation->markNoShow();
+
         return $reservation;
     }
 
@@ -260,9 +263,9 @@ class ReservationService
             'no_shows' => $reservations->where('status', 'NO_SHOW')->count(),
             'average_party_size' => round($reservations->avg('party_size'), 1),
             'by_status' => $reservations->groupBy('status')->map->count(),
-            'by_day' => $reservations->groupBy(fn($r) => $r->reservation_date->format('l'))->map->count(),
+            'by_day' => $reservations->groupBy(fn ($r) => $r->reservation_date->format('l'))->map->count(),
             'popular_times' => $reservations
-                ->groupBy(fn($r) => Carbon::parse($r->reservation_time)->format('H:00'))
+                ->groupBy(fn ($r) => Carbon::parse($r->reservation_time)->format('H:00'))
                 ->map->count()
                 ->sortDesc()
                 ->take(5),

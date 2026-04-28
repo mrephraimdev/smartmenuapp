@@ -13,7 +13,7 @@ class TestOrderController extends Controller
             'success' => true,
             'message' => 'Test réussi!',
             'data' => $request->all(),
-            'test' => 'Ça fonctionne!'
+            'test' => 'Ça fonctionne!',
         ]);
     }
 }

@@ -18,8 +18,8 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $tables = Table::where('tenant_id', $tenant->id)
-                      ->orderBy('code')
-                      ->get();
+            ->orderBy('code')
+            ->get();
 
         return view('admin.tables.index', compact('tenant', 'tables'));
     }
@@ -47,7 +47,7 @@ class TableController extends Controller
             'code' => 'required|string|max:10|unique:tables,code,NULL,id,tenant_id,' . $tenant->id,
             'label' => 'required|string|max:255',
             'capacity' => 'required|integer|min:1|max:50',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         Table::create([
@@ -55,11 +55,11 @@ class TableController extends Controller
             'code' => strtoupper($request->code),
             'label' => $request->label,
             'capacity' => $request->capacity,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
         ]);
 
         return redirect()->route('admin.tables.index', $tenant->slug)
-                        ->with('success', 'Table créée avec succès.');
+            ->with('success', 'Table créée avec succès.');
     }
 
     /**
@@ -71,8 +71,8 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
-                     ->where('id', $tableId)
-                     ->firstOrFail();
+            ->where('id', $tableId)
+            ->firstOrFail();
 
         return view('admin.tables.show', compact('tenant', 'table'));
     }
@@ -86,8 +86,8 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
-                     ->where('id', $tableId)
-                     ->firstOrFail();
+            ->where('id', $tableId)
+            ->firstOrFail();
 
         return view('admin.tables.edit', compact('tenant', 'table'));
     }
@@ -101,25 +101,25 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
-                     ->where('id', $tableId)
-                     ->firstOrFail();
+            ->where('id', $tableId)
+            ->firstOrFail();
 
         $request->validate([
             'code' => 'required|string|max:10|unique:tables,code,' . $table->id . ',id,tenant_id,' . $tenant->id,
             'label' => 'required|string|max:255',
             'capacity' => 'required|integer|min:1|max:50',
-            'is_active' => 'boolean'
+            'is_active' => 'boolean',
         ]);
 
         $table->update([
             'code' => strtoupper($request->code),
             'label' => $request->label,
             'capacity' => $request->capacity,
-            'is_active' => $request->has('is_active')
+            'is_active' => $request->has('is_active'),
         ]);
 
         return redirect()->route('admin.tables.index', $tenant->slug)
-                        ->with('success', 'Table mise à jour avec succès.');
+            ->with('success', 'Table mise à jour avec succès.');
     }
 
     /**
@@ -131,19 +131,19 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
-                     ->where('id', $tableId)
-                     ->firstOrFail();
+            ->where('id', $tableId)
+            ->firstOrFail();
 
         // Vérifier s'il y a des commandes actives
         if ($table->orders()->whereIn('status', ['RECU', 'PREP', 'PRET'])->exists()) {
             return redirect()->route('admin.tables.index', $tenant->slug)
-                            ->with('error', 'Impossible de supprimer une table avec des commandes actives.');
+                ->with('error', 'Impossible de supprimer une table avec des commandes actives.');
         }
 
         $table->delete();
 
         return redirect()->route('admin.tables.index', $tenant->slug)
-                        ->with('success', 'Table supprimée avec succès.');
+            ->with('success', 'Table supprimée avec succès.');
     }
 
     /**
@@ -155,15 +155,15 @@ class TableController extends Controller
         $this->authorizeTenantAccess($tenant);
 
         $table = Table::where('tenant_id', $tenant->id)
-                     ->where('id', $tableId)
-                     ->firstOrFail();
+            ->where('id', $tableId)
+            ->firstOrFail();
 
-        $table->update(['is_active' => !$table->is_active]);
+        $table->update(['is_active' => ! $table->is_active]);
 
         return response()->json([
             'success' => true,
             'is_active' => $table->is_active,
-            'message' => $table->is_active ? 'Table activée' : 'Table désactivée'
+            'message' => $table->is_active ? 'Table activée' : 'Table désactivée',
         ]);
     }
 
@@ -179,7 +179,7 @@ class TableController extends Controller
             'prefix' => 'required|string|max:5',
             'start_number' => 'required|integer|min:1',
             'count' => 'required|integer|min:1|max:50',
-            'capacity' => 'required|integer|min:1|max:50'
+            'capacity' => 'required|integer|min:1|max:50',
         ]);
 
         $created = 0;
@@ -188,20 +188,20 @@ class TableController extends Controller
             $code = $request->prefix . str_pad($number, 2, '0', STR_PAD_LEFT);
 
             // Vérifier si le code existe déjà
-            if (!Table::where('tenant_id', $tenant->id)->where('code', $code)->exists()) {
+            if (! Table::where('tenant_id', $tenant->id)->where('code', $code)->exists()) {
                 Table::create([
                     'tenant_id' => $tenant->id,
                     'code' => $code,
                     'label' => 'Table ' . $request->prefix . $number,
                     'capacity' => $request->capacity,
-                    'is_active' => true
+                    'is_active' => true,
                 ]);
                 $created++;
             }
         }
 
         return redirect()->route('admin.tables.index', $tenant->slug)
-                        ->with('success', $created . ' table(s) créée(s) avec succès.');
+            ->with('success', $created . ' table(s) créée(s) avec succès.');
     }
 
     /**
@@ -213,7 +213,7 @@ class TableController extends Controller
             return;
         }
 
-        if (Auth::user()->tenant_id !== $tenant->id || !Auth::user()->hasRole('ADMIN')) {
+        if (Auth::user()->tenant_id !== $tenant->id || ! Auth::user()->hasRole('ADMIN')) {
             abort(403, 'Accès non autorisé.');
         }
     }

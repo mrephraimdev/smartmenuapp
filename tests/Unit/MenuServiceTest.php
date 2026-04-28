@@ -2,23 +2,26 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\Tenant;
-use App\Models\Menu;
 use App\Models\Category;
 use App\Models\Dish;
-use App\Models\Variant;
+use App\Models\Menu;
 use App\Models\Option;
+use App\Models\Tenant;
+use App\Models\Variant;
 use App\Services\MenuService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class MenuServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected MenuService $menuService;
+
     protected Tenant $tenant;
+
     protected Menu $menu;
+
     protected Category $category;
 
     protected function setUp(): void
@@ -253,7 +256,7 @@ class MenuServiceTest extends TestCase
         $dishes = $this->menuService->getDishesByCategory($this->category->id);
 
         $this->assertCount(2, $dishes);
-        $this->assertTrue($dishes->every(fn($d) => $d->active));
+        $this->assertTrue($dishes->every(fn ($d) => $d->active));
     }
 
     /** @test */
@@ -289,7 +292,7 @@ class MenuServiceTest extends TestCase
         $dishes = $this->menuService->getAvailableDishes($this->tenant->id);
 
         $this->assertCount(2, $dishes);
-        $this->assertFalse($dishes->contains(fn($d) => $d->name === 'No Stock'));
+        $this->assertFalse($dishes->contains(fn ($d) => $d->name === 'No Stock'));
     }
 
     /** @test */

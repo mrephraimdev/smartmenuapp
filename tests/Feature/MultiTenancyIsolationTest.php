@@ -26,11 +26,17 @@ class MultiTenancyIsolationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected User $adminA;
+
     protected User $adminB;
+
     protected User $superAdmin;
+
     protected Role $superAdminRole;
+
     protected Role $adminRole;
 
     /**
@@ -43,12 +49,12 @@ class MultiTenancyIsolationTest extends TestCase
         // Créer les rôles
         $this->superAdminRole = Role::create([
             'name' => 'SUPER_ADMIN',
-            'description' => 'Super administrateur'
+            'description' => 'Super administrateur',
         ]);
 
         $this->adminRole = Role::create([
             'name' => 'ADMIN',
-            'description' => 'Administrateur tenant'
+            'description' => 'Administrateur tenant',
         ]);
 
         // Créer 2 tenants

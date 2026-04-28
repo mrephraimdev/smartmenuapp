@@ -17,8 +17,8 @@ use App\Observers\TenantObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureSentry(): void
     {
-        if (!app()->bound('sentry') || empty(config('sentry.dsn'))) {
+        if (! app()->bound('sentry') || empty(config('sentry.dsn'))) {
             return;
         }
 
@@ -61,7 +61,7 @@ class AppServiceProvider extends ServiceProvider
                 $request = $event->getRequest();
                 if ($request !== null && method_exists($request, 'getData')) {
                     $data = $request->getData();
-                    if (is_array($data) && !empty($data)) {
+                    if (is_array($data) && ! empty($data)) {
                         foreach ($sensitiveKeys as $key) {
                             if (array_key_exists($key, $data)) {
                                 $data[$key] = '[Filtered]';
@@ -72,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
             } catch (\Throwable $e) {
                 // Ne pas bloquer l'app si Sentry échoue
             }
+
             return $event;
         });
     }
@@ -102,6 +103,7 @@ class AppServiceProvider extends ServiceProvider
         // Rate Limiting par tenant : 1000 requêtes par minute par tenant
         RateLimiter::for('api-tenant', function (Request $request) {
             $tenantId = $request->user()?->tenant_id ?? 'guest';
+
             return Limit::perMinute(1000)->by($tenantId);
         });
 
@@ -111,7 +113,7 @@ class AppServiceProvider extends ServiceProvider
                 ->response(function (Request $request, array $headers) {
                     return response()->json([
                         'error' => 'Trop de requêtes. Veuillez réessayer dans une minute.',
-                        'message' => 'Rate limit exceeded'
+                        'message' => 'Rate limit exceeded',
                     ], 429, $headers);
                 });
         });
@@ -129,6 +131,7 @@ class AppServiceProvider extends ServiceProvider
         // Empêche le spam de commandes depuis un même appareil/table
         RateLimiter::for('orders', function (Request $request) {
             $key = $request->ip() . '|' . ($request->table_id ?? 'unknown');
+
             return Limit::perMinute(5)->by($key)
                 ->response(function (Request $request, array $headers) {
                     return response()->json([
@@ -142,6 +145,7 @@ class AppServiceProvider extends ServiceProvider
         // Le contrôleur a déjà une limite de 2 min entre appels
         RateLimiter::for('waiter-calls', function (Request $request) {
             $key = $request->ip() . '|' . ($request->table_id ?? 'unknown');
+
             return Limit::perMinute(3)->by($key)
                 ->response(function (Request $request, array $headers) {
                     return response()->json([

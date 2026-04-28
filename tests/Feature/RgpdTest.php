@@ -1,8 +1,7 @@
 <?php
 
-use App\Models\Order;
-use App\Models\Reservation;
 use App\Enums\OrderStatus;
+use App\Models\Order;
 
 beforeEach(function () {
     $this->tenant = createTenant();

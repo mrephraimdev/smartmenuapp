@@ -3,9 +3,7 @@
 namespace App\Events;
 
 use App\Models\Order;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -69,7 +67,7 @@ class OrderCreated implements ShouldBroadcast
                 'code' => $this->order->table->code,
                 'label' => $this->order->table->label,
             ] : null,
-            'items' => $this->order->items->map(fn($item) => [
+            'items' => $this->order->items->map(fn ($item) => [
                 'id' => $item->id,
                 'dish_name' => $item->dish?->name ?? 'N/A',
                 'quantity' => $item->quantity,

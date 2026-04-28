@@ -127,9 +127,9 @@ class FileUploadService
     /**
      * Validate image file with security checks
      *
-     * @param int $maxSizeKb Maximum file size in KB
-     * @param int $maxWidth Maximum image width (0 = no limit)
-     * @param int $maxHeight Maximum image height (0 = no limit)
+     * @param  int  $maxSizeKb  Maximum file size in KB
+     * @param  int  $maxWidth  Maximum image width (0 = no limit)
+     * @param  int  $maxHeight  Maximum image height (0 = no limit)
      */
     public static function imageValidationRules(
         int $maxSizeKb = 2048,
@@ -168,13 +168,14 @@ class FileUploadService
         // Vérifier le MIME type réel du fichier
         $mimeType = $file->getMimeType();
 
-        if (!in_array($mimeType, self::allowedImageMimes())) {
+        if (! in_array($mimeType, self::allowedImageMimes())) {
             return false;
         }
 
         // Tenter de lire comme image pour valider le contenu
         try {
             $imageInfo = @getimagesize($file->getPathname());
+
             return $imageInfo !== false;
         } catch (\Exception $e) {
             return false;

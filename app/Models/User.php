@@ -17,7 +17,7 @@ class User extends Authenticatable
         'email',
         'password',
         'tenant_id',
-        'role'
+        'role',
     ];
 
     protected $hidden = [
@@ -53,6 +53,7 @@ class User extends Authenticatable
     public function hasRole(string|UserRole $roleName): bool
     {
         $roleValue = $roleName instanceof UserRole ? $roleName->value : $roleName;
+
         return $this->role === $roleValue;
     }
 
@@ -66,6 +67,7 @@ class User extends Authenticatable
                 return true;
             }
         }
+
         return false;
     }
 
@@ -91,6 +93,7 @@ class User extends Authenticatable
     public function canAccessPOS(): bool
     {
         $roleEnum = $this->getRoleEnum();
+
         return $roleEnum ? $roleEnum->canAccessPOS() : false;
     }
 
@@ -100,6 +103,7 @@ class User extends Authenticatable
     public function canAccessKDS(): bool
     {
         $roleEnum = $this->getRoleEnum();
+
         return $roleEnum ? $roleEnum->canAccessKDS() : false;
     }
 
@@ -109,6 +113,7 @@ class User extends Authenticatable
     public function canManagePayments(): bool
     {
         $roleEnum = $this->getRoleEnum();
+
         return $roleEnum ? $roleEnum->canManagePayments() : false;
     }
 
@@ -118,11 +123,12 @@ class User extends Authenticatable
     public function hasPermission(string $permission): bool
     {
         $roleEnum = $this->getRoleEnum();
-        if (!$roleEnum) {
+        if (! $roleEnum) {
             return false;
         }
 
         $permissions = $roleEnum->permissions();
+
         return in_array('*', $permissions) || in_array($permission, $permissions);
     }
 }

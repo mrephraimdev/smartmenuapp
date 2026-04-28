@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Order;
 use App\Models\PosSession;
 use App\Models\Tenant;
 use App\Models\User;
@@ -184,7 +183,7 @@ class PosService
 
         // Group orders by status
         $ordersByStatus = $orders->groupBy('status')
-            ->map(fn($group) => $group->count())
+            ->map(fn ($group) => $group->count())
             ->toArray();
 
         // Top dishes sold
@@ -206,10 +205,10 @@ class PosService
         // Hourly distribution
         $hourlyDistribution = $orders
             ->whereNotIn('status', ['ANNULE'])
-            ->groupBy(fn($order) => $order->created_at->format('H'))
-            ->map(fn($group) => [
+            ->groupBy(fn ($order) => $order->created_at->format('H'))
+            ->map(fn ($group) => [
                 'count' => $group->count(),
-                'revenue' => $group->sum('total')
+                'revenue' => $group->sum('total'),
             ])
             ->sortKeys()
             ->toArray();
@@ -224,7 +223,7 @@ class PosService
                 'duration_minutes' => $session->getDurationInMinutes(),
                 'average_order_value' => $session->total_orders > 0 ? $session->total_sales / $session->total_orders : 0,
                 'cash_discrepancy' => $session->cash_difference,
-            ]
+            ],
         ];
     }
 
@@ -246,7 +245,7 @@ class PosService
 
         // Group orders by status
         $ordersByStatus = $orders->groupBy('status')
-            ->map(fn($group) => $group->count())
+            ->map(fn ($group) => $group->count())
             ->toArray();
 
         // Top dishes sold so far
@@ -277,7 +276,7 @@ class PosService
             'summary' => [
                 'duration_minutes' => $session->getDurationInMinutes(),
                 'average_order_value' => $currentTotals['total_orders'] > 0 ? $currentTotals['total_sales'] / $currentTotals['total_orders'] : 0,
-            ]
+            ],
         ];
     }
 

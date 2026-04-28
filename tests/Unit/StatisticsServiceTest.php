@@ -2,26 +2,28 @@
 
 namespace Tests\Unit;
 
-use Tests\TestCase;
-use App\Models\Tenant;
-use App\Models\Table;
-use App\Models\Menu;
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Dish;
+use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Table;
+use App\Models\Tenant;
 use App\Services\StatisticsService;
-use App\Enums\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
+use Tests\TestCase;
 
 class StatisticsServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected StatisticsService $statisticsService;
+
     protected Tenant $tenant;
+
     protected Table $table;
+
     protected Dish $dish;
 
     protected function setUp(): void

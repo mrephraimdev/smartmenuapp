@@ -25,7 +25,7 @@ class OrderItemResource extends JsonResource
             'options' => $this->options ?? [],
             'dish' => new DishResource($this->whenLoaded('dish')),
             'dish_id' => $this->dish_id,
-            'dish_name' => $this->when(!$this->relationLoaded('dish'), fn() => $this->dish?->name),
+            'dish_name' => $this->when(! $this->relationLoaded('dish'), fn () => $this->dish?->name),
             'variant' => $this->when($this->variant_id, function () {
                 return [
                     'id' => $this->variant?->id,

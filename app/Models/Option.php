@@ -20,7 +20,7 @@ class Option extends Model
     protected static function booted(): void
     {
         static::addGlobalScope('tenant', function (Builder $builder) {
-            if (Auth::check() && !Auth::user()->hasRole('SUPER_ADMIN') && Auth::user()->tenant_id) {
+            if (Auth::check() && ! Auth::user()->hasRole('SUPER_ADMIN') && Auth::user()->tenant_id) {
                 $builder->whereHas('dish', function (Builder $query) {
                     $query->where('tenant_id', Auth::user()->tenant_id);
                 });

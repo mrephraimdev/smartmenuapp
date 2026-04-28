@@ -13,7 +13,7 @@ enum PaymentMethod: string
 
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::CASH => 'Espèces',
             self::CARD => 'Carte bancaire',
             self::ORANGE_MONEY => 'Orange Money',
@@ -25,7 +25,7 @@ enum PaymentMethod: string
 
     public function icon(): string
     {
-        return match($this) {
+        return match ($this) {
             self::CASH => 'banknotes',
             self::CARD => 'credit-card',
             self::ORANGE_MONEY => 'device-phone-mobile',
@@ -37,7 +37,7 @@ enum PaymentMethod: string
 
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::CASH => 'green',
             self::CARD => 'blue',
             self::ORANGE_MONEY => 'orange',
@@ -49,7 +49,7 @@ enum PaymentMethod: string
 
     public function badgeClass(): string
     {
-        return match($this) {
+        return match ($this) {
             self::CASH => 'bg-green-100 text-green-800',
             self::CARD => 'bg-blue-100 text-blue-800',
             self::ORANGE_MONEY => 'bg-orange-100 text-orange-800',
@@ -92,7 +92,7 @@ enum PaymentMethod: string
      */
     public function requiresApiIntegration(): bool
     {
-        return match($this) {
+        return match ($this) {
             self::CASH, self::CARD => false,
             default => true,
         };

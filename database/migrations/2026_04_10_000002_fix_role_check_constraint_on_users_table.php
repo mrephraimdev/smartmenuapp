@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+return new class() extends Migration
 {
     /**
      * SQLite doesn't support ALTER COLUMN, so we recreate the users table

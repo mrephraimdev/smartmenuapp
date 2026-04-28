@@ -4,9 +4,8 @@ namespace App\Services;
 
 use App\Models\Table;
 use App\Models\Tenant;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrCodeService
 {
@@ -99,6 +98,7 @@ class QrCodeService
     public function getQrCodeBase64(Table $table, array $options = []): string
     {
         $qrCode = $this->generateQrCode($table, array_merge($options, ['format' => 'svg']));
+
         return 'data:image/svg+xml;base64,' . base64_encode($qrCode);
     }
 
@@ -119,7 +119,7 @@ class QrCodeService
     {
         $tables = $tenant->tables();
 
-        if (!empty($tableIds)) {
+        if (! empty($tableIds)) {
             $tables->whereIn('id', $tableIds);
         }
 

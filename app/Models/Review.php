@@ -45,7 +45,7 @@ class Review extends Model
 
         static::creating(function ($review) {
             // Calculate overall rating if not set
-            if (!$review->overall_rating) {
+            if (! $review->overall_rating) {
                 $review->overall_rating = round(
                     ($review->food_rating + $review->service_rating + $review->ambiance_rating) / 3
                 );
@@ -100,7 +100,7 @@ class Review extends Model
      */
     public function hasResponse(): bool
     {
-        return !empty($this->response);
+        return ! empty($this->response);
     }
 
     /**
@@ -122,6 +122,7 @@ class Review extends Model
     public function publish(): self
     {
         $this->update(['is_published' => true]);
+
         return $this;
     }
 
@@ -131,6 +132,7 @@ class Review extends Model
     public function unpublish(): self
     {
         $this->update(['is_published' => false]);
+
         return $this;
     }
 
@@ -140,6 +142,7 @@ class Review extends Model
     public function feature(): self
     {
         $this->update(['is_featured' => true]);
+
         return $this;
     }
 
@@ -149,6 +152,7 @@ class Review extends Model
     public function unfeature(): self
     {
         $this->update(['is_featured' => false]);
+
         return $this;
     }
 

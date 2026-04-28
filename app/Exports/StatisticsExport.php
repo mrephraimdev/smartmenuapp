@@ -14,7 +14,9 @@ class StatisticsExport implements WithMultipleSheets
     use Exportable;
 
     protected Tenant $tenant;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Tenant $tenant, Carbon $startDate, Carbon $endDate)
@@ -38,10 +40,12 @@ class StatisticsExport implements WithMultipleSheets
 }
 
 // Statistics Overview Sheet
-class StatisticsOverviewSheet implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithTitle, \Maatwebsite\Excel\Concerns\WithStyles
+class StatisticsOverviewSheet implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithStyles, \Maatwebsite\Excel\Concerns\WithTitle
 {
     protected Tenant $tenant;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Tenant $tenant, Carbon $startDate, Carbon $endDate)
@@ -83,7 +87,7 @@ class StatisticsOverviewSheet implements \Maatwebsite\Excel\Concerns\FromArray, 
             [''],
             ['COMMANDES PAR STATUT'],
             ['Statut', 'Nombre'],
-            ...collect($ordersByStatus)->map(fn($count, $status) => [$status, $count])->values()->toArray(),
+            ...collect($ordersByStatus)->map(fn ($count, $status) => [$status, $count])->values()->toArray(),
         ];
     }
 
@@ -114,10 +118,12 @@ class StatisticsOverviewSheet implements \Maatwebsite\Excel\Concerns\FromArray, 
 }
 
 // Top Dishes Sheet
-class TopDishesSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, \Maatwebsite\Excel\Concerns\WithStyles
+class TopDishesSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithStyles, \Maatwebsite\Excel\Concerns\WithTitle
 {
     protected Tenant $tenant;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Tenant $tenant, Carbon $startDate, Carbon $endDate)
@@ -178,10 +184,12 @@ class TopDishesSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maa
 }
 
 // Daily Revenue Sheet
-class DailyRevenueSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithTitle, \Maatwebsite\Excel\Concerns\WithStyles
+class DailyRevenueSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \Maatwebsite\Excel\Concerns\WithHeadings, \Maatwebsite\Excel\Concerns\WithStyles, \Maatwebsite\Excel\Concerns\WithTitle
 {
     protected Tenant $tenant;
+
     protected Carbon $startDate;
+
     protected Carbon $endDate;
 
     public function __construct(Tenant $tenant, Carbon $startDate, Carbon $endDate)
@@ -244,8 +252,8 @@ class DailyRevenueSheet implements \Maatwebsite\Excel\Concerns\FromCollection, \
         // Add a sum formula at the bottom
         $lastRow = $sheet->getHighestRow() + 1;
         $sheet->setCellValue("A{$lastRow}", 'TOTAL');
-        $sheet->setCellValue("B{$lastRow}", "=SUM(B2:B" . ($lastRow - 1) . ")");
-        $sheet->setCellValue("C{$lastRow}", "=SUM(C2:C" . ($lastRow - 1) . ")");
+        $sheet->setCellValue("B{$lastRow}", '=SUM(B2:B' . ($lastRow - 1) . ')');
+        $sheet->setCellValue("C{$lastRow}", '=SUM(C2:C' . ($lastRow - 1) . ')');
 
         $sheet->getStyle("A{$lastRow}:C{$lastRow}")->applyFromArray([
             'font' => ['bold' => true],
