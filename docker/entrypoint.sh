@@ -49,9 +49,9 @@ php artisan storage:link 2>/dev/null || true
 # -----------------------------------------------
 if [ "$APP_ENV" = "production" ] || [ "$APP_ENV" = "staging" ]; then
     echo "Mise en cache de la configuration..."
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
+    php artisan config:cache 2>&1 || echo "⚠ config:cache ignoré"
+    php artisan route:cache 2>&1 || echo "⚠ route:cache ignoré"
+    php artisan view:cache 2>&1 || echo "⚠ view:cache ignoré"
 else
     echo "Mode ${APP_ENV} — cache ignoré."
 fi
