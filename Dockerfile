@@ -122,7 +122,7 @@ RUN { \
 } > /usr/local/etc/php/conf.d/production.ini
 
 # Create directories and set permissions
-RUN mkdir -p /var/log/php /var/www/html/storage/logs \
+RUN mkdir -p /var/log/php /var/log/supervisor /var/www/html/storage/logs \
     && chown -R www-data:www-data /var/log/php
 
 # Set working directory

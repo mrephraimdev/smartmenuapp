@@ -36,7 +36,7 @@ fi
 # 3. Migrations
 # -----------------------------------------------
 echo "Exécution des migrations..."
-php artisan migrate --force 2>&1 || echo "⚠ Migration échouée — voir erreur ci-dessus"
+php artisan migrate --force -v 2>&1 || echo "⚠ Migration échouée — voir erreur ci-dessus"
 
 # -----------------------------------------------
 # 4. Lien symbolique storage
