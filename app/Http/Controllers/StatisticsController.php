@@ -109,16 +109,18 @@ class StatisticsController extends Controller
      */
     private function getGeneralStats($tenant, Carbon $from, Carbon $to)
     {
+        $today = Carbon::today()->toDateString();
+
         $stats = Order::where('tenant_id', $tenant->id)
             ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->selectRaw("
                 COUNT(*) as total_orders,
                 COALESCE(SUM(total), 0) as total_revenue,
                 COALESCE(AVG(total), 0) as avg_order_value,
-                COALESCE(SUM(CASE WHEN DATE(created_at) = date('now') THEN 1 ELSE 0 END), 0) as today_orders,
-                COALESCE(SUM(CASE WHEN DATE(created_at) = date('now') THEN total ELSE 0 END), 0) as today_revenue,
+                COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN 1 ELSE 0 END), 0) as today_orders,
+                COALESCE(SUM(CASE WHEN DATE(created_at) = ? THEN total ELSE 0 END), 0) as today_revenue,
                 SUM(CASE WHEN status = 'RECU' THEN 1 ELSE 0 END) as pending_orders
-            ")
+            ", [$today, $today])
             ->first();
 
         return [
@@ -137,7 +139,7 @@ class StatisticsController extends Controller
     private function getHourlyPeaks($tenant, Carbon $from, Carbon $to)
     {
         $hourlyData = Order::where('tenant_id', $tenant->id)
-            ->selectRaw("cast(strftime('%H', created_at) as integer) as hour, COUNT(*) as count")
+            ->selectRaw('CAST(EXTRACT(HOUR FROM created_at) AS INTEGER) as hour, COUNT(*) as count')
             ->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->groupBy('hour')
             ->orderBy('hour')
@@ -200,13 +202,16 @@ class StatisticsController extends Controller
     private function getRevenueByPeriod($tenant)
     {
         // Une seule requête pour toutes les périodes
+        $cutoff7 = Carbon::now()->subDays(7)->toDateTimeString();
+        $cutoff30 = Carbon::now()->subDays(30)->toDateTimeString();
+
         $results = Order::where('tenant_id', $tenant->id)
             ->where('created_at', '>=', Carbon::now()->subDays(90))
             ->selectRaw('
-                SUM(CASE WHEN created_at >= datetime(\'now\', \'-7 days\') THEN total ELSE 0 END) as revenue_7days,
-                SUM(CASE WHEN created_at >= datetime(\'now\', \'-30 days\') THEN total ELSE 0 END) as revenue_30days,
+                SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END) as revenue_7days,
+                SUM(CASE WHEN created_at >= ? THEN total ELSE 0 END) as revenue_30days,
                 SUM(total) as revenue_90days
-            ')
+            ', [$cutoff7, $cutoff30])
             ->first();
 
         return [
@@ -296,7 +301,7 @@ class StatisticsController extends Controller
         // Une seule requête groupée par heure
         $hourlyData = Order::where('tenant_id', $tenant->id)
             ->whereDate('created_at', Carbon::today())
-            ->selectRaw('cast(strftime(\'%H\', created_at) as integer) as hour, COUNT(*) as orders')
+            ->selectRaw('CAST(EXTRACT(HOUR FROM created_at) AS INTEGER) as hour, COUNT(*) as orders')
             ->groupBy('hour')
             ->get()
             ->keyBy('hour');

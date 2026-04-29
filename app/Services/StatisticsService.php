@@ -21,9 +21,11 @@ class StatisticsService
         $date = $date ?? now();
 
         $driver = DB::getDriverName();
-        $hourExpr = $driver === 'sqlite'
-            ? "CAST(strftime('%H', created_at) AS INTEGER)"
-            : 'HOUR(created_at)';
+        $hourExpr = match ($driver) {
+            'sqlite' => "CAST(strftime('%H', created_at) AS INTEGER)",
+            'pgsql' => 'CAST(EXTRACT(HOUR FROM created_at) AS INTEGER)',
+            default => 'HOUR(created_at)',
+        };
 
         $hourlyData = Order::where('tenant_id', $tenantId)
             ->whereDate('created_at', $date)

@@ -56,5 +56,12 @@ else
     echo "Mode ${APP_ENV} — cache ignoré."
 fi
 
+# -----------------------------------------------
+# 6. Corriger les permissions storage (volumes bind-mount)
+# -----------------------------------------------
+echo "Correction des permissions storage..."
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+
 echo "=== Démarrage des services ==="
 exec "$@"
