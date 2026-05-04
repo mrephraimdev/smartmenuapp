@@ -43,6 +43,6 @@ jobs:
             sleep 15
 
             echo "=== Health check ==="
-            curl -f http://localhost/health || exit 1
+            curl -f https://horuspos.app/health || exit 1
 
             echo "=== Deployment successful ==="
