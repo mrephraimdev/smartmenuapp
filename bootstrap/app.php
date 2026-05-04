@@ -13,6 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust the reverse proxy (nginx host) so Laravel generates HTTPS URLs
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_HOST |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PORT |
+            \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO);
+
         // Ajouter les headers de sécurité à toutes les réponses web
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
