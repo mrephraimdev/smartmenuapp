@@ -29,7 +29,15 @@ class ServeurDashboardController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return view('serveur.dashboard', compact('tenant', 'tables', 'pendingOrders'));
+        $tablesJson = json_encode(
+            $tables->map(fn ($t) => $this->serializeTable($t))->values()
+        );
+
+        $ordersJson = json_encode(
+            $pendingOrders->map(fn ($o) => $this->serializeOrder($o))->values()
+        );
+
+        return view('serveur.dashboard', compact('tenant', 'tables', 'pendingOrders', 'tablesJson', 'ordersJson'));
     }
 
     /**
