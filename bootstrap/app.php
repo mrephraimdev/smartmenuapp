@@ -35,8 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'role'             => \App\Http\Middleware\CheckRole::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
+            'table.session'    => \App\Http\Middleware\ValidateTableSession::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
@@ -51,6 +52,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Clear old logs
         $schedule->command('logs:clear')->weekly();
+
+        // Expirer les sessions de table inactives toutes les 5 minutes
+        $schedule->command('table-sessions:expire')->everyFiveMinutes();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->reportable(function (\Throwable $e): void {

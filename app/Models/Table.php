@@ -22,4 +22,19 @@ class Table extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function sessions()
+    {
+        return $this->hasMany(TableSession::class);
+    }
+
+    public function activeSession()
+    {
+        return $this->hasOne(TableSession::class)->where('status', 'ACTIVE')->latest();
+    }
+
+    public function hasActiveSession(): bool
+    {
+        return $this->sessions()->where('status', 'ACTIVE')->exists();
+    }
 }

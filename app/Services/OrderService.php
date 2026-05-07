@@ -91,13 +91,21 @@ class OrderService
                 ];
             }
 
+            // Commandes QR (depuis le téléphone client) partent EN_ATTENTE — validation humaine requise
+            $source = $data['source'] ?? 'POS';
+            $initialStatus = $source === 'QR'
+                ? OrderStatus::PENDING->value
+                : OrderStatus::RECEIVED->value;
+
             $order = Order::createWithNumber([
-                'tenant_id' => $data['tenant_id'],
-                'table_id' => $data['table_id'],
-                'serveur_id' => $data['serveur_id'] ?? null,
-                'status' => OrderStatus::RECEIVED->value,
-                'total' => $total,
-                'notes' => $data['notes'] ?? '',
+                'tenant_id'        => $data['tenant_id'],
+                'table_id'         => $data['table_id'],
+                'table_session_id' => $data['table_session_id'] ?? null,
+                'serveur_id'       => $data['serveur_id'] ?? null,
+                'status'           => $initialStatus,
+                'source'           => $source,
+                'total'            => $total,
+                'notes'            => $data['notes'] ?? '',
             ]);
 
             foreach ($orderItems as $itemData) {

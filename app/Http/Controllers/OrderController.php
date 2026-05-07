@@ -103,14 +103,26 @@ class OrderController extends Controller
                 'notes' => 'nullable|string|max:1000',
             ]);
 
+            // Injecter la session de table si validée par le middleware
+            $tableSession = $request->attributes->get('table_session');
+            if ($tableSession) {
+                $validated['table_session_id'] = $tableSession->id;
+                $validated['source'] = 'QR';
+            }
+
             $order = $this->orderService->createOrder($validated);
 
+            $message = ($validated['source'] ?? 'POS') === 'QR'
+                ? 'Commande envoyée ! Le serveur va confirmer votre présence.'
+                : 'Commande créée avec succès!';
+
             return response()->json([
-                'success' => true,
-                'message' => 'Commande créée avec succès!',
-                'order_id' => $order->id,
+                'success'      => true,
+                'message'      => $message,
+                'order_id'     => $order->id,
                 'order_number' => $order->order_number,
-                'total' => $order->total,
+                'total'        => $order->total,
+                'status'       => $order->status,
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {

@@ -14,6 +14,8 @@ use App\Http\Controllers\QrCodeController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServeurController;
+use App\Http\Controllers\ServeurDashboardController;
+use App\Http\Controllers\TableSessionController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\SuiviController;
 use App\Http\Controllers\SuperAdminController;
@@ -270,6 +272,16 @@ Route::middleware(['auth', 'role:ADMIN,SERVEUR'])->group(function () {
     Route::post('/kds/{tenantSlug}/commande', [ServeurController::class, 'store'])->name('serveur.commande.store');
     Route::get('/kds/{tenantSlug}/historique', [ServeurController::class, 'historique'])->name('serveur.historique.index');
     Route::post('/kds/{tenantSlug}/encaisser/{order}', [ServeurController::class, 'encaisser'])->name('serveur.encaisser');
+
+    // Dashboard serveur : gestion des sessions de table + validation commandes QR
+    Route::prefix('/serveur/{tenantSlug}')->group(function () {
+        Route::get('/dashboard', [ServeurDashboardController::class, 'index'])->name('serveur.dashboard');
+        Route::get('/dashboard/data', [ServeurDashboardController::class, 'data'])->name('serveur.dashboard.data');
+        Route::post('/orders/{order}/validate', [ServeurDashboardController::class, 'validateOrder'])->name('serveur.orders.validate');
+        Route::post('/orders/{order}/refuse', [ServeurDashboardController::class, 'refuseOrder'])->name('serveur.orders.refuse');
+        Route::post('/tables/{table}/session/open', [TableSessionController::class, 'open'])->name('serveur.session.open');
+        Route::post('/sessions/{session}/close', [TableSessionController::class, 'close'])->name('serveur.session.close');
+    });
 });
 
 // =============================================================================
@@ -281,8 +293,23 @@ Route::get('/menu', function () {
     return view('menu-client');
 })->name('menu');
 
-Route::get('/menu/{tenantId}/{tableId}', [AdminMenuController::class, 'showMenu'])->name('menu.client');
-Route::post('/order/{tenantId}/{tableId}', [OrderController::class, 'store'])->name('order.store');
+Route::get('/menu/{tenantId}/{tableId}', [AdminMenuController::class, 'showMenu'])
+    ->middleware('table.session')
+    ->name('menu.client');
+
+Route::post('/order/{tenantId}/{tableId}', [OrderController::class, 'store'])
+    ->middleware('table.session')
+    ->name('order.store');
+
+// Heartbeat : renouveler l'activité de la session QR client (appelé depuis menu-client.js)
+Route::post('/api/session/heartbeat/{tenantId}/{tableId}', function (\Illuminate\Http\Request $request) {
+    $session = $request->attributes->get('table_session');
+
+    return response()->json([
+        'success'           => true,
+        'remaining_seconds' => $session->getRemainingSeconds(),
+    ]);
+})->middleware('table.session')->name('session.heartbeat');
 
 // QR Code page publique pour impression
 Route::get('/qrcode/{tenantId}/{tableCode}', [QrCodeController::class, 'publicShow'])->name('qrcode.show');

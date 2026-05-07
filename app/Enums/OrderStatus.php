@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
+    case PENDING = 'EN_ATTENTE'; // Commande QR en attente de validation serveur
     case RECEIVED = 'RECU';
     case PREPARING = 'PREP';
     case READY = 'PRET';
@@ -13,10 +14,11 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::RECEIVED => 'Reçue',
+            self::PENDING   => 'En attente',
+            self::RECEIVED  => 'Reçue',
             self::PREPARING => 'En préparation',
-            self::READY => 'Prête',
-            self::SERVED => 'Servie',
+            self::READY     => 'Prête',
+            self::SERVED    => 'Servie',
             self::CANCELLED => 'Annulée',
         };
     }
@@ -24,10 +26,11 @@ enum OrderStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::RECEIVED => 'blue',
+            self::PENDING   => 'orange',
+            self::RECEIVED  => 'blue',
             self::PREPARING => 'yellow',
-            self::READY => 'green',
-            self::SERVED => 'gray',
+            self::READY     => 'green',
+            self::SERVED    => 'gray',
             self::CANCELLED => 'red',
         };
     }
@@ -35,10 +38,11 @@ enum OrderStatus: string
     public function icon(): string
     {
         return match ($this) {
-            self::RECEIVED => 'heroicon-o-inbox',
+            self::PENDING   => 'heroicon-o-clock',
+            self::RECEIVED  => 'heroicon-o-inbox',
             self::PREPARING => 'heroicon-o-fire',
-            self::READY => 'heroicon-o-check-circle',
-            self::SERVED => 'heroicon-o-check',
+            self::READY     => 'heroicon-o-check-circle',
+            self::SERVED    => 'heroicon-o-check',
             self::CANCELLED => 'heroicon-o-x-circle',
         };
     }
@@ -46,6 +50,7 @@ enum OrderStatus: string
     public static function activeStatuses(): array
     {
         return [
+            self::PENDING,
             self::RECEIVED,
             self::PREPARING,
             self::READY,
@@ -60,10 +65,11 @@ enum OrderStatus: string
     public function nextStatus(): ?self
     {
         return match ($this) {
-            self::RECEIVED => self::PREPARING,
+            self::PENDING   => self::RECEIVED,
+            self::RECEIVED  => self::PREPARING,
             self::PREPARING => self::READY,
-            self::READY => self::SERVED,
-            default => null,
+            self::READY     => self::SERVED,
+            default         => null,
         };
     }
 }
