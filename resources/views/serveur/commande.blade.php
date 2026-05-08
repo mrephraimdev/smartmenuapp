@@ -209,6 +209,12 @@
                 </div>
                 <span style="font-size:12px;font-weight:500;color:var(--txt);">{{ Auth::user()->name }}</span>
             </div>
+            <a href="{{ route('serveur.dashboard', $tenant->slug) }}"
+               style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);border-radius:9px;color:#22c55e;font-size:11px;font-weight:600;text-decoration:none;transition:all .15s;"
+               onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                <svg style="width:13px;height:13px;" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 5.25h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5m-16.5 4.5h16.5"/></svg>
+                <span class="tb-hide">Tables</span>
+            </a>
             <a href="{{ route('kds', $tenant->slug) }}"
                style="display:flex;align-items:center;gap:5px;padding:6px 10px;background:var(--s3);border:1px solid var(--bd);border-radius:9px;color:var(--mut);font-size:11px;font-weight:500;text-decoration:none;transition:color .15s;"
                onmouseover="this.style.color='var(--amber)'" onmouseout="this.style.color='var(--mut)'">
