@@ -91,9 +91,10 @@ class OrderService
                 ];
             }
 
-            // Commandes QR (depuis le téléphone client) partent EN_ATTENTE — validation humaine requise
+            // Commandes QR : EN_ATTENTE si validation requise, sinon direct en cuisine
             $source = $data['source'] ?? 'POS';
-            $initialStatus = $source === 'QR'
+            $requireValidation = $data['require_order_validation'] ?? true;
+            $initialStatus = ($source === 'QR' && $requireValidation)
                 ? OrderStatus::PENDING->value
                 : OrderStatus::RECEIVED->value;
 

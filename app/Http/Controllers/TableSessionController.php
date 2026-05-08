@@ -49,6 +49,77 @@ class TableSessionController extends Controller
     }
 
     /**
+     * Ouvrir toutes les tables du tenant.
+     */
+    public function openAll(Request $request, string $tenantSlug): JsonResponse
+    {
+        $tenant = Tenant::findBySlug($tenantSlug);
+
+        $tables = Table::where('tenant_id', $tenant->id)->get();
+        $opened = 0;
+
+        foreach ($tables as $table) {
+            // Fermer les sessions actives existantes
+            TableSession::where('table_id', $table->id)->where('status', 'ACTIVE')
+                ->get()->each(fn ($s) => $s->close());
+
+            TableSession::create([
+                'tenant_id'        => $tenant->id,
+                'table_id'         => $table->id,
+                'opened_by'        => Auth::id(),
+                'status'           => 'ACTIVE',
+                'opened_at'        => now(),
+                'last_activity_at' => now(),
+            ]);
+            $opened++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$opened} tables ouvertes.",
+        ]);
+    }
+
+    /**
+     * Fermer toutes les tables du tenant.
+     */
+    public function closeAll(Request $request, string $tenantSlug): JsonResponse
+    {
+        $tenant = Tenant::findBySlug($tenantSlug);
+
+        $closed = TableSession::whereHas('table', fn ($q) => $q->where('tenant_id', $tenant->id))
+            ->where('status', 'ACTIVE')
+            ->get()
+            ->each(fn ($s) => $s->close())
+            ->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$closed} tables fermées.",
+        ]);
+    }
+
+    /**
+     * Basculer le mode de validation des commandes QR.
+     */
+    public function toggleValidation(Request $request, string $tenantSlug): JsonResponse
+    {
+        $tenant = Tenant::findBySlug($tenantSlug);
+        $tenant->update([
+            'require_order_validation' => ! $tenant->require_order_validation,
+        ]);
+        Tenant::forgetSlugCache($tenantSlug);
+
+        $label = $tenant->require_order_validation ? 'activée' : 'désactivée';
+
+        return response()->json([
+            'success'  => true,
+            'enabled'  => $tenant->require_order_validation,
+            'message'  => "Validation des commandes {$label}.",
+        ]);
+    }
+
+    /**
      * Fermer une session de table (après paiement/départ du client).
      */
     public function close(Request $request, string $tenantSlug, TableSession $session): JsonResponse

@@ -12,13 +12,14 @@ class Tenant extends Model
 
     protected $fillable = [
         'name', 'slug', 'logo_url', 'cover_url', 'branding', 'type', 'currency', 'locale', 'is_active', 'theme_id',
-        'address', 'phone', 'email', 'opening_hours',
+        'address', 'phone', 'email', 'opening_hours', 'require_order_validation',
     ];
 
     protected $casts = [
-        'branding' => 'array',
-        'opening_hours' => 'array',
-        'is_active' => 'boolean',
+        'branding'                  => 'array',
+        'opening_hours'             => 'array',
+        'is_active'                 => 'boolean',
+        'require_order_validation'  => 'boolean',
     ];
 
     public function users()

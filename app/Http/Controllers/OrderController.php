@@ -105,15 +105,22 @@ class OrderController extends Controller
 
             // Injecter la session de table si validée par le middleware
             $tableSession = $request->attributes->get('table_session');
+            $validatedTable = $request->attributes->get('validated_table');
             if ($tableSession) {
                 $validated['table_session_id'] = $tableSession->id;
                 $validated['source'] = 'QR';
+                // Récupérer le paramètre de validation du tenant
+                $tenant = \App\Models\Tenant::find($validated['tenant_id'] ?? $validatedTable?->tenant_id);
+                $validated['require_order_validation'] = $tenant?->require_order_validation ?? true;
             }
 
             $order = $this->orderService->createOrder($validated);
 
+            $requireValidation = $validated['require_order_validation'] ?? true;
             $message = ($validated['source'] ?? 'POS') === 'QR'
-                ? 'Commande envoyée ! Le serveur va confirmer votre présence.'
+                ? ($requireValidation
+                    ? 'Commande envoyée ! Le serveur va confirmer votre présence.'
+                    : 'Commande envoyée en cuisine !')
                 : 'Commande créée avec succès!';
 
             return response()->json([

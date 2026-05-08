@@ -113,6 +113,46 @@ class ServeurDashboardController extends Controller
         ]);
     }
 
+    /**
+     * Page dédiée commandes en attente.
+     */
+    public function pendingOrdersPage(string $tenantSlug)
+    {
+        $tenant = Tenant::findBySlug($tenantSlug);
+
+        $pendingOrders = Order::where('tenant_id', $tenant->id)
+            ->where('status', OrderStatus::PENDING->value)
+            ->with(['table', 'items.dish'])
+            ->orderBy('created_at')
+            ->get();
+
+        $ordersJson = json_encode(
+            $pendingOrders->map(fn ($o) => $this->serializeOrder($o))->values()
+        );
+
+        return view('serveur.pending-orders', compact('tenant', 'pendingOrders', 'ordersJson'));
+    }
+
+    /**
+     * JSON polling commandes en attente.
+     */
+    public function pendingOrdersData(string $tenantSlug): JsonResponse
+    {
+        $tenant = Tenant::findBySlug($tenantSlug);
+
+        $pendingOrders = Order::where('tenant_id', $tenant->id)
+            ->where('status', OrderStatus::PENDING->value)
+            ->with(['table', 'items.dish'])
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn ($o) => $this->serializeOrder($o));
+
+        return response()->json([
+            'pending_orders' => $pendingOrders,
+            'pending_count'  => $pendingOrders->count(),
+        ]);
+    }
+
     private function serializeTable(Table $table): array
     {
         $session = $table->activeSession;

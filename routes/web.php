@@ -281,6 +281,11 @@ Route::middleware(['auth', 'role:ADMIN,SERVEUR'])->group(function () {
         Route::post('/orders/{order}/refuse', [ServeurDashboardController::class, 'refuseOrder'])->name('serveur.orders.refuse');
         Route::post('/tables/{table}/session/open', [TableSessionController::class, 'open'])->name('serveur.session.open');
         Route::post('/sessions/{session}/close', [TableSessionController::class, 'close'])->name('serveur.session.close');
+        Route::post('/sessions/open-all', [TableSessionController::class, 'openAll'])->name('serveur.session.openAll');
+        Route::post('/sessions/close-all', [TableSessionController::class, 'closeAll'])->name('serveur.session.closeAll');
+        Route::post('/settings/toggle-validation', [TableSessionController::class, 'toggleValidation'])->name('serveur.settings.toggleValidation');
+        Route::get('/commandes-attente', [ServeurDashboardController::class, 'pendingOrdersPage'])->name('serveur.pending');
+        Route::get('/commandes-attente/data', [ServeurDashboardController::class, 'pendingOrdersData'])->name('serveur.pending.data');
     });
 });
 
