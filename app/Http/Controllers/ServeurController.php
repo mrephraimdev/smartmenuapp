@@ -185,13 +185,20 @@ class ServeurController extends Controller
         $tenant = Tenant::findBySlug($tenantSlug);
         $serveur = Auth::user();
 
-        $orders = Order::with(['table', 'items.dish'])
-            ->where('tenant_id', $tenant->id)
-            ->where('serveur_id', $serveur->id)
-            ->whereDate('created_at', today())
-            ->orderBy('created_at', 'desc')
-            ->paginate(30);
+        $baseQuery = Order::where('tenant_id', $tenant->id)
+            ->whereDate('created_at', today());
 
-        return view('serveur.historique', compact('tenant', 'orders', 'serveur'));
+        $stats = [
+            'total'     => (clone $baseQuery)->count(),
+            'active'    => (clone $baseQuery)->whereIn('status', ['RECU', 'PREP', 'PRET'])->count(),
+            'completed' => (clone $baseQuery)->where('status', 'SERVI')->count(),
+        ];
+
+        $orders = (clone $baseQuery)
+            ->with(['table', 'items.dish', 'serveur'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        return view('serveur.historique', compact('tenant', 'orders', 'serveur', 'stats'));
     }
 }

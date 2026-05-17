@@ -53,8 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Clear old logs
         $schedule->command('logs:clear')->weekly();
 
-        // Expirer les sessions de table inactives toutes les 5 minutes
-        $schedule->command('table-sessions:expire')->everyFiveMinutes();
+        // Sessions de table : expiration auto désactivée — fermées uniquement à la déconnexion des serveurs
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->reportable(function (\Throwable $e): void {

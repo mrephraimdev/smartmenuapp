@@ -169,6 +169,7 @@
             <div class="tb-left">
                 <span class="tb-title">Gestion des tables</span>
                 <span x-show="pendingCount > 0" class="sb-badge amber" x-text="pendingCount + ' en attente'" x-cloak></span>
+                <span x-show="waiterCallCount > 0" class="sb-badge" style="background:var(--red);" x-text="waiterCallCount + ' appel(s) serveur'" x-cloak></span>
             </div>
             <div class="tb-right">
                 <span class="sync-txt" x-show="lastSync" x-text="'⟳ ' + lastSync" x-cloak></span>
@@ -206,7 +207,7 @@
                             <template x-if="t.has_session && t.session">
                                 <div>
                                     <div x-text="t.session.opened_by ? 'Par ' + t.session.opened_by : ''"></div>
-                                    <div class="tcard-timer" x-text="formatTimer(t.session.remaining_seconds)"></div>
+                                    <div class="tcard-timer" x-text="'⏱ ' + formatDuration(t.session.opened_at)"></div>
                                 </div>
                             </template>
                             <template x-if="!t.has_session"><div>—</div></template>
@@ -227,32 +228,73 @@
 <div class="toast" :class="toast.type" x-show="toast.show" x-transition x-cloak x-text="toast.message"></div>
 
 <script>
+function playNotification(type = 'order') {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const sequences = {
+            order: [{f:880,d:0.08},{f:1100,d:0.12},{f:880,d:0.08},{f:1320,d:0.18}],
+            call:  [{f:660,d:0.1},{f:880,d:0.1},{f:660,d:0.1},{f:880,d:0.1},{f:1100,d:0.2}],
+        };
+        let t = ctx.currentTime;
+        (sequences[type] || sequences.order).forEach(({f, d}) => {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = f;
+            g.gain.setValueAtTime(0.35, t);
+            g.gain.exponentialRampToValueAtTime(0.001, t + d);
+            o.start(t); o.stop(t + d);
+            t += d + 0.03;
+        });
+    } catch(e){}
+}
+
 function dashboard() {
     return {
         tables:           {!! $tablesJson !!},
         pendingCount:     {{ $pendingOrders->count() }},
+        waiterCallCount:  0,
         validationEnabled: {{ $tenant->require_order_validation ? 'true' : 'false' }},
         lastSync: null,
         toast: { show: false, message: '', type: 'success' },
+        _prevPendingCount: {{ $pendingOrders->count() }},
+        _prevCallCount: 0,
 
         init() {
-            setInterval(() => {
-                this.tables = this.tables.map(t => {
-                    if (t.has_session && t.session && t.session.remaining_seconds > 0)
-                        t.session.remaining_seconds = Math.max(0, t.session.remaining_seconds - 1);
-                    return t;
-                });
-            }, 1000);
-            setInterval(() => this.poll(), 15000);
+            setInterval(() => this.poll(), 8000);
+            setInterval(() => this.pollCalls(), 10000);
+            this.pollCalls();
         },
 
         async poll() {
             try {
                 const res  = await fetch('{{ route('serveur.dashboard.data', $tenant->slug) }}', { headers: {'X-Requested-With':'XMLHttpRequest'} });
                 const data = await res.json();
+                const newCount = data.pending_count;
+                if (newCount > this._prevPendingCount) {
+                    playNotification('order');
+                    this.showToast(`🔔 ${newCount - this._prevPendingCount} nouvelle(s) commande(s) en attente`, 'success');
+                }
+                this._prevPendingCount = newCount;
                 this.tables       = data.tables;
-                this.pendingCount = data.pending_count;
+                this.pendingCount = newCount;
                 this.lastSync = new Date().toTimeString().slice(0,8);
+            } catch(e){}
+        },
+
+        async pollCalls() {
+            try {
+                const res  = await fetch('/api/waiter-calls?tenant_id={{ $tenant->id }}', { headers: {'X-Requested-With':'XMLHttpRequest','Accept':'application/json'} });
+                const data = await res.json();
+                const calls = data.calls ?? [];
+                const newCount = calls.length;
+                if (newCount > this._prevCallCount) {
+                    playNotification('call');
+                    const tableName = calls[0]?.table_name ?? calls[0]?.table_code ?? '';
+                    this.showToast(`🔔 Appel serveur${tableName ? ' — ' + tableName : ''}`, 'error');
+                }
+                this._prevCallCount = newCount;
+                this.waiterCallCount = newCount;
             } catch(e){}
         },
 
@@ -312,10 +354,14 @@ function dashboard() {
             setTimeout(() => this.toast.show = false, 3500);
         },
 
-        formatTimer(seconds) {
-            if (seconds <= 0) return '⚠ Expirée';
-            if (seconds < 60) return `⏱ ${seconds}s`;
-            return `⏱ ${Math.floor(seconds/60)}m ${(seconds%60).toString().padStart(2,'0')}s`;
+        formatDuration(openedAt) {
+            if (!openedAt) return '';
+            const diffMs = Date.now() - new Date(openedAt).getTime();
+            const totalSec = Math.floor(diffMs / 1000);
+            if (totalSec < 60) return `${totalSec}s`;
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            return h > 0 ? `${h}h ${m.toString().padStart(2,'0')}m` : `${m}m`;
         },
     };
 }

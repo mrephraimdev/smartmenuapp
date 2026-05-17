@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mes commandes — {{ $tenant->name }}</title>
+    <title>Historique des commandes — {{ $tenant->name }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css'])
@@ -83,8 +83,8 @@
                 </svg>
             </div>
             <div>
-                <p class="font-display" style="font-size:14px;font-weight:700;color:var(--text);line-height:1.2;">Mes commandes du jour</p>
-                <p style="font-size:11px;color:var(--text-muted);">{{ $serveur->name }} · {{ now()->translatedFormat('d M Y') }}</p>
+                <p class="font-display" style="font-size:14px;font-weight:700;color:var(--text);line-height:1.2;">Historique des commandes du jour</p>
+                <p style="font-size:11px;color:var(--text-muted);">Tous les serveurs · {{ now()->translatedFormat('d M Y') }}</p>
             </div>
         </div>
 
@@ -142,22 +142,17 @@
 
         {{-- Stats row --}}
         <div class="grid grid-cols-3 gap-4 mb-8">
-            @php
-                $total     = $orders->total();
-                $active    = $orders->getCollection()->filter(fn($o) => in_array($o->status, ['RECU','PREP','PRET']))->count();
-                $completed = $orders->getCollection()->filter(fn($o) => $o->status === 'SERVI')->count();
-            @endphp
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;">
-                <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;" class="font-display">Total</p>
-                <p class="font-display" style="font-size:28px;font-weight:800;color:var(--text);">{{ $total }}</p>
+                <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;" class="font-display">Total du jour</p>
+                <p class="font-display" style="font-size:28px;font-weight:800;color:var(--text);">{{ $stats['total'] }}</p>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;">
                 <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;" class="font-display">En cours</p>
-                <p class="font-display" style="font-size:28px;font-weight:800;color:#60a5fa;">{{ $active }}</p>
+                <p class="font-display" style="font-size:28px;font-weight:800;color:#60a5fa;">{{ $stats['active'] }}</p>
             </div>
             <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 20px;">
                 <p style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;" class="font-display">Servis</p>
-                <p class="font-display" style="font-size:28px;font-weight:800;color:#34d399;">{{ $completed }}</p>
+                <p class="font-display" style="font-size:28px;font-weight:800;color:#34d399;">{{ $stats['completed'] }}</p>
             </div>
         </div>
 
@@ -196,6 +191,13 @@
                                 <span style="color:var(--text);">{{ $order->table?->label ?? $order->table?->code ?? 'Sans table' }}</span>
                                 <span style="margin:0 6px;opacity:0.3;">·</span>
                                 {{ $order->created_at->format('d/m/Y à H:i') }}
+                                @if($order->serveur)
+                                    <span style="margin:0 6px;opacity:0.3;">·</span>
+                                    <span style="color:var(--amber);font-weight:600;">{{ $order->serveur->name }}</span>
+                                @elseif($order->source === 'QR')
+                                    <span style="margin:0 6px;opacity:0.3;">·</span>
+                                    <span style="color:var(--text-muted);">Client QR</span>
+                                @endif
                             </p>
                         </div>
                         <p class="font-display" style="font-size:18px;font-weight:800;color:var(--amber);flex-shrink:0;margin-left:16px;">{{ $order->getFormattedTotal() }}</p>
