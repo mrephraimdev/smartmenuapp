@@ -227,6 +227,7 @@ export default function menuClientStore() {
 
         // Ajouter au panier
         addToCart() {
+            if (window.menuClientConfig?.preview) return;
             if (!this.selectedDish) return;
 
             const cartItem = {
@@ -490,6 +491,7 @@ export default function menuClientStore() {
 
         // Soumettre commande
         async submitOrder() {
+            if (window.menuClientConfig?.preview) return;
             // Protection contre double-clic
             if (this.isSubmitting) return;
 

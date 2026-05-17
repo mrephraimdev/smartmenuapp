@@ -302,6 +302,16 @@ Route::get('/menu/{tenantId}/{tableId}', [AdminMenuController::class, 'showMenu'
     ->middleware('table.session')
     ->name('menu.client');
 
+// Menu en aperçu public (sans session, sans commande) — utilisé depuis la confirmation de réservation
+Route::get('/menu/{tenantSlug}/apercu', function (string $tenantSlug) {
+    $tenant = \App\Models\Tenant::findBySlug($tenantSlug);
+    return view('menu-client', [
+        'tenantId'  => $tenant->id,
+        'tableCode' => null,
+        'preview'   => true,
+    ]);
+})->name('menu.apercu');
+
 Route::post('/order/{tenantId}/{tableId}', [OrderController::class, 'store'])
     ->middleware('table.session')
     ->name('order.store');

@@ -18,7 +18,8 @@
     <script>
         window.menuClientConfig = {
             tenantId: '{{ $tenantId ?? 1 }}',
-            tableCode: '{{ $tableCode ?? "A1" }}'
+            tableCode: '{{ $tableCode ?? "A1" }}',
+            preview: {{ isset($preview) && $preview ? 'true' : 'false' }},
         };
     </script>
 

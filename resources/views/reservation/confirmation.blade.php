@@ -424,8 +424,7 @@
 
     {{-- ── Actions ── --}}
     <div class="actions">
-        @if($reservation->table_id)
-        <a href="{{ route('menu.client', ['tenantId' => $tenant->id, 'tableId' => $reservation->table_id]) }}"
+        <a href="{{ route('menu.apercu', $tenant->slug) }}"
            class="btn-primary">
             <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2"/>
@@ -435,7 +434,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
             </svg>
         </a>
-        @endif
 
         <a href="{{ route('reservation.form', $tenant->slug) }}" class="btn-secondary">
             <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
