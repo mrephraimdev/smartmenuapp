@@ -37,13 +37,6 @@ class ValidateTableSession
             return $this->deny($request, 'table-inactive', 'Table non disponible.');
         }
 
-        // Vérifier l'inactivité (15 minutes)
-        if ($session->isExpiredByInactivity()) {
-            $session->expire();
-
-            return $this->deny($request, 'session-expired', 'Session expirée. Veuillez rescanner le QR code.');
-        }
-
         // Renouveler l'activité
         $session->refreshActivity();
 

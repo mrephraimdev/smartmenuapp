@@ -342,7 +342,7 @@
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Liens publics</p>
             </div>
 
-            <a href="{{ url('/menu/' . $tenant->id . '/A1') }}" target="_blank"
+            <a href="{{ route('menu.apercu', $tenant->slug) }}" target="_blank"
                class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 transition-all">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/>
@@ -526,7 +526,7 @@
                     </div>
                 </div>
 
-                <a href="{{ url('/menu/' . $tenant->id . '/A1') }}" target="_blank"
+                <a href="{{ route('menu.apercu', $tenant->slug) }}" target="_blank"
                    class="hidden sm:flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-amber-600 bg-gray-50 hover:bg-amber-50 px-3 py-1.5 rounded-lg border border-gray-200 hover:border-amber-200 transition-all">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/>
