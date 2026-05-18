@@ -300,6 +300,7 @@ Route::get('/menu', function () {
 
 Route::get('/menu/{tenantId}/{tableId}', [AdminMenuController::class, 'showMenu'])
     ->middleware('table.session')
+    ->where('tenantId', '[0-9]+')
     ->name('menu.client');
 
 // Menu en aperçu public (sans session, sans commande) — utilisé depuis la confirmation de réservation
