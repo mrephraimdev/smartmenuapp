@@ -9,12 +9,22 @@
             font-family: 'Courier New', 'Lucida Console', monospace;
             font-size: 14px;
             font-weight: 900;
-            width: 80mm;
-            padding: 4mm;
-            background: #fff;
+            background: #d1d5db;
             color: #000;
             line-height: 1.4;
             -webkit-text-size-adjust: none;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+        .receipt {
+            width: 80mm;
+            max-width: 100%;
+            background: #fff;
+            padding: 4mm;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
         }
 
         /* Header */
@@ -120,14 +130,15 @@
         .thx { font-size: 15px; font-weight: 900; margin-bottom: 4px; }
         .fs { font-size: 11px; font-weight: 900; }
 
-        /* Print */
         @media print {
-            body { width: 80mm; margin: 0; }
+            body { background: #fff; display: block; padding: 0; margin: 0; }
+            .receipt { width: 80mm; padding: 4mm; box-shadow: none; }
             @page { size: 80mm auto; margin: 0; }
         }
     </style>
 </head>
 <body>
+<div class="receipt">
 
     {{-- ====== HEADER ====== --}}
     <div class="header">
@@ -200,6 +211,7 @@
         <div class="stars">* * * * * * * * *</div>
     </div>
 
+</div>
     <script>
         window.onload = function() { window.print(); };
         window.onafterprint = function() { window.close(); };

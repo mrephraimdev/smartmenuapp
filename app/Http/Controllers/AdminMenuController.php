@@ -67,7 +67,7 @@ class AdminMenuController extends Controller
             ->whereBetween('created_at', [$from->startOfDay(), $to->copy()->endOfDay()]);
 
         $orderStats = (clone $orderQuery)
-            ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(total), 0) as total_revenue')
+            ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(CASE WHEN status != \'ANNULE\' THEN total ELSE 0 END), 0) as total_revenue')
             ->first();
 
         $activeDishes = Dish::where('tenant_id', $tenantId)->where('active', true)->count();
@@ -76,8 +76,9 @@ class AdminMenuController extends Controller
             ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->where('orders.tenant_id', $tenantId)
+            ->where('orders.status', '!=', 'ANNULE')
             ->whereBetween('orders.created_at', [$from->startOfDay(), $to->copy()->endOfDay()])
-            ->select('dishes.name', DB::raw('COUNT(*) as order_count'))
+            ->select('dishes.name', DB::raw('SUM(order_items.quantity) as order_count'))
             ->groupBy('dishes.id', 'dishes.name')
             ->orderBy('order_count', 'desc')
             ->limit(5)

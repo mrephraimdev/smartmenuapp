@@ -12,9 +12,19 @@
         body {
             font-family: 'Courier New', monospace;
             font-size: 12px;
+            background: #d1d5db;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+        .receipt {
             width: 80mm;
+            max-width: 100%;
+            background: #fff;
             padding: 5mm;
-            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
         }
         .header {
             text-align: center;
@@ -103,17 +113,14 @@
             font-weight: bold;
         }
         @media print {
-            body {
-                width: 80mm;
-            }
-            @page {
-                size: 80mm auto;
-                margin: 0;
-            }
+            body { background: #fff; display: block; padding: 0; margin: 0; }
+            .receipt { width: 80mm; padding: 5mm; box-shadow: none; }
+            @page { size: 80mm auto; margin: 0; }
         }
     </style>
 </head>
 <body>
+<div class="receipt">
     <div class="header">
         <h1>CUISINE</h1>
         <div class="subtitle">{{ $tenant->name }}</div>
@@ -158,6 +165,7 @@
         <div class="time">Imprimé à {{ $printedAt->format('H:i:s') }}</div>
     </div>
 
+</div>
     <script>
         window.onload = function() { window.print(); };
         window.onafterprint = function() { window.close(); };
