@@ -18,6 +18,7 @@ use App\Http\Controllers\ServeurDashboardController;
 use App\Http\Controllers\TableSessionController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\SuiviController;
+use App\Http\Controllers\RolePermissionsController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TenantController;
@@ -65,6 +66,11 @@ Route::middleware(['auth', 'role:SUPER_ADMIN'])->group(function () {
     Route::get('/superadmin/dashboard', [SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
     Route::resource('/superadmin/tenants', TenantController::class, ['as' => 'superadmin']);
     Route::resource('/superadmin/users', UserController::class, ['as' => 'superadmin']);
+
+    // Gestion des permissions par rôle (globales)
+    Route::get('/superadmin/permissions', [RolePermissionsController::class, 'superadminIndex'])->name('superadmin.permissions');
+    Route::post('/superadmin/permissions/toggle', [RolePermissionsController::class, 'superadminToggle'])->name('superadmin.permissions.toggle');
+    Route::post('/superadmin/permissions/reset', [RolePermissionsController::class, 'superadminReset'])->name('superadmin.permissions.reset');
 });
 
 // =============================================================================
@@ -176,6 +182,12 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function () {
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('admin.audit-logs.index');
         Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('admin.audit-logs.export');
         Route::get('/audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('admin.audit-logs.show');
+
+        // Permissions par rôle (Admin configure pour son restaurant)
+        Route::get('/permissions', [RolePermissionsController::class, 'adminIndex'])->name('admin.permissions.index');
+        Route::post('/permissions/toggle', [RolePermissionsController::class, 'adminToggle'])->name('admin.permissions.toggle');
+        Route::post('/permissions/reset-permission', [RolePermissionsController::class, 'adminResetPermission'])->name('admin.permissions.reset-permission');
+        Route::post('/permissions/reset', [RolePermissionsController::class, 'adminReset'])->name('admin.permissions.reset');
 
         // Staff Management (Admin can manage CAISSIER, CHEF, SERVEUR for their restaurant)
         Route::get('/staff', [App\Http\Controllers\AdminStaffController::class, 'index'])->name('admin.staff.index');

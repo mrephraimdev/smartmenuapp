@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Enums\UserRole;
 use App\Models\Tenant;
 use App\Models\User;
 
@@ -17,8 +17,7 @@ class SuperAdminController extends Controller
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
             'total_users' => User::count(),
-            'total_orders' => Order::count(),
-            'total_revenue' => Order::sum('total'),
+            'total_admins' => User::where('role', UserRole::ADMIN->value)->count(),
         ];
 
         $recentTenants = Tenant::orderBy('created_at', 'desc')->limit(5)->get();

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Models\RolePermission;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -128,7 +129,15 @@ class User extends Authenticatable
         }
 
         $permissions = $roleEnum->permissions();
+        if (in_array('*', $permissions)) {
+            return true;
+        }
 
-        return in_array('*', $permissions) || in_array($permission, $permissions);
+        $override = RolePermission::getEffective($roleEnum->value, $permission, $this->tenant_id);
+        if ($override !== null) {
+            return $override;
+        }
+
+        return in_array($permission, $permissions);
     }
 }
