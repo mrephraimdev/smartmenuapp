@@ -149,7 +149,10 @@
     </style>
 </head>
 <body>
-    <button class="pbtn no-print" onclick="window.print()">IMPRIMER</button>
+    <button id="print-btn" class="pbtn no-print" onclick="window.print()">IMPRIMER</button>
+    <div id="mobile-msg" style="display:none;position:fixed;top:10px;right:10px;background:#fff;border:2px solid #000;padding:12px 16px;font-family:sans-serif;font-size:13px;max-width:250px;border-radius:6px;z-index:999;">
+        📱 Impression non disponible sur mobile.<br>Utilisez un ordinateur connecté à l'imprimante.
+    </div>
 
     {{-- ====== HEADER ====== --}}
     <div class="header">
@@ -246,7 +249,15 @@
     </div>
 
     <script>
-        window.onload = function() { window.print(); };
+        window.onload = function() {
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            if (isMobile) {
+                document.getElementById('print-btn').style.display = 'none';
+                document.getElementById('mobile-msg').style.display = 'block';
+            } else {
+                window.print();
+            }
+        };
         window.onafterprint = function() { window.close(); };
     </script>
 </body>

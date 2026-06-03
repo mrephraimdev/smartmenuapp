@@ -45,7 +45,7 @@ class PrintService
     /**
      * Generate daily report for printing
      */
-    public function generateDailyReport(Tenant $tenant, string $date): string
+    public function generateDailyReport(Tenant $tenant, string $date, ?string $pdfUrl = null): string
     {
         $orders = Order::where('tenant_id', $tenant->id)
             ->whereDate('created_at', $date)
@@ -89,6 +89,7 @@ class PrintService
             'orders' => $orders,
             'stats' => $stats,
             'printedAt' => now(),
+            'pdfUrl' => $pdfUrl,
         ])->render();
     }
 

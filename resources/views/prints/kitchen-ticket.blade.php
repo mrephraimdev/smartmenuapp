@@ -113,7 +113,7 @@
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="header">
         <h1>CUISINE</h1>
         <div class="subtitle">{{ $tenant->name }}</div>
@@ -157,5 +157,13 @@
     <div class="footer">
         <div class="time">Imprimé à {{ $printedAt->format('H:i:s') }}</div>
     </div>
+
+    <script>
+        window.onload = function() {
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            if (!isMobile) { window.print(); }
+        };
+        window.onafterprint = function() { window.close(); };
+    </script>
 </body>
 </html>

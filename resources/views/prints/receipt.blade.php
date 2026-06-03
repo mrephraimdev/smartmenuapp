@@ -201,7 +201,17 @@
     </div>
 
     <script>
-        window.onload = function() { window.print(); };
+        window.onload = function() {
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            if (isMobile) {
+                var msg = document.createElement('div');
+                msg.style.cssText = 'position:fixed;top:10px;right:10px;background:#fff;border:2px solid #000;padding:12px 16px;font-family:sans-serif;font-size:13px;max-width:250px;border-radius:6px;z-index:999;';
+                msg.innerHTML = '📱 Impression non disponible sur mobile.<br>Utilisez un ordinateur connecté à l\'imprimante.';
+                document.body.appendChild(msg);
+            } else {
+                window.print();
+            }
+        };
         window.onafterprint = function() { window.close(); };
     </script>
 </body>

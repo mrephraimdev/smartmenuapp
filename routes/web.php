@@ -264,6 +264,7 @@ Route::middleware(['auth', 'role:ADMIN,CAISSIER'])->group(function () {
         Route::get('/print/order/{order}/kitchen', [PrintController::class, 'kitchenTicket'])->name('admin.print.kitchen');
         Route::get('/print/order/{order}/receipt', [PrintController::class, 'receipt'])->name('admin.print.receipt');
         Route::get('/print/daily-report', [PrintController::class, 'dailyReport'])->name('admin.print.daily-report');
+        Route::get('/print/daily-report-pdf', [PrintController::class, 'dailyReportPdf'])->name('admin.print.daily-report.pdf');
     });
 });
 

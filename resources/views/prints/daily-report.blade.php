@@ -134,23 +134,50 @@
         .thx { font-size: 13px; font-weight: 900; margin-bottom: 3px; }
         .fs { font-size: 11px; font-weight: 900; }
 
-        /* Print button */
-        .pbtn {
+        /* Toolbars */
+        .toolbar {
             position: fixed; top: 10px; right: 10px;
-            padding: 10px 20px; background: #000; color: #fff;
-            border: none; cursor: pointer; font-size: 14px;
-            font-family: sans-serif; font-weight: bold;
+            display: flex; gap: 8px; align-items: center;
+            font-family: sans-serif; z-index: 999;
         }
+        .tbtn {
+            padding: 10px 16px; border: none; cursor: pointer;
+            font-size: 13px; font-weight: bold; border-radius: 6px;
+        }
+        .tbtn-print { background: #000; color: #fff; }
+        .tbtn-pdf   { background: #e53e3e; color: #fff; }
+        #toolbar-mobile { display: none; }
 
         @media print {
             body { width: 80mm; margin: 0; }
-            .pbtn { display: none !important; }
+            .toolbar { display: none !important; }
             @page { size: 80mm auto; margin: 0; }
+        }
+
+        @media screen and (max-width: 767px) {
+            body { width: 100%; max-width: 100vw; padding: 4mm 3mm; font-size: 13px; }
         }
     </style>
 </head>
 <body>
-    <button class="pbtn" onclick="window.print()">IMPRIMER</button>
+    {{-- Toolbar desktop --}}
+    <div id="toolbar-desktop" class="toolbar">
+        <button class="tbtn tbtn-print" onclick="window.print()">🖨 Imprimer</button>
+        @if(!empty($pdfUrl))
+        <a href="{{ $pdfUrl }}" class="tbtn tbtn-pdf" download>⬇ PDF</a>
+        @endif
+    </div>
+
+    {{-- Toolbar mobile --}}
+    <div id="toolbar-mobile" class="toolbar">
+        @if(!empty($pdfUrl))
+        <a href="{{ $pdfUrl }}" class="tbtn tbtn-pdf" style="font-size:15px;padding:12px 20px;">⬇ Télécharger PDF</a>
+        @else
+        <div style="background:#fff;border:2px solid #000;padding:10px 14px;font-size:13px;font-family:sans-serif;border-radius:6px;max-width:240px;">
+            📱 Impression non disponible sur mobile.<br>Utilisez un ordinateur connecté à l'imprimante.
+        </div>
+        @endif
+    </div>
 
     {{-- ====== HEADER ====== --}}
     <div class="header">
@@ -216,57 +243,6 @@
         </tr>
     </table>
 
-    <div class="sep-d"></div>
-
-    {{-- ====== PLATS POPULAIRES ====== --}}
-    @if(!empty($stats['popular_dishes']))
-    <div class="sec">Plats populaires</div>
-    <table class="tbl">
-        <tr>
-            <th style="text-align:left">Plat</th>
-            <th class="tr">Qté</th>
-        </tr>
-        @foreach($stats['popular_dishes'] as $dish => $qty)
-        <tr>
-            <td>{{ $dish }}</td>
-            <td class="tr">{{ $qty }}</td>
-        </tr>
-        @endforeach
-    </table>
-    <div class="sep-d"></div>
-    @endif
-
-    {{-- ====== DÉTAIL COMMANDES ====== --}}
-    <div class="sec">Détail commandes</div>
-    @foreach($orders as $order)
-    <div class="od">
-        <div class="left">
-            <span>{{ $order->order_number }}</span>
-            <span style="font-size:11px"> {{ $order->created_at->format('H:i') }}</span>
-            <span style="font-size:11px"> [{{ $order->table->code ?? 'Cprt' }}]</span>
-        </div>
-        <div class="right">
-            {{ number_format($order->total, 0, ',', ' ') }} F
-            <br><span style="font-size:10px">
-                @if($order->status === 'ANNULE') ANNULE
-                @elseif($order->payment_status === 'PAID') PAYE
-                @elseif($order->payment_status === 'PARTIAL') PART.
-                @else IMPAYE
-                @endif
-            </span>
-        </div>
-    </div>
-    @endforeach
-
-    {{-- Total commandes --}}
-    @php
-        $totalCA = $orders->where('status', '!=', 'ANNULE')->sum('total');
-    @endphp
-    <div style="display:flex;justify-content:space-between;border-top:2px solid #000;margin-top:4px;padding-top:4px;font-size:14px;font-weight:900;">
-        <span>{{ $orders->where('status','!=','ANNULE')->count() }} commandes</span>
-        <span>{{ number_format($totalCA, 0, ',', ' ') }} F</span>
-    </div>
-
     <div class="sep"></div>
 
     {{-- ====== FOOTER ====== --}}
@@ -279,7 +255,21 @@
     </div>
 
     <script>
-        window.onload = function() { window.print(); };
+        var pdfUrl = '{{ $pdfUrl ?? '' }}';
+
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                || window.innerWidth < 768;
+        }
+
+        window.onload = function() {
+            if (isMobile()) {
+                document.getElementById('toolbar-desktop').style.display = 'none';
+                document.getElementById('toolbar-mobile').style.display = 'flex';
+            } else {
+                window.print();
+            }
+        };
         window.onafterprint = function() { window.close(); };
     </script>
 </body>
