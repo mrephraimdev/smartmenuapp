@@ -70,7 +70,10 @@ class AdminMenuController extends Controller
             ->selectRaw('COUNT(*) as total_orders, COALESCE(SUM(CASE WHEN status != \'ANNULE\' THEN total ELSE 0 END), 0) as total_revenue')
             ->first();
 
-        $activeDishes = Dish::where('tenant_id', $tenantId)->where('active', true)->count();
+        $activeDishes = Dish::where('tenant_id', $tenantId)
+            ->where('active', true)
+            ->whereHas('category', fn ($q) => $q->whereHas('menu', fn ($q2) => $q2->where('active', true)))
+            ->count();
 
         $popularDishes = DB::table('order_items')
             ->join('dishes', 'order_items.dish_id', '=', 'dishes.id')

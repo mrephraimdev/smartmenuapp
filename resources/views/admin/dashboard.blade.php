@@ -183,7 +183,7 @@
                             <span class="font-medium text-gray-800">{{ $dish->name }}</span>
                         </div>
                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {{ $dish->order_count }} commandes
+                            {{ $dish->order_count }} vendus
                         </span>
                     </div>
                     @endforeach
