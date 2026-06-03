@@ -111,6 +111,22 @@
                 $isChef     = $user->hasRole(\App\Enums\UserRole::CHEF);
                 $isServeur  = $user->hasRole(\App\Enums\UserRole::SERVEUR);
 
+                // Permissions configurables (respectent les overrides admin/superadmin)
+                $canViewMenu        = $user->hasPermission('view_menu');
+                $canManageMenu      = $user->hasPermission('manage_menu');
+                $canImportMenu      = $user->hasPermission('import_menu') || $isAdmin;
+                $canCreateOrder     = $user->hasPermission('create_order');
+                $canViewOrders      = $user->hasPermission('view_orders');
+                $canAccessKDS       = $user->hasPermission('access_kds');
+                $canManagePayments  = $user->hasPermission('manage_payments');
+                $canViewTables      = $user->hasPermission('view_tables');
+                $canManageTables    = $user->hasPermission('manage_tables');
+                $canViewStats       = $user->hasPermission('view_statistics');
+                $canViewDailyReport = $user->hasPermission('view_daily_report');
+                $canExportData      = $user->hasPermission('export_data');
+                $canManageRes       = $user->hasPermission('manage_reservations') || $isAdmin;
+                $canManageReviews   = $user->hasPermission('manage_reviews') || $isAdmin;
+
                 $navLink = fn($active) => $active
                     ? 'nav-active flex items-center gap-3 px-3 py-2.5 rounded-r-xl rounded-l-none -ml-3 pl-[calc(0.75rem+3px)] text-sm font-medium transition-all'
                     : 'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-all';
@@ -128,7 +144,7 @@
             @endif
 
             {{-- ─ MON MENU ─ --}}
-            @if($isAdmin || $isChef)
+            @if($canViewMenu || $canManageMenu)
             <div class="pt-4 pb-1">
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Mon Menu</p>
             </div>
@@ -139,12 +155,12 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/>
                 </svg>
                 Menus &amp; Plats
-                @if($isChef)
+                @if(!$canManageMenu && $canViewMenu)
                     <span class="ml-auto text-[10px] text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">lecture</span>
                 @endif
             </a>
 
-            @if($isAdmin)
+            @if($canImportMenu)
             <a href="{{ route('admin.menu.import', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.menu.import*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -161,8 +177,8 @@
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Commandes</p>
             </div>
 
-            {{-- Prise de commande au comptoir (ADMIN/CAISSIER) --}}
-            @if($isAdmin || $isCaissier)
+            {{-- Prise de commande au comptoir --}}
+            @if($canCreateOrder && !$isServeur)
             <a href="{{ route('admin.comptoir.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.comptoir*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -172,8 +188,8 @@
             </a>
             @endif
 
-            {{-- Prise de commande serveur (SERVEUR uniquement) --}}
-            @if($isServeur)
+            {{-- Prise de commande serveur --}}
+            @if($isServeur && $canCreateOrder)
             <a href="{{ route('serveur.commande.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('serveur.commande.index')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -191,6 +207,7 @@
             @endif
 
             {{-- Suivi des commandes --}}
+            @if($canViewOrders)
             <a href="{{ route('admin.suivi.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.suivi*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -207,8 +224,9 @@
                 </svg>
                 Historique
             </a>
+            @endif
 
-            @if($isAdmin || $isChef || $isServeur || $isCaissier)
+            @if($canAccessKDS)
             <a href="{{ url('/kds/' . $slug) }}"
                class="{{ $navLink(false) }} group">
                 <svg class="w-5 h-5 flex-shrink-0 text-orange-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -221,7 +239,7 @@
             @endif
 
             {{-- ─ PAIEMENTS ─ --}}
-            @if($isAdmin || $isCaissier)
+            @if($canManagePayments)
             <div class="pt-4 pb-1">
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Paiements</p>
             </div>
@@ -236,7 +254,7 @@
             @endif
 
             {{-- ─ RESTAURANT ─ --}}
-            @if($isAdmin || $isCaissier || $isServeur)
+            @if($canViewTables || $canManageTables || $isAdmin)
             <div class="pt-4 pb-1">
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Restaurant</p>
             </div>
@@ -263,11 +281,12 @@
             @endif
 
             {{-- ─ SERVICES ─ --}}
-            @if($isAdmin)
+            @if($canManageRes || $canManageReviews)
             <div class="pt-4 pb-1">
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Services</p>
             </div>
 
+            @if($canManageRes)
             <a href="{{ route('admin.reservations.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.reservations*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -275,7 +294,9 @@
                 </svg>
                 Réservations
             </a>
+            @endif
 
+            @if($canManageReviews)
             <a href="{{ route('admin.reviews.index', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.reviews*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -284,14 +305,15 @@
                 Avis Clients
             </a>
             @endif
+            @endif
 
             {{-- ─ ANALYSE ─ --}}
-            @if($isAdmin || $isCaissier)
+            @if($canViewStats || $canViewDailyReport || $canExportData)
             <div class="pt-4 pb-1">
                 <p class="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Analyse</p>
             </div>
 
-            @if($isAdmin)
+            @if($canViewStats)
             <a href="{{ route('admin.statistics', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.statistics*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -301,6 +323,7 @@
             </a>
             @endif
 
+            @if($canViewDailyReport)
             <a href="{{ route('admin.print.daily-report', $slug) }}" target="_blank"
                class="{{ $navLink(false) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
@@ -308,8 +331,9 @@
                 </svg>
                 Rapport du jour
             </a>
+            @endif
 
-            @if($isAdmin)
+            @if($canExportData)
             <a href="{{ route('admin.reports', $slug) }}"
                class="{{ $navLink(request()->routeIs('admin.reports*')) }}">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">

@@ -88,11 +88,11 @@ class RolePermissionsController extends Controller
         return back()->with('success', 'Permissions globales réinitialisées aux valeurs par défaut.');
     }
 
-    /** Vue admin — permissions pour un tenant spécifique */
+    /** Vue admin — permissions pour un tenant spécifique (staff seulement, pas ADMIN) */
     public function adminIndex(string $tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
-        $roles = UserRole::tenantRoles();
+        $roles = UserRole::staffRoles(); // CHEF, SERVEUR, CAISSIER uniquement
         $catalog = self::permissionsCatalog();
 
         $tenantOverrides = RolePermission::where('tenant_id', $tenant->id)
@@ -106,13 +106,13 @@ class RolePermissionsController extends Controller
         return view('admin.permissions', compact('tenant', 'roles', 'catalog', 'tenantOverrides', 'globalOverrides'));
     }
 
-    /** Toggle permission tenant (admin) */
+    /** Toggle permission tenant (admin) — staff uniquement, pas ADMIN */
     public function adminToggle(Request $request, string $tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
         $validated = $request->validate([
-            'role'       => 'required|string',
+            'role'       => 'required|string|in:CHEF,SERVEUR,CAISSIER',
             'permission' => 'required|string',
             'enabled'    => 'required|boolean',
         ]);
@@ -125,13 +125,13 @@ class RolePermissionsController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    /** Supprimer override tenant (retour au défaut global/enum) */
+    /** Supprimer override tenant (retour au défaut global/enum) — staff uniquement */
     public function adminResetPermission(Request $request, string $tenantSlug)
     {
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 
         $validated = $request->validate([
-            'role'       => 'required|string',
+            'role'       => 'required|string|in:CHEF,SERVEUR,CAISSIER',
             'permission' => 'required|string',
         ]);
 
