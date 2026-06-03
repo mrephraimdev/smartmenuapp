@@ -68,12 +68,13 @@ class PrintController extends Controller
         $tenant = Tenant::findBySlug($tenantSlug);
         $date = $request->get('date', now()->toDateString());
 
-        $html = $this->printService->generateDailyReport($tenant, $date);
+        $html = $this->printService->generateDailyReportPdf($tenant, $date);
 
         $pdf = Pdf::loadHTML($html)
-            ->setPaper([0, 0, 226.77, 841.89]) // 80mm wide, A4 height as max
+            ->setPaper([0, 0, 226.77, 841.89]) // 80mm wide
             ->setOption('isHtml5ParserEnabled', true)
-            ->setOption('isRemoteEnabled', false);
+            ->setOption('isRemoteEnabled', false)
+            ->setOption('defaultFont', 'courier');
 
         $filename = 'rapport-' . $tenant->slug . '-' . $date . '.pdf';
 

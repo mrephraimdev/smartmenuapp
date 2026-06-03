@@ -94,6 +94,50 @@ class PrintService
     }
 
     /**
+     * Generate daily report HTML optimized for DomPDF (no flexbox)
+     */
+    public function generateDailyReportPdf(Tenant $tenant, string $date): string
+    {
+        $orders = Order::where('tenant_id', $tenant->id)
+            ->whereDate('created_at', $date)
+            ->with(['items.dish', 'table'])
+            ->get();
+
+        $payments = Payment::where('tenant_id', $tenant->id)
+            ->whereDate('created_at', $date)
+            ->where('status', 'SUCCESS')
+            ->get();
+
+        $paymentsByMethod = [];
+        foreach (PaymentMethod::cashierMethods() as $method) {
+            $methodPayments = $payments->where('method', $method->value);
+            $paymentsByMethod[$method->value] = [
+                'label' => $method->label(),
+                'count' => $methodPayments->count(),
+                'total' => $methodPayments->sum('amount'),
+            ];
+        }
+
+        $stats = [
+            'total_orders'       => $orders->count(),
+            'served_orders'      => $orders->where('status', 'SERVI')->count(),
+            'cancelled_orders'   => $orders->where('status', 'ANNULE')->count(),
+            'total_payments'     => $payments->sum('amount'),
+            'payment_count'      => $payments->count(),
+            'payments_by_method' => $paymentsByMethod,
+            'unpaid_orders'      => $orders->where('payment_status', '!=', 'PAID')->where('status', '!=', 'ANNULE')->count(),
+            'unpaid_amount'      => $orders->where('payment_status', '!=', 'PAID')->where('status', '!=', 'ANNULE')->sum(fn ($o) => $o->total - $o->paid_amount),
+        ];
+
+        return View::make('prints.daily-report-pdf', [
+            'tenant'    => $tenant,
+            'date'      => $date,
+            'stats'     => $stats,
+            'printedAt' => now(),
+        ])->render();
+    }
+
+    /**
      * Get popular dishes from orders collection
      */
     protected function getPopularDishes($orders): array
