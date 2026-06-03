@@ -146,36 +146,18 @@
         }
         .tbtn-print { background: #000; color: #fff; }
         .tbtn-pdf   { background: #e53e3e; color: #fff; }
-        #toolbar-mobile { display: none; }
-
         @media print {
             body { width: 80mm; margin: 0; }
             .toolbar { display: none !important; }
             @page { size: 80mm auto; margin: 0; }
         }
-
-        @media screen and (max-width: 767px) {
-            body { width: 100%; max-width: 100vw; padding: 4mm 3mm; font-size: 13px; }
-        }
     </style>
 </head>
 <body>
-    {{-- Toolbar desktop --}}
-    <div id="toolbar-desktop" class="toolbar">
+    <div class="toolbar">
         <button class="tbtn tbtn-print" onclick="window.print()">🖨 Imprimer</button>
         @if(!empty($pdfUrl))
         <a href="{{ $pdfUrl }}" class="tbtn tbtn-pdf" download>⬇ PDF</a>
-        @endif
-    </div>
-
-    {{-- Toolbar mobile --}}
-    <div id="toolbar-mobile" class="toolbar">
-        @if(!empty($pdfUrl))
-        <a href="{{ $pdfUrl }}" class="tbtn tbtn-pdf" style="font-size:15px;padding:12px 20px;">⬇ Télécharger PDF</a>
-        @else
-        <div style="background:#fff;border:2px solid #000;padding:10px 14px;font-size:13px;font-family:sans-serif;border-radius:6px;max-width:240px;">
-            📱 Impression non disponible sur mobile.<br>Utilisez un ordinateur connecté à l'imprimante.
-        </div>
         @endif
     </div>
 
@@ -255,21 +237,7 @@
     </div>
 
     <script>
-        var pdfUrl = '{{ $pdfUrl ?? '' }}';
-
-        function isMobile() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-                || window.innerWidth < 768;
-        }
-
-        window.onload = function() {
-            if (isMobile()) {
-                document.getElementById('toolbar-desktop').style.display = 'none';
-                document.getElementById('toolbar-mobile').style.display = 'flex';
-            } else {
-                window.print();
-            }
-        };
+        window.onload = function() { window.print(); };
         window.onafterprint = function() { window.close(); };
     </script>
 </body>

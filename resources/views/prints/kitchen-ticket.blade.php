@@ -159,10 +159,7 @@
     </div>
 
     <script>
-        window.onload = function() {
-            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-            if (!isMobile) { window.print(); }
-        };
+        window.onload = function() { window.print(); };
         window.onafterprint = function() { window.close(); };
     </script>
 </body>
